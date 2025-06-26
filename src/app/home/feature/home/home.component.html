@@ -1,0 +1,79 @@
+<div class="home-container">
+
+  <!-- Carpet Scanner (fullscreen when triggered) -->
+  @if (showCarpetTest()) {
+    <app-carpet-scanner
+      (carpetConfirmed)="onCarpetConfirmed($event)"
+      (exitScanner)="onExitCarpetTest()">
+    </app-carpet-scanner>
+  }
+
+
+  <app-user-profile-widget
+  [user]="user()"
+  [leaderboardPosition]="userLeaderboardPosition()"
+  (openProfile)="handleOpenProfile()" />
+
+    <!-- ✅ Onboarding Hint -->
+    @if (isNewUser()) {
+      <div class="onboarding-hint">
+        <span class="hint-icon">💡</span>
+        <span class="hint-text">
+          Welcome to Spoonscount! Start a mission to begin your pub adventure.
+        </span>
+      </div>
+    }
+
+  <app-scoreboard-hero [data]="scoreboardData()" />
+
+
+  @if (carpets().length > 0 || carpetsLoading()) {
+    <app-carpet-grid
+      [carpets]="carpets"
+      [loading]="carpetsLoading"
+    />
+  }
+
+
+  <!-- ✅ Badges Showcase -->
+  @if (earnedBadges().length > 0) {
+    <app-badges-showcase
+      [badges]="earnedBadges()"
+      [maxDisplay]="6"
+      (viewAllBadges)="handleViewAllBadges()" />
+  }
+
+  <!-- ✅ Active Missions -->
+  @if (activeMissions().length > 0) {
+    <app-missions-section
+      [missions]="activeMissions()"
+      [maxDisplay]="3"
+      (viewMission)="handleViewMission($event)" />
+  }
+
+  <!-- ✅ Action Cards -->
+  <!-- <app-action-cards
+    [showStartMission]="activeMissions().length === 0"
+    (startMission)="handleStartMission()"
+    (openGuide)="handleOpenGuide()"
+    (openSettings)="handleOpenSettings()" /> -->
+
+
+
+  <!-- ✅ Development Debug Section -->
+  <!-- @if (isDevelopment()) {
+    <details class="debug-section">
+      <summary>🐛 Debug Information</summary>
+      <div class="debug-grid">
+        <div class="debug-item">
+          <h4>User State</h4>
+          <pre>{{ debugUserInfo() | json }}</pre>
+        </div>
+        <div class="debug-item">
+          <h4>Stores Status</h4>
+          <pre>{{ debugStoresInfo() | json }}</pre>
+        </div>
+      </div>
+    </details>
+  } -->
+</div>

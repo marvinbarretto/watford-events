@@ -1,0 +1,110 @@
+// src/app/shared/feature/user-info/user-info.component.scss
+.user-info {
+  background-color: var(--brand-dark);
+  color: var(--brand-light);
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  padding: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.user-info__anon {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex: 1;
+  min-width: 0; // Allow text to truncate
+
+  .anon-avatar {
+    display: block;
+    border-radius: 50%;
+    width: 3rem;
+    height: 3rem;
+    flex-shrink: 0;
+  }
+}
+
+.user-info__user {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex: 1;
+
+  img {
+    border-radius: 50%;
+    border: solid 2px var(--brand-light);
+    width: 3rem;
+    height: 3rem;
+    object-fit: cover;
+    object-position: center;
+    flex-shrink: 0;
+  }
+}
+
+.user-details {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  flex: 1;
+  min-width: 0; // Allow text to truncate
+
+  .user-name {
+    font-weight: 600;
+    margin: 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 12rem;
+  }
+
+  .user-type {
+    opacity: 0.7;
+    font-size: 0.75rem;
+    margin: 0;
+  }
+}
+
+.user-controls {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.login-section {
+  display: flex;
+}
+
+// Mobile responsiveness
+@media (max-width: 768px) {
+  .user-info {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.75rem;
+  }
+
+  .user-info__anon,
+  .user-info__user {
+    justify-content: center;
+  }
+
+  .user-controls {
+    justify-content: center;
+  }
+
+  .login-section {
+    justify-content: center;
+  }
+
+  .user-details .user-name {
+    max-width: none;
+    text-align: center;
+  }
+}
+
+@media (max-width: 480px) {
+  .user-controls {
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+}

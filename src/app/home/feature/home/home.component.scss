@@ -1,0 +1,87 @@
+.home-container {
+  padding: 0 1rem 2rem;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+/* ✅ Onboarding Hint */
+.onboarding-hint {
+  background: rgba(255, 237, 78, 0.15);
+  border: 1px solid rgba(255, 237, 78, 0.3);
+  border-radius: 8px;
+  padding: 0.75rem;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  text-align: left;
+  margin-bottom: 2rem;
+}
+
+.hint-icon {
+  font-size: 1.25rem;
+  flex-shrink: 0;
+}
+
+.hint-text {
+  font-size: 0.875rem;
+  line-height: 1.4;
+  color: var(--color-text, #1f2937);
+}
+
+/* ✅ Debug Styles */
+.debug-section {
+  margin-top: 2rem;
+  background: var(--color-surface, #f8fafc);
+  border: 1px solid var(--color-border, #e2e8f0);
+  border-radius: 8px;
+  padding: 1rem;
+}
+
+.debug-section summary {
+  cursor: pointer;
+  font-weight: 600;
+  color: var(--color-text-secondary, #64748b);
+}
+
+.debug-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 1rem;
+  margin-top: 1rem;
+}
+
+.debug-item {
+  background: white;
+  border: 1px solid var(--color-border, #e2e8f0);
+  border-radius: 6px;
+  padding: 1rem;
+}
+
+.debug-item h4 {
+  margin: 0 0 0.5rem 0;
+  font-size: 0.875rem;
+  color: var(--color-text, #1f2937);
+}
+
+.debug-item pre {
+  background: #f1f5f9;
+  border: 1px solid #e2e8f0;
+  border-radius: 4px;
+  padding: 0.75rem;
+  font-size: 0.75rem;
+  overflow-x: auto;
+  max-height: 200px;
+  overflow-y: auto;
+  margin: 0;
+}
+
+/* ✅ Responsive Design */
+@media (max-width: 768px) {
+  .home-container {
+    padding: 0 0.5rem 1rem;
+  }
+
+  .debug-grid {
+    grid-template-columns: 1fr;
+  }
+}
