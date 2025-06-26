@@ -260,107 +260,165 @@ watford-events/
 
 ---
 
-## 🎯 Story Points and Estimation
 
-Tasks are estimated using story points for velocity tracking:
+## 🔄 Development Workflow - Point-Based Planning
 
-- **1 point**: 2-4 hours (small bug fix, simple component update)
-- **2 points**: Half day (simple feature, basic component)  
-- **3 points**: Full day (medium feature, component with logic)
-- **5 points**: 2-3 days (complex feature, multiple components)
-- **8 points**: 1 week (major feature, multiple services)
+This project uses a **simple, point-based workflow** designed for solo development with velocity tracking.
+
+### Quick Overview
+```bash
+# 1. Brain dump ideas into markdown
+code planning/current.md
+
+# 2. Convert to GitHub issues  
+./workflow.sh preview
+./workflow.sh plan
+
+# 3. Work normally with commits
+git commit -m "feat: add search component. closes #23"
+git commit -m "fix: fix mobile layout. closes #24"
+
+# 4. Track progress automatically
+./workflow.sh progress    # Updates PROGRESS.md weekly
+```
+
+### Workflow Files
+
+#### `workflow.sh` - Main workflow script
+- **Setup**: `./workflow.sh setup` (one-time: creates labels + templates)
+- **Plan**: `./workflow.sh plan` (convert markdown → GitHub issues)  
+- **Preview**: `./workflow.sh preview` (see what would be created)
+- **Progress**: `./workflow.sh progress` (generate weekly PROGRESS.md)
+- **Status**: `./workflow.sh status` (quick project overview)
+
+#### `planning/current.md` - Your main planning file
+Brain dump ideas using this format:
+```markdown
+## [EPIC] Feature Area [epic,now] [SP: 15]
+
+### Implementation [feature,frontend,now] [SP: 10]
+- Create component [sp2]
+- Add validation [sp1] 
+- Add responsive design [sp2]
+- Add unit tests [sp3]
+- Fix mobile issues [sp2]
+```
+
+#### `PROGRESS.md` - Automatic progress tracking
+Auto-generated weekly with:
+- ✅ Points completed this week
+- 🎯 Current priorities and points remaining  
+- 📈 Recent commits and velocity trends
+- 📊 Project statistics and burndown
+
+### Point System
+
+**Story Points = Time Estimates**
+- **sp1** - Quickies (1-2 hours): Bug fixes, small styling updates
+- **sp2** - Half day (3-4 hours): Simple components, basic features
+- **sp3** - Full day (6-8 hours): Complex components, medium features  
+- **sp5** - 2 days (12-16 hours): Major features, API integrations
+- **sp8** - 3-4 days (24-32 hours): Large epics, architecture changes
+
+**Priority Labels**
+- **now** - This week (~15 points target)
+- **soon** - This month (backlog)
+- **later** - Someday maybe
 
 ### Velocity Tracking
-- Target: 20-25 story points per week
-- Track actual vs estimated time to improve future estimates
-- Use issue comments to note time spent vs estimate
+
+After a few weeks you'll learn your capacity:
+- **Weekly target**: ~12-15 points  
+- **Task accuracy**: "sp2 tasks actually take me 4 hours"
+- **Energy patterns**: "Friday afternoons = sp1 cleanup time"
+
+The system automatically tracks:
+- Points completed per week
+- Velocity trends (getting faster/slower)
+- Remaining points in current priorities
+
+### Daily Development Flow
+
+#### Monday: Planning Session
+```bash
+# Brain dump week's ideas
+code planning/current.md
+
+# Preview what you'll create
+./workflow.sh preview
+
+# Create the issues
+./workflow.sh plan
+```
+
+#### Daily: Development
+```bash
+# Pick issue from project board based on energy:
+# High energy: sp3-sp5 main features
+# Low energy: sp1-sp2 cleanup tasks
+# Friday afternoon: always sp1 quickies
+
+# Work with issue references
+git commit -m "add search validation. #34"
+git commit -m "fix mobile layout. closes #34"
+```
+
+#### Friday: Progress Review
+```bash
+# Generate automatic progress report
+./workflow.sh progress
+
+# Review velocity and plan next week
+# Celebrate completed points! 🎉
+```
+
+### Example Planning Session
+
+**Brain dump in `planning/current.md`:**
+```markdown
+# Week of Jan 29 - Search Implementation
+
+## [EPIC] Event Search & Discovery [epic,now] [SP: 15]
+
+### Search Core [feature,frontend,now] [SP: 10]
+- Create search input component [sp2]
+- Add search results display [sp3] 
+- Implement category filtering [sp2]
+- Add search loading states [sp1]
+- Fix mobile search layout [sp2]
+
+### Performance [feature,tech,now] [SP: 5]
+- Optimize event list rendering [sp3]
+- Add image lazy loading [sp2]
+
+## [EPIC] Mobile Polish [epic,soon] [SP: 8]
+- Fix navigation menu overflow [sp1]
+- Improve touch interactions [sp2]
+- Add mobile breakpoints [sp2]
+- Update accessibility [sp3]
+```
+
+**Convert to issues:**
+```bash
+./workflow.sh plan
+# Creates 9 GitHub issues with proper labels and point estimates
+# Issues automatically appear in project board
+```
+
+**Work and track:**
+```bash
+# Work on issues, commit with references
+git commit -m "create search component with validation. closes #34"
+
+# Weekly progress update
+./workflow.sh progress
+# Updates PROGRESS.md with completed points, velocity, trends
+```
+
+This workflow gives you **structure without overhead** - plan in markdown, track automatically, focus on building.
 
 ---
 
-## 🔧 Development Commands
-
-### Daily Development
-```bash
-# Start development server
-ng serve
-
-# Run tests
-npm test
-
-# Run linting (if configured)
-npm run lint
-
-# Commit changes
-git add .
-git commit -m "update event listing page. #6"
-git push
-
-# Build for production
-npm run build
-```
-
-### Issue Management
-```bash
-# List issues
-gh issue list
-
-# Create new issue
-gh issue create --title "Feature name" --body "Description" --label "task,phase:foundation,sp:3"
-
-# View issue details
-gh issue view [number]
-
-# Close issue
-gh issue close [number]
-```
-
-### Project Board
-```bash
-# View project in browser
-gh project view --web
-
-# Or visit: https://github.com/marvinbarretto/watford-events/projects/1
-```
-
----
-
-## 📊 Git Workflow
-
-### For Most Changes (Recommended)
-```bash
-# Work directly on main for speed
-git add .
-git commit -m "update package json for watford-events. #2"
-git push origin main
-```
-
-### For Large/Risky Changes (Optional)
-```bash
-# Create feature branch for major changes
-git checkout -b transform-store-architecture
-
-# Work and commit
-git commit -m "rename PubStore to EventStore. #5"
-git commit -m "update store contracts. closes #5"
-
-# Push and create PR for review
-git push -u origin transform-store-architecture
-gh pr create --title "Transform store architecture" --body "Closes #5"
-
-# Merge when ready
-gh pr merge --squash
-```
-
-### Simple Daily Workflow
-```bash
-# 1. Pick issue from project board
-# 2. Work on main branch
-# 3. Commit frequently with issue references
-# 4. Push when ready
-# 5. Move issue to "Done" on project board
-```
-
----
 
 ## 🚀 Deployment
 
@@ -498,12 +556,5 @@ gh project view --web
 ng serve
 ```
 
----
-
-## 📄 License
-
-Private repository - All rights reserved.
 
 ---
-
-*Last updated: December 2024*
