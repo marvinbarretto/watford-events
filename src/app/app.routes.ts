@@ -20,25 +20,6 @@ export const appRoutes: Routes = [
       import('./pubs/data-access/pub.routes').then((m) => m.PUBS_ROUTES),
   },
   {
-    path: 'test-carpet',
-    title: 'Test Carpet',
-    loadComponent: () =>
-      import('./check-in/feature/carpet-scanner/carpet-scanner.component')
-        .then(m => m.CarpetScannerComponent)
-  },
-  {
-    path: 'carpets',
-    loadChildren: () =>
-      import('./carpets/data-access/carpet.routes').then((m) => m.CARPETS_ROUTES),
-  },
-  {
-    path: 'dev/carpet-analyzer',
-    loadComponent: () =>
-      import('./dev/carpet-analyzer/carpet-analyzer.component')
-        .then(m => m.CarpetAnalyzerComponent)
-  },
-
-  {
     path: 'missions',
     title: 'Missions',
     loadChildren: () =>
@@ -49,11 +30,6 @@ export const appRoutes: Routes = [
     title: 'Leaderboard',
     loadChildren: () =>
       import('./leaderboard/data-access/leaderboard.routes').then((m) => m.LEADERBOARD_ROUTES),
-  },
-  {
-    path: 'admin/badges',
-    loadChildren: () =>
-      import('./badges/data-access/badge.routes').then((m) => m.BADGE_ROUTES),
   },
   {
     path: 'admin/missions',

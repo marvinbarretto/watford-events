@@ -92,10 +92,6 @@ export class AuthStore {
         checkedInPubIds: [],
         streaks: {},
         joinedAt: new Date().toISOString(),
-        badgeCount: 0,
-        badgeIds: [],
-        landlordCount: 0,
-        landlordPubIds: [],
         joinedMissionIds: [],
       };
 

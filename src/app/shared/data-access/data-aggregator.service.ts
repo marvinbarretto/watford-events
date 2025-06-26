@@ -128,8 +128,6 @@ export class DataAggregatorService {
       todaysPoints: this.pointsStore.todaysPoints?.() || 0, // Safe access
       pubsVisited: this.pubsVisited(), // From our computed
       totalPubs: 856, // TODO: Get from PubStore when available
-      badgeCount: this.userStore.badgeCount(),
-      landlordCount: this.userStore.landlordCount(),
       totalCheckins: this.newCheckinStore.totalCheckins(),
       isLoading
     };
@@ -277,8 +275,6 @@ export class DataAggregatorService {
         totalPoints: this.userStore.totalPoints(),
         pubsVisited: this.pubsVisited(),
         totalCheckins: this.newCheckinStore.totalCheckins(),
-        badgeCount: this.userStore.badgeCount(),
-        landlordCount: this.userStore.landlordCount()
       },
       activity: {
         todaysPoints: this.pointsStore.todaysPoints?.() || 0,

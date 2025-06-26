@@ -19,7 +19,6 @@ import { FeatureFlagPipe } from '../../utils/feature-flag.pipe';
 import { PanelStore, PanelType } from '../../ui/panel/panel.store';
 import { ViewportService } from '../../data-access/viewport.service';
 import { NavComponent } from "../nav/nav.component";
-import { LandlordStore } from '../../../landlord/data-access/landlord.store';
 import { NearbyPubStore } from '../../../pubs/data-access/nearby-pub.store';
 import { AuthStore } from '../../../auth/data-access/auth.store';
 
@@ -54,7 +53,6 @@ export class HeaderComponent extends BaseComponent implements AfterViewInit {
   // 🔧 Services
   private readonly viewportService = inject(ViewportService);
   private readonly panelStore = inject(PanelStore);
-  private readonly landlordStore = inject(LandlordStore);
   private readonly nearbyPubStore = inject(NearbyPubStore);
   private readonly authStore = inject(AuthStore);
   private readonly userStore = inject(UserStore);

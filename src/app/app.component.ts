@@ -13,7 +13,6 @@ import { DeviceCapabilityService } from './shared/utils/device-capability-check.
 import { SsrPlatformService } from './shared/utils/ssr/ssr-platform.service';
 import { PageTitleService } from './shared/data-access/page-title.service';
 import { PubStore } from './pubs/data-access/pub.store';
-import { LandlordStore } from './landlord/data-access/landlord.store';
 
 @Component({
   selector: 'app-root',
@@ -36,7 +35,6 @@ export class AppComponent {
   readonly platform = inject(SsrPlatformService);
   readonly titleService = inject(PageTitleService);
   readonly pubStore = inject(PubStore);
-  readonly landlordStore = inject(LandlordStore);
 
   constructor() {
     console.log('[AppComponent] Booted at', new Date().toISOString());
@@ -46,7 +44,6 @@ export class AppComponent {
     this.pubStore.loadOnce();
     console.log('[AppComponent] PubStore loaded');
 
-    // There is no LandlordStore.loadOnce()
 
 
     this.platform.onlyOnBrowser(() => {

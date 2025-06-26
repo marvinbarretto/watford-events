@@ -4,7 +4,6 @@ import { Router } from '@angular/router';
 import { OverlayService } from '@shared/data-access/overlay.service';
 import { UserProgressionService } from '@shared/data-access/user-progression.service';
 import { ModalCheckinSuccessComponent } from '../ui/modal-checkin-success/modal-checkin-success.component';
-import { ModalCheckinLandlordComponent } from '../ui/modal-checkin-landlord/modal-checkin-landlord.component';
 import { CheckInResultData } from '../utils/check-in.models';
 
 @Injectable({ providedIn: 'root' })
@@ -56,58 +55,8 @@ export class CheckInModalService {
       close();
     });
 
-    componentRef.instance.nextModal.subscribe(() => {
-      console.log('[CheckInModalService] Next modal requested');
-      close();
-
-      // Brief delay for smooth transition
-      setTimeout(() => {
-        this.showLandlordStatus(data);
-      }, 200);
-    });
   }
 
-  /**
-   * Second Modal: Landlord Status
-   */
-  private showLandlordStatus(data: CheckInResultData): void {
-    console.log('[CheckInModalService] Opening landlord modal');
-
-    const { componentRef, close } = this.overlayService.open(
-      ModalCheckinLandlordComponent,
-      {},
-      {
-        data: {
-          isNewLandlord: data.isNewLandlord || false,
-          landlordMessage: data.landlordMessage,
-          pub: data.pub
-        },
-        UserExperienceLevel: this.userProgressionService.userExperienceLevel()
-      }
-    );
-
-    // Handle modal events
-    componentRef.instance.navigate.subscribe(() => {
-      console.log('[CheckInModalService] Navigate from landlord modal');
-      close();
-      this.navigateToPub(data.pub?.id);
-    });
-
-    componentRef.instance.dismiss.subscribe(() => {
-      console.log('[CheckInModalService] Landlord modal dismissed');
-      close();
-    });
-
-    componentRef.instance.previousModal.subscribe(() => {
-      console.log('[CheckInModalService] Previous modal requested');
-      close();
-
-      // Brief delay for smooth transition
-      setTimeout(() => {
-        this.showCheckinSuccess(data);
-      }, 200);
-    });
-  }
 
   /**
    * Navigate to pub details

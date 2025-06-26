@@ -58,21 +58,7 @@
       </section>
     }
 
-    <!-- Landlord Status Section - Enhanced -->
-    <section class="landlord-status">
-      <h2>Current Landlord</h2>
-      @if (landlordInsights(); as insights) {
-        <div class="landlord-card" [class]="'landlord-card--' + insights.status">
-          <div class="landlord-main">
-            <p class="landlord-message"><strong>{{ insights.message }}</strong></p>
-            <p class="landlord-subtitle">{{ insights.subtitle }}</p>
-          </div>
-          <div class="landlord-action">
-            <small class="action-hint">{{ insights.actionHint }}</small>
-          </div>
-        </div>
-      }
-    </section>
+
 
     <!-- Carpet Section -->
     @if (currentPub.carpetUrl) {
@@ -146,26 +132,7 @@
       <a routerLink="/pubs" class="back-link">← Back to pubs</a>
     </div>
 
-    <!-- Enhanced Landlord History -->
-    @if (landlordHistory().length > 0) {
-      <section class="history">
-        <h2>Recent Landlords ({{ landlordHistory().length }})</h2>
-        <ul class="landlord-list">
-          @for (entry of landlordHistory(); track entry.claimedAt) {
-            <li class="landlord-item" [class.is-current-user]="entry.isCurrentUser">
-              <div class="landlord-user">
-                <span class="crown">👑</span>
-                <span class="user-name">{{ entry.displayName }}</span>
-                @if (entry.isCurrentUser) {
-                  <span class="you-badge">You</span>
-                }
-              </div>
-              <span class="claim-time">{{ entry.relativeTime }}</span>
-            </li>
-          }
-        </ul>
-      </section>
-    }
+
 
     <!-- Nearby Pubs Discovery -->
     @if (unvisitedNearbyPubs().length > 0) {

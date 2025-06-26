@@ -1,7 +1,6 @@
 
 import { Timestamp } from "firebase/firestore";
 import { CheckIn } from "../../check-in/utils/check-in.models";
-import { Landlord } from "../../landlord/utils/landlord.model";
 
 export type Pub = {
   id: string;
@@ -22,10 +21,6 @@ export type Pub = {
   recordLatestCheckinAt?: Timestamp;
   longestStreak?: number;
 
-  currentLandlord?: Landlord;
-  todayLandlord?: Landlord;
-
-  landlordHistory?: Landlord[];
   checkinHistory?: CheckIn[];
 };
 

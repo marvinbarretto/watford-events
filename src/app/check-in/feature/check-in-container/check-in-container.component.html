@@ -11,13 +11,7 @@
       <p>You checked in to <strong>{{ pub().name }}</strong>!</p>
       <p>Date: {{ today }}</p>
 
-      @if (landlordMessage()) {
-        <p>{{ landlordMessage() }}</p>
-      }
 
-      @if (badge()) {
-        <p>🏅 New badge: {{ badge() }}</p>
-      }
 
       @if (missionUpdated()) {
         <p>📈 Mission progress updated</p>

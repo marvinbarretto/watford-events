@@ -2,12 +2,9 @@
 import { Component, inject, input, output, computed, signal, effect } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ButtonComponent } from '@shared/ui/button/button.component';
-import { BadgeIconComponent } from '@badges/ui/badge-icon/badge-icon.component';
 import { NewCheckinStore } from '../../../new-checkin/data-access/new-checkin.store';
 import { AuthStore } from '@auth/data-access/auth.store';
 import { PubStore } from '@pubs/data-access/pub.store';
-import { DeviceCarpetStorageService } from '../../../carpets/data-access/device-carpet-storage.service';
-import { BADGE_DEFINITIONS } from '@badges/utils/badge.config';
 import { ButtonVariant } from '@shared/ui/button/button.params';
 import { environment } from '../../../../environments/environment';
 import { CheckInResultData } from '../../utils/check-in.models';
@@ -22,7 +19,7 @@ type PointsBreakdownItem = {
 
 @Component({
   selector: 'app-modal-checkin-success',
-  imports: [CommonModule, ButtonComponent, BadgeIconComponent],
+  imports: [CommonModule, ButtonComponent],
   template: `
     <div class="modal-container" [class.success]="data().success">
       <div class="modal-header">
@@ -92,8 +89,8 @@ type PointsBreakdownItem = {
                 <h3>🏆 Points Earned</h3>
                 <div class="points-table">
                   @for (item of pointsBreakdown(); track item.type; let i = $index) {
-                    <div 
-                      class="points-row" 
+                    <div
+                      class="points-row"
                       [style.animation-delay]="(i * 0.1) + 's'"
                     >
                       <div class="points-icon" [style.color]="item.color">
@@ -107,7 +104,7 @@ type PointsBreakdownItem = {
                       </div>
                     </div>
                   }
-                  
+
                   @if (totalPointsEarned() > 0) {
                     <div class="points-total">
                       <div class="total-label">Total Points</div>
@@ -118,31 +115,6 @@ type PointsBreakdownItem = {
               </div>
             }
 
-            <!-- Badges Section -->
-            @if (hasNewBadges()) {
-              <div class="badges-section">
-                <h3>🏅 New Badges Earned!</h3>
-                <div class="badges-grid">
-                  @for (badgeData of displayBadges(); track badgeData.badgeId) {
-                    <div class="badge-award">
-                      <div class="badge-display">
-                        <app-badge-icon
-                          [badge]="getBadgeDefinition(badgeData.badgeId)"
-                        ></app-badge-icon>
-                      </div>
-                      <div class="badge-info">
-                        <span class="badge-name">{{ badgeData.name }}</span>
-                        @if (getBadgeDefinition(badgeData.badgeId)?.description) {
-                          <span class="badge-description">
-                            {{ getBadgeDefinition(badgeData.badgeId)?.description }}
-                          </span>
-                        }
-                      </div>
-                    </div>
-                  }
-                </div>
-              </div>
-            }
 
           </div>
         } @else {
@@ -432,11 +404,7 @@ type PointsBreakdownItem = {
         font-size: 2rem;
         margin-bottom: 0.5rem;
       }
-      
-      .carpet-image {
-        max-width: 120px;
-        max-height: 120px;
-      }
+
 
       .points-section {
         padding: 0.5rem;
@@ -471,49 +439,6 @@ type PointsBreakdownItem = {
       }
     }
 
-    /* Carpet Section Styles */
-    .carpet-section {
-      margin: 0.25rem 0;
-      padding: 0;
-      background: transparent;
-      border-radius: 6px;
-    }
-
-
-    .carpet-display {
-      display: flex;
-      justify-content: center;
-      align-items: center;
-    }
-
-    .carpet-image {
-      max-width: 120px;
-      max-height: 120px;
-      width: auto;
-      height: auto;
-      border-radius: 6px;
-      border: 1px solid var(--color-border);
-      box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
-    }
-
-    .carpet-placeholder {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      padding: 1rem;
-      color: var(--color-text-muted);
-    }
-
-    .carpet-placeholder span {
-      font-size: 2rem;
-      margin-bottom: 0.5rem;
-    }
-
-    .carpet-placeholder p {
-      margin: 0;
-      font-size: 0.875rem;
-      text-align: center;
-    }
 
     /* Points Breakdown Section */
     .points-section {
@@ -636,11 +561,7 @@ export class ModalCheckinSuccessComponent {
   private readonly newCheckinStore = inject(NewCheckinStore);
   private readonly authStore = inject(AuthStore);
   private readonly pubStore = inject(PubStore);
-  private readonly carpetStorageService = inject(DeviceCarpetStorageService);
 
-  // Carpet image state
-  private readonly _carpetImageUrl = signal<string | null>(null);
-  readonly carpetImageUrl = this._carpetImageUrl.asReadonly();
 
   constructor() {
     // Debug effect to log when modal data changes
@@ -648,17 +569,15 @@ export class ModalCheckinSuccessComponent {
       const data = this.data();
       const allCheckins = this.newCheckinStore.checkins();
       const storeLoading = this.newCheckinStore.loading();
-      
+
       console.log('[ModalCheckinSuccess] Modal data changed:', {
         success: data.success,
         pubId: data.pub?.id,
         pubName: data.pub?.name,
-        carpetCaptured: data.carpetCaptured,
-        carpetImageKey: data.checkin?.carpetImageKey,
         checkinId: data.checkin?.id,
         timestamp: data.checkin?.timestamp
       });
-      
+
       console.log('[ModalCheckinSuccess] NewCheckinStore state:', {
         allCheckinsCount: allCheckins.length,
         storeLoading,
@@ -667,14 +586,6 @@ export class ModalCheckinSuccessComponent {
       });
     });
 
-    // Load carpet image when data changes
-    effect(() => {
-      const carpetKey = this.data().checkin?.carpetImageKey;
-      if (carpetKey && this.data().carpetCaptured) {
-        console.log('[ModalCheckinSuccess] Loading carpet image for key:', carpetKey);
-        this.loadCarpetImage(carpetKey);
-      }
-    });
   }
 
   // Computed properties for UI logic
@@ -683,18 +594,14 @@ export class ModalCheckinSuccessComponent {
   );
 
 
-  readonly hasNewBadges = computed(() =>
-    this.data().badges && this.data().badges!.length > 0
-  );
+  readonly hasNewBadges = computed(() => false);
 
-  readonly displayBadges = computed(() =>
-    this.data().badges || []
-  );
+  readonly displayBadges = computed(() => []);
 
   // Points breakdown computed properties
   readonly pointsBreakdown = computed((): PointsBreakdownItem[] => {
     const checkin = this.data().checkin;
-    
+
     // If we have points but no breakdown, create a simple one
     if (checkin?.pointsEarned && !checkin.pointsBreakdown) {
       return [{
@@ -705,7 +612,7 @@ export class ModalCheckinSuccessComponent {
         color: '#28a745'
       }];
     }
-    
+
     if (!checkin?.pointsBreakdown) return [];
 
     try {
@@ -738,7 +645,7 @@ export class ModalCheckinSuccessComponent {
       // Parse bonus points from reason string
       if (breakdown.reason && breakdown.bonus > 0) {
         const reason = breakdown.reason.toLowerCase();
-        
+
         if (reason.includes('first check-in') || reason.includes('first visit')) {
           const points = reason.includes('first check-in') ? 25 : 10;
           items.push({
@@ -749,7 +656,7 @@ export class ModalCheckinSuccessComponent {
             color: '#ffc107'
           });
         }
-        
+
         if (reason.includes('photo')) {
           items.push({
             type: 'photo',
@@ -759,13 +666,13 @@ export class ModalCheckinSuccessComponent {
             color: '#6f42c1'
           });
         }
-        
+
         if (reason.includes('streak')) {
           const streakMatch = reason.match(/(\d+)\s*(-day\s*)?streak/i);
           const streakDays = streakMatch ? parseInt(streakMatch[1]) : 0;
           const streakPoints = reason.match(/(\d+)\s+\d+-day\s*streak/i);
           const points = streakPoints ? parseInt(streakPoints[1]) : 10;
-          
+
           items.push({
             type: 'streak',
             points: points,
@@ -774,7 +681,7 @@ export class ModalCheckinSuccessComponent {
             color: '#fd7e14'
           });
         }
-        
+
         if (reason.includes('social')) {
           items.push({
             type: 'social',
@@ -812,28 +719,28 @@ export class ModalCheckinSuccessComponent {
   readonly totalCheckinsCount = computed(() => {
     const userId = this.authStore.uid();
     if (!userId) return 0;
-    
+
     const allCheckins = this.newCheckinStore.checkins();
     const userCheckins = allCheckins.filter(c => c.userId === userId);
-    
+
     console.log('[ModalCheckinSuccess] totalCheckinsCount computed:', {
       allCheckinsCount: allCheckins.length,
       userId,
       userCheckinsCount: userCheckins.length,
       userCheckins: userCheckins.map(c => ({ id: c.id, pubId: c.pubId, timestamp: c.timestamp }))
     });
-    
+
     return userCheckins.length;
   });
 
   readonly totalPubsCount = computed(() => {
     const userId = this.authStore.uid();
     if (!userId) return 0;
-    
+
     const allCheckins = this.newCheckinStore.checkins();
     const userCheckins = allCheckins.filter(c => c.userId === userId);
     const uniquePubIds = new Set(userCheckins.map(c => c.pubId));
-    
+
     console.log('[ModalCheckinSuccess] totalPubsCount computed:', {
       allCheckinsCount: allCheckins.length,
       userId,
@@ -841,7 +748,7 @@ export class ModalCheckinSuccessComponent {
       uniquePubIds: Array.from(uniquePubIds),
       uniquePubsCount: uniquePubIds.size
     });
-    
+
     return uniquePubIds.size;
   });
 
@@ -849,7 +756,7 @@ export class ModalCheckinSuccessComponent {
     const currentPubId = this.data().pub?.id;
     const allCheckins = this.newCheckinStore.checkins();
     const userId = this.authStore.uid();
-    
+
     if (!currentPubId || !userId) {
       console.log('[ModalCheckinSuccess] isFirstTimeAtPub: No current pub ID or user ID');
       return false;
@@ -858,9 +765,9 @@ export class ModalCheckinSuccessComponent {
     const userCheckins = allCheckins.filter(
       c => c.userId === userId && c.pubId === currentPubId
     );
-    
+
     const isFirst = userCheckins.length === 1;
-    
+
     console.log('[ModalCheckinSuccess] isFirstTimeAtPub computed:', {
       currentPubId,
       userId,
@@ -869,7 +776,7 @@ export class ModalCheckinSuccessComponent {
       isFirstTime: isFirst,
       userCheckinsForThisPubData: userCheckins.map(c => ({ id: c.id, timestamp: c.timestamp }))
     });
-    
+
     return isFirst;
   });
 
@@ -887,7 +794,7 @@ export class ModalCheckinSuccessComponent {
   readonly consecutiveDaysCount = computed(() => {
     const userId = this.authStore.uid();
     if (!userId) return 0;
-    
+
     const userCheckins = this.newCheckinStore.checkins()
       .filter(c => c.userId === userId)
       .sort((a, b) => b.timestamp.toMillis() - a.timestamp.toMillis());
@@ -922,25 +829,6 @@ export class ModalCheckinSuccessComponent {
     this.dismiss.emit();
   }
 
-  // Carpet image methods
-  private async loadCarpetImage(carpetKey: string): Promise<void> {
-    try {
-      console.log('[ModalCheckinSuccess] Loading carpet image:', carpetKey);
-      const imageUrl = await this.carpetStorageService.getPhotoUrl(carpetKey);
-      if (imageUrl) {
-        this._carpetImageUrl.set(imageUrl);
-        console.log('[ModalCheckinSuccess] Carpet image loaded successfully');
-      }
-    } catch (error) {
-      console.error('[ModalCheckinSuccess] Failed to load carpet image:', error);
-      this._carpetImageUrl.set(null);
-    }
-  }
-
-  onCarpetImageError(): void {
-    console.log('[ModalCheckinSuccess] Carpet image failed to load, showing placeholder');
-    this._carpetImageUrl.set(null);
-  }
 
   // Utility methods
   formatTimestamp(timestamp: any): string {
@@ -970,8 +858,5 @@ export class ModalCheckinSuccessComponent {
     }
   }
 
-  getBadgeDefinition(badgeId: string) {
-    return BADGE_DEFINITIONS.find(b => b.id === badgeId);
-  }
 
 }

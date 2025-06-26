@@ -36,32 +36,7 @@ type UserEngagementLevel = 'new' | 'casual' | 'regular' | 'expert';
       <div class="user-info">
         <div class="user-name">{{ displayName() }}</div>
 
-        <!-- ✅ Progressive information based on engagement -->
-        @switch (engagementLevel()) {
-          @case ('new') {
-            <div class="user-subtitle">New Explorer</div>
-          }
-          @case ('casual') {
-            <div class="user-subtitle">{{ pubsVisited() }} pubs visited</div>
-          }
-          @case ('regular') {
-            <div class="user-stats">
-              <span class="stat">{{ pubsVisited() }} pubs</span>
-              <span class="stat-divider">•</span>
-              <span class="stat">{{ badgeCount() }} badges</span>
-            </div>
-          }
-          @case ('expert') {
-            <div class="user-stats">
-              <span class="stat">{{ pubsVisited() }} pubs</span>
-              <span class="stat-divider">•</span>
-              <span class="stat">{{ badgeCount() }} badges</span>
-            </div>
-            @if (leaderboardPosition() && leaderboardPosition()! <= 100) {
-              <div class="user-subtitle">#{{ leaderboardPosition() }} on leaderboard</div>
-            }
-          }
-        }
+
       </div>
 
       <!-- ✅ Settings indicator -->
@@ -258,30 +233,12 @@ export class UserProfileWidgetComponent {
     return currentUser?.checkedInPubIds?.length || 0;
   });
 
-  readonly badgeCount = computed(() => {
-    const currentUser = this.user();
-    return currentUser?.badgeCount || 0;
-  });
 
   readonly engagementLevel = computed((): UserEngagementLevel => {
     const pubs = this.pubsVisited();
-    const badges = this.badgeCount();
     const position = this.leaderboardPosition();
 
-    // ✅ Expert: High activity + leaderboard presence
-    if (pubs >= 20 || badges >= 10 || (position && position <= 50)) {
-      return 'expert';
-    }
 
-    // ✅ Regular: Moderate activity
-    if (pubs >= 5 || badges >= 3) {
-      return 'regular';
-    }
-
-    // ✅ Casual: Some activity
-    if (pubs >= 1 || badges >= 1) {
-      return 'casual';
-    }
 
     // ✅ New: No activity yet
     return 'new';

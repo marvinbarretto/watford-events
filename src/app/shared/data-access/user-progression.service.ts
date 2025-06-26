@@ -69,9 +69,7 @@ export class UserProgressionService {
     this.isBrandNewUser() || this.isFirstTimeUser()
   );
 
-  readonly shouldShowBadges = computed(() =>
-    this.userStore.hasBadges() && !this.isBrandNewUser()
-  );
+  readonly shouldShowBadges = computed(() => false);
 
   readonly shouldShowProgressFeatures = computed(() =>
     !this.isBrandNewUser()

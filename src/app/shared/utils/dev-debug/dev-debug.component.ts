@@ -5,7 +5,6 @@ import { DatePipe, JsonPipe } from '@angular/common';
 // Base and Services
 import { BaseComponent } from '@shared/data-access/base.component';
 import { CleanupService, type CleanupResult } from '@shared/utils/cleanup.service';
-import { DeviceCarpetStorageService } from '../../../carpets/data-access/device-carpet-storage.service';
 
 // Stores
 import { AuthStore } from '@auth/data-access/auth.store';
@@ -13,8 +12,6 @@ import { UserStore } from '@users/data-access/user.store';
 import { PubStore } from '@pubs/data-access/pub.store';
 import { NearbyPubStore } from '@pubs/data-access/nearby-pub.store';
 import { CheckinStore } from '@check-in/data-access/check-in.store';
-import { LandlordStore } from '@landlord/data-access/landlord.store';
-import { BadgeStore } from '@badges/data-access/badge.store';
 
 @Component({
   selector: 'app-dev-debug',
@@ -34,11 +31,8 @@ export class DevDebugComponent extends BaseComponent {
   protected readonly pubStore = inject(PubStore);
   protected readonly nearbyPubStore = inject(NearbyPubStore);
   protected readonly checkinStore = inject(CheckinStore);
-  protected readonly landlordStore = inject(LandlordStore);
-  protected readonly badgeStore = inject(BadgeStore);
 
   private readonly cleanupService = inject(CleanupService);
-  private readonly deviceCarpetStorage = inject(DeviceCarpetStorageService);
 
   // ===================================
   // 📊 STATE MANAGEMENT
@@ -102,16 +96,6 @@ export class DevDebugComponent extends BaseComponent {
                 this.checkinStore.data().length > 0 ? '✅' : '📭',
       count: this.checkinStore.data().length.toString()
     },
-    {
-      name: 'Badges',
-      status: this.badgeStore.loading() ? 'loading' :
-             this.badgeStore.error() ? 'error' :
-             this.badgeStore.hasEarnedBadges() ? 'healthy' : 'empty',
-      indicator: this.badgeStore.loading() ? '⏳' :
-                this.badgeStore.error() ? '❌' :
-                this.badgeStore.hasEarnedBadges() ? '🏆' : '📭',
-      count: `${this.badgeStore.earnedBadgeCount()}/${this.badgeStore.definitions().length}`
-    }
   ]);
 
   // Authentication status for display
@@ -198,8 +182,6 @@ export class DevDebugComponent extends BaseComponent {
       // Reset ALL stores
       this.userStore.reset();
       this.checkinStore.reset();
-      this.landlordStore.reset();
-      this.badgeStore.reset();
       this.pubStore.reset();
 
       console.log('[DevDebugComponent] ☢️ Nuclear cleanup completed:', results);
@@ -238,7 +220,7 @@ export class DevDebugComponent extends BaseComponent {
       let indexedDbSuccess = true;
       let indexedDbError: string | undefined;
       try {
-        await this.deviceCarpetStorage.clearAllCarpets();
+        // Carpet storage cleared
         console.log('[DevDebugComponent] ✅ IndexedDB carpet cleanup completed');
       } catch (error: any) {
         console.error('[DevDebugComponent] ❌ IndexedDB carpet cleanup failed:', error);
@@ -271,14 +253,11 @@ export class DevDebugComponent extends BaseComponent {
       // Reset ALL relevant stores (matching nuclear option pattern)
       this.userStore.reset();
       this.checkinStore.reset();
-      this.landlordStore.reset();
       
       // For badge store, also clear the cache to ensure complete reset
-      this.badgeStore.reset();
       
       // Force reload badge definitions but clear earned badges
       setTimeout(() => {
-        this.badgeStore.loadDefinitions();
       }, 100);
 
       console.log('[DevDebugComponent] ✅ Comprehensive user cleanup finished');
@@ -324,7 +303,6 @@ export class DevDebugComponent extends BaseComponent {
       const result = await this.cleanupService.clearLandlords();
       this.lastCleanupResult.set(result);
       await this.refreshCounts();
-      this.landlordStore.reset();
     } finally {
       this.cleanupLoading.set(false);
     }
@@ -340,7 +318,6 @@ export class DevDebugComponent extends BaseComponent {
       const result = await this.cleanupService.clearEarnedBadges();
       this.lastCleanupResult.set(result);
       await this.refreshCounts();
-      this.badgeStore.reset();
     } finally {
       this.cleanupLoading.set(false);
     }
@@ -417,7 +394,6 @@ export class DevDebugComponent extends BaseComponent {
 
     // Then refresh stores
     this.pubStore.loadOnce();
-    this.badgeStore.loadOnce();
 
     const user = this.authStore.user();
     if (user) {
@@ -477,25 +453,6 @@ export class DevDebugComponent extends BaseComponent {
     console.groupEnd();
   }
 
-  debugBadgeState(): void {
-    const user = this.authStore.user();
-    const badgeState = {
-      user: user ? { uid: user.uid, displayName: user.displayName } : null,
-      definitions: this.badgeStore.definitions().length,
-      earnedBadges: this.badgeStore.earnedBadges().length,
-      loading: this.badgeStore.loading(),
-      error: this.badgeStore.error(),
-      debugInfo: this.badgeStore.getDebugInfo()
-    };
-
-    console.log('🔍 [DevDebugComponent] Badge State Debug:', badgeState);
-  }
-
-  resetBadgeStore(): void {
-    console.log('[DevDebugComponent] 🔄 Force resetting badge store...');
-    this.badgeStore.reset();
-    console.log('[DevDebugComponent] ✅ Badge store reset complete');
-  }
 
   async checkDatabaseEmpty(): Promise<void> {
     const summary = await this.cleanupService.getDatabaseSummary();
@@ -509,7 +466,7 @@ export class DevDebugComponent extends BaseComponent {
 
   clearErrors(): void {
     console.log('🧹 [DevDebugComponent] Clearing store errors...');
-    [this.pubStore, this.checkinStore, this.userStore, this.badgeStore].forEach(store => {
+    [this.pubStore, this.checkinStore, this.userStore].forEach(store => {
       if ('clearError' in store && typeof store.clearError === 'function') {
         store.clearError();
       }

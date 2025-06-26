@@ -3,7 +3,7 @@
  * 
  * RESPONSIBILITIES:
  * - User profile state management (auth-reactive pattern)
- * - Display data for scoreboard (totalPoints, pubsVisited, badges, landlord status)
+ * - Display data for scoreboard (totalPoints, pubsVisited)
  * - User document CRUD operations in Firestore
  * - Sync with Firebase Auth profile updates
  * 
@@ -11,8 +11,6 @@
  * - AuthStore.user() changes → triggers loadOrCreateUser()
  * - PointsStore.awardPoints() → updates totalPoints via patchUser()
  * - CheckinStore.checkinToPub() → updates checkedInPubIds via patchUser()
- * - BadgeStore awards → updates badgeCount/badgeIds via updateBadgeSummary()
- * - LandlordStore → updates landlordCount/landlordPubIds via updateLandlordSummary()
  * 
  * DATA FLOW OUT:
  * - HomeComponent.scoreboardData → reads totalPoints, pubsVisited from here
@@ -30,7 +28,7 @@ import { getAuth, updateProfile } from 'firebase/auth';
 import { firstValueFrom } from 'rxjs';
 import { UserService } from './user.service';
 import { AuthStore } from '../../auth/data-access/auth.store';
-import type { User, UserBadgeSummary, UserLandlordSummary } from '../utils/user.model';
+import type { User } from '../utils/user.model';
 
 @Injectable({ providedIn: 'root' })
 export class UserStore {
@@ -62,12 +60,6 @@ export class UserStore {
   });
 
   readonly hasUser = computed(() => !!this.user());
-  readonly hasLandlordPubs = computed(() => (this.user()?.landlordCount || 0) > 0);
-  readonly badgeCount = computed(() => this.user()?.badgeCount || 0);
-  readonly badgeIds = computed(() => this.user()?.badgeIds || []);
-  readonly hasBadges = computed(() => this.badgeCount() > 0);
-  readonly landlordCount = computed(() => this.user()?.landlordCount || 0);
-  readonly landlordPubIds = computed(() => this.user()?.landlordPubIds || []);
 
   /**
    * REMOVED: pubsVisited computation moved to ScoreboardOrchestratorService
@@ -238,10 +230,6 @@ export class UserStore {
             checkedInPubIds: [],
             streaks: {},
             joinedAt: new Date().toISOString(),
-            badgeCount: 0,
-            badgeIds: [],
-            landlordCount: 0,
-            landlordPubIds: [],
             joinedMissionIds: [],
           };
 
@@ -270,21 +258,6 @@ export class UserStore {
   // SUMMARY UPDATES (Called by other stores)
   // ===================================
 
-  /**
-   * Update badge summary (called by BadgeStore)
-   */
-  updateBadgeSummary(summary: UserBadgeSummary): void {
-    console.log('[UserStore] 🏅 Updating badge summary:', summary);
-    this.patchUser(summary);
-  }
-
-  /**
-   * Update landlord summary (called by LandlordStore)
-   */
-  updateLandlordSummary(summary: UserLandlordSummary): void {
-    console.log('[UserStore] 👑 Updating landlord summary:', summary);
-    this.patchUser(summary);
-  }
 
   /**
    * Patch user data (optimistic local update only)
@@ -340,8 +313,6 @@ export class UserStore {
       error: this._error(),
       lastLoadedUserId: this.lastLoadedUserId,
       userUid: this._user()?.uid || null,
-      badgeCount: this.badgeCount(),
-      landlordCount: this.landlordCount()
     };
   }
 

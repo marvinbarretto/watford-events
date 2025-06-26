@@ -6,18 +6,13 @@ import { getStorage, ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { Pub } from '../../pubs/utils/pub.models';
 import { earliest, latest } from '../../shared/utils/date-utils';
 import { User } from '../../users/utils/user.model';
-import { LandlordService } from '../../landlord/data-access/landlord.service';
 import { AuthStore } from '../../auth/data-access/auth.store';
-import { LandlordStore } from '../../landlord/data-access/landlord.store';
-import { Landlord } from '../../landlord/utils/landlord.model';
 
 @Injectable({
   providedIn: 'root'
 })
 export class CheckInService extends FirestoreService {
-  private landlordService = inject(LandlordService);
   private authStore = inject(AuthStore);
-  private landlordStore = inject(LandlordStore);
 
   /**
    * Get today's check-in for a specific pub and current user
@@ -99,11 +94,10 @@ private async updateUserStats(user: User, checkin: Omit<CheckIn, 'id'>): Promise
    * - Ensures user exists in Firestore
    * - Updates pub statistics
    * - Updates user statistics
-   * - Attempts to award landlord status
    * @param checkin - Check-in data without ID
-   * @returns Promise<CheckIn & { landlordResult?: ... }> - Completed check-in with landlord info
+   * @returns Promise<CheckIn> - Completed check-in
    */
-  async completeCheckin(checkin: Omit<CheckIn, 'id'>): Promise<CheckIn & { landlordResult?: { landlord: Landlord | null; wasAwarded: boolean } }> {
+  async completeCheckin(checkin: Omit<CheckIn, 'id'>): Promise<CheckIn> {
     const pub = await this.validatePubExists(checkin.pubId);
     const user = await this.ensureUserExists(checkin.userId);
 
@@ -116,21 +110,11 @@ private async updateUserStats(user: User, checkin: Omit<CheckIn, 'id'>): Promise
     await this.updatePubStats(pub, checkin, checkinRef.id);
     await this.updateUserStats(user, checkin); // ✅ FIXED: Use transformation logic
 
-    // Try to award landlord status (doesn't update stores)
-    const checkinDate = this.normalizeDate(checkin.timestamp);
-    const landlordResult = await this.landlordService.tryAwardLandlord(checkin.pubId, checkinDate);
-
-    console.log('[CheckInService] Landlord result:', landlordResult);
-
-    // Return the completed check-in with landlord info for the store to handle
-    const completedCheckin = {
+    // Return the completed check-in
+    return {
       ...checkin,
       id: checkinRef.id,
-      madeUserLandlord: landlordResult.wasAwarded,
-      landlordResult,
     };
-
-    return completedCheckin;
   }
 
 
@@ -159,7 +143,6 @@ private async updateUserStats(user: User, checkin: Omit<CheckIn, 'id'>): Promise
     // Create new user document with minimal data
     await this.setDoc(`users/${userId}`, {
       createdAt: serverTimestamp(),
-      landlordOf: [],
       streaks: {},
     });
 

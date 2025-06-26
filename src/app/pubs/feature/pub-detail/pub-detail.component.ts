@@ -6,7 +6,6 @@ import type { Pub } from '../../utils/pub.models';
 import { PubStore } from '../../data-access/pub.store';
 import { PubService } from '../../data-access/pub.service';
 import { AuthStore } from '../../../auth/data-access/auth.store';
-import { LandlordStore } from '../../../landlord/data-access/landlord.store';
 import { NearbyPubStore } from '../../data-access/nearby-pub.store';
 import { CheckinStore } from '../../../check-in/data-access/check-in.store';
 import { BaseComponent } from '../../../shared/data-access/base.component';
@@ -27,7 +26,6 @@ export class PubDetailComponent extends BaseComponent implements OnInit {
   // ✅ Inject all required stores
   protected readonly pubStore = inject(PubStore);
   protected readonly authStore = inject(AuthStore);
-  protected readonly landlordStore = inject(LandlordStore);
   protected readonly nearbyPubStore = inject(NearbyPubStore);
   protected readonly checkinStore = inject(CheckinStore);
 
@@ -35,19 +33,6 @@ export class PubDetailComponent extends BaseComponent implements OnInit {
 
   // ✅ Enhanced user display helpers
   readonly currentUser = this.authStore.user;
-
-  // ✅ Dynamic reactive signals
-  readonly currentLandlord = computed(() => {
-    const pubId = this.pub()?.id;
-    if (!pubId) return null;
-    return this.landlordStore.get(pubId);
-  });
-
-  readonly isUserLandlord = computed(() => {
-    const userId = this.authStore.uid();
-    const landlord = this.currentLandlord();
-    return landlord?.userId === userId;
-  });
 
   readonly userDistance = computed(() => {
     const pubId = this.pub()?.id;
@@ -103,37 +88,6 @@ export class PubDetailComponent extends BaseComponent implements OnInit {
       visitCount,
       lastVisit: lastVisit ? getRelativeTime(lastVisit.timestamp) : null,
       canCheckInToday: this.checkinStore.canCheckInToday(pubValue.id),
-    };
-  });
-
-  // ✅ Landlord insights
-  readonly landlordInsights = computed(() => {
-    const landlord = this.currentLandlord();
-    const userId = this.authStore.uid();
-
-    if (!landlord) {
-      return {
-        status: 'unclaimed',
-        message: 'No one rules this pub today',
-        subtitle: 'Be the first to claim the throne!',
-        actionHint: this.canCheckIn() ? 'Check in to become landlord' : 'Get within range to claim it'
-      };
-    }
-
-    if (landlord.userId === userId) {
-      return {
-        status: 'you',
-        message: 'You are the landlord!',
-        subtitle: `Since ${getRelativeTime(landlord.claimedAt)}`,
-        actionHint: 'Your reign continues...'
-      };
-    }
-
-    return {
-      status: 'other',
-      message: `${this.getUserDisplayName(landlord.userId)} rules here`,
-      subtitle: `Claimed ${getRelativeTime(landlord.claimedAt)}`,
-      actionHint: this.canCheckIn() ? 'Check in to challenge their rule!' : 'Get closer to stage a coup'
     };
   });
 
@@ -196,24 +150,6 @@ export class PubDetailComponent extends BaseComponent implements OnInit {
     return this.nearbyPubs().filter(pub => visitedPubIds.has(pub.id));
   });
 
-  // ✅ Safe landlord history with enhanced display
-  readonly landlordHistory = computed(() => {
-    const pubValue = this.pub();
-    if (!pubValue?.landlordHistory || !Array.isArray(pubValue.landlordHistory)) {
-      return [];
-    }
-
-    return pubValue.landlordHistory
-      .slice(-5) // Last 5 landlords
-      .reverse()
-      .map(entry => ({
-        ...entry,
-        displayName: this.getUserDisplayName(entry.userId),
-        relativeTime: getRelativeTime(entry.claimedAt),
-        isCurrentUser: entry.userId === this.authStore.uid()
-      }));
-  });
-
 
 
 
@@ -273,7 +209,6 @@ export class PubDetailComponent extends BaseComponent implements OnInit {
     const local = this.pubStore.data().find(p => p.id === id);
     if (local) {
       this.pub.set(local);
-      await this.landlordStore.loadOnce(id);
       return;
     }
 
@@ -282,9 +217,6 @@ export class PubDetailComponent extends BaseComponent implements OnInit {
         const found = await this.pubsService.getPubById(id).toPromise();
         this.pub.set(found ?? null);
 
-        if (found) {
-          await this.landlordStore.loadOnce(found.id);
-        }
 
         return found;
       },

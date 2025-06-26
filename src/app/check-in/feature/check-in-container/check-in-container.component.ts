@@ -60,11 +60,8 @@ export class CheckInContainerComponent extends BaseComponent {
   readonly storeLoading = this.checkinStore.loading;
   readonly checkin = this.checkinStore.checkinSuccess;
   readonly storeError = this.checkinStore.error;
-  readonly landlordMessage = this.checkinStore.landlordMessage;
 
   // ✅ Derived state with computed signals
-  readonly isLandlord = computed(() => !!this.checkin()?.madeUserLandlord);
-  readonly badge = computed(() => this.checkin()?.badgeName ?? null);
   readonly missionUpdated = computed(() => this.checkin()?.missionUpdated ?? false);
 
   // ✅ Component-specific state using BaseComponent patterns

@@ -5,15 +5,12 @@
  * - Check-in workflow management (geolocation, validation, completion)
  * - Multi-store coordination during check-ins
  * - Badge evaluation after successful check-ins
- * - Landlord status determination and updates
  * 
  * MULTI-STORE COORDINATION WORKFLOW:
  * 1. User initiates check-in → validates location + distance
  * 2. PointsStore.awardCheckInPoints() → calculates & awards points
  * 3. Creates check-in record in Firestore
  * 4. UserStore.patchUser() → updates checkedInPubIds (for pubsVisited)
- * 5. LandlordStore.set() → updates landlord status if won
- * 6. BadgeAwardService.evaluateAndAwardBadges() → checks for new badges
  * 
  * CRITICAL REAL-TIME UPDATES:
  * - MUST update UserStore.checkedInPubIds immediately after check-in
@@ -35,11 +32,9 @@ import { Pub } from '../../pubs/utils/pub.models';
 import { firstValueFrom } from 'rxjs';
 import { AuthStore } from '../../auth/data-access/auth.store';
 import { BaseStore } from '../../shared/data-access/base.store';
-import { LandlordStore } from '../../landlord/data-access/landlord.store';
 import { getDistanceKm } from '../../shared/utils/get-distance';
 import { User } from '../../users/utils/user.model';
 import { UserStore } from '../../users/data-access/user.store';
-import { BadgeAwardService } from '../../badges/data-access/badge-award.service';
 import { PointsStore } from '../../points/data-access/points.store';
 import { CheckInPointsData, PointsBreakdown } from '../../points/utils/points.models';
 
@@ -48,8 +43,6 @@ export class CheckinStore extends BaseStore<CheckIn> {
   // 🔧 Dependencies
   private readonly checkinService = inject(CheckInService);
   private readonly pubService = inject(PubService);
-  private readonly badgeAwardService = inject(BadgeAwardService);
-  private readonly landlordStore = inject(LandlordStore);
   private readonly userStore = inject(UserStore);
   private readonly pointsStore = inject(PointsStore);
 
@@ -62,10 +55,8 @@ export class CheckinStore extends BaseStore<CheckIn> {
 
   // 📡 Additional check-in specific state
   private readonly _checkinSuccess = signal<CheckIn | null>(null);
-  private readonly _landlordMessage = signal<string | null>(null);
 
   readonly checkinSuccess = this._checkinSuccess.asReadonly();
-  readonly landlordMessage = this._landlordMessage.asReadonly();
 
   // 📡 Main data - expose with clean name
   readonly checkins = this.data;
@@ -83,9 +74,6 @@ export class CheckinStore extends BaseStore<CheckIn> {
     new Set(this.data().map(checkIn => checkIn.pubId))
   );
 
-  readonly landlordPubs = computed(() =>
-    this.checkins().filter(c => c.madeUserLandlord).map(c => c.pubId)
-  );
 
   readonly todayCheckins = computed(() => {
     const today = new Date().toISOString().split('T')[0];
@@ -170,9 +158,7 @@ export class CheckinStore extends BaseStore<CheckIn> {
    * 2. Awards points via PointsStore (updates UserStore.totalPoints)
    * 3. Creates check-in record in Firestore
    * 4. Updates UserStore.checkedInPubIds (for real-time pubsVisited)
-   * 5. Updates LandlordStore if user becomes landlord
-   * 6. Evaluates and awards badges via BadgeAwardService
-   * 
+     * 
    * @throws Error if location denied, too far, or check-in fails
    * @sideEffects Updates multiple stores for real-time scoreboard accuracy
    */
@@ -221,19 +207,12 @@ export class CheckinStore extends BaseStore<CheckIn> {
       console.log('[CheckinStore] 🔄 Processing check-in...');
       const completed = await this.checkinService.completeCheckin(newCheckin);
 
-      if (completed.landlordResult) {
-        this.landlordStore.set(pubId, completed.landlordResult.landlord);
-        console.log('[CheckinStore] 👑 Updated landlord store:', completed.landlordResult);
-      }
-
-      const { landlordResult, ...cleanCheckin } = completed;
+      const cleanCheckin = completed;
       this.recordCheckinSuccess(cleanCheckin);
 
-      console.log('[CheckinStore] 🏅 Starting badge evaluation...');
-      await this.evaluateBadgesAfterCheckIn(userId, cleanCheckin);
 
 
-// ✅ UPDATE USER'S CHECKED-IN PUBS (add this after badge evaluation)
+// ✅ UPDATE USER'S CHECKED-IN PUBS
 console.log('[CheckinStore] 🔄 Updating user check-in history...');
 
 // Update UserStore with new check-in data
@@ -261,13 +240,6 @@ if (currentUser) {
 
 
 
-      // ✅ Enhanced success message with points
-      const pointsMessage = this.formatPointsMessage(pointsBreakdown);
-      this._landlordMessage.set(
-        completed.madeUserLandlord
-          ? `👑 You're the landlord today! ${pointsMessage}`
-          : `✅ Check-in complete! ${pointsMessage}`
-      );
 
 
 
@@ -285,85 +257,7 @@ if (currentUser) {
   }
 
 
-     /**
-   * Get badge debug info for current user
-   */
-  async debugBadges(userId?: string): Promise<void> {
-    const targetUserId = userId || this.authStore.uid();
-    if (!targetUserId) {
-      console.error('[CheckinStore] ❌ No user ID for badge debug');
-      return;
-    }
-
-    console.log('[CheckinStore] 🐛 Badge debug for user:', targetUserId);
-
-    try {
-      const userCheckIns = this.checkins().filter(ci => ci.userId === targetUserId);
-      const debugInfo = await this.badgeAwardService.getDebugInfo();
-      console.log('[CheckinStore] 🐛 Badge debug info:', debugInfo);
-    } catch (error) {
-      console.error('[CheckinStore] 🐛 Badge debug failed:', error);
-    }
-  }
-
-  // ✅ NEW: Development/Testing helpers
-  /**
-   * Manual badge evaluation for testing
-   */
-  async testBadgeEvaluation(userId?: string): Promise<void> {
-    const targetUserId = userId || this.authStore.uid();
-    if (!targetUserId) {
-      console.error('[CheckinStore] ❌ No user ID for badge testing');
-      return;
-    }
-
-    console.log('[CheckinStore] 🧪 Testing badge evaluation for user:', targetUserId);
-
-    try {
-      const userCheckIns = this.checkins().filter(ci => ci.userId === targetUserId);
-      const eligibleBadges = await this.badgeAwardService.evaluateBadgesForUser(targetUserId, userCheckIns);
-      console.log('[CheckinStore] 🧪 Test results - eligible badges:', eligibleBadges);
-    } catch (error) {
-      console.error('[CheckinStore] 🧪 Badge test failed:', error);
-    }
-  }
-  private async evaluateBadgesAfterCheckIn(userId: string, checkIn: CheckIn): Promise<void> {
-    console.log('[CheckinStore] 🎯 Badge evaluation starting', {
-      userId,
-      checkInId: checkIn.id,
-      pubId: checkIn.pubId
-    });
-
-    try {
-      // Get all user check-ins (including the new one just added)
-      const allUserCheckIns = this.checkins().filter(ci => ci.userId === userId);
-
-      const awardedBadges = await this.badgeAwardService.evaluateAndAwardBadges(
-        userId,
-        checkIn,
-        allUserCheckIns
-      );
-
-      if (awardedBadges.length > 0) {
-        console.log('[CheckinStore] 🎉 Badges awarded during check-in!', {
-          checkInId: checkIn.id,
-          userId,
-          badgesAwarded: awardedBadges.map(b => b.badgeId),
-          totalAwarded: awardedBadges.length
-        });
-
-        // ✅ Show toast for badge awards
-        const badgeNames = awardedBadges.map(b => b.badgeId).join(', ');
-        this.toastService.success(`🏅 New badge${awardedBadges.length > 1 ? 's' : ''} earned: ${badgeNames}!`);
-      } else {
-        console.log('[CheckinStore] 📝 No new badges awarded for this check-in');
-      }
-    } catch (error) {
-      console.error('[CheckinStore] Badge evaluation failed:', error);
-      // Don't fail the check-in if badge evaluation fails
-      // Badge awarding is secondary to the main check-in flow
-    }
-  }
+   
 
   /**
    * Clear check-in success state with null checks
@@ -371,9 +265,6 @@ if (currentUser) {
   clearCheckinSuccess(): void {
     if (this._checkinSuccess) {
       this._checkinSuccess.set(null);
-    }
-    if (this._landlordMessage) {
-      this._landlordMessage.set(null);
     }
   }
 
@@ -384,9 +275,6 @@ if (currentUser) {
     // ✅ Safe null checks before calling set()
     if (this._checkinSuccess) {
       this._checkinSuccess.set(null);
-    }
-    if (this._landlordMessage) {
-      this._landlordMessage.set(null);
     }
 
     console.log('[CheckinStore] 🧹 Complete reset');
@@ -576,18 +464,10 @@ clearPointsBreakdown(): void {
       // ✅ Step 3: Update local user state
       this.userStore.patchUser(updatedUserFields);
 
-      // ✅ Step 4: Handle landlord result
-      if (result.landlordResult?.wasAwarded && result.landlordResult.landlord) {
-        this.landlordStore.set(pubId, result.landlordResult.landlord);
-        console.log('[CheckinStore] 👑 New landlord awarded:', result.landlordResult.landlord);
-      }
 
       // ✅ Step 5: Add check-in to local state
       this.recordCheckinSuccess(result);
 
-      // ✅ Step 6: NEW: Evaluate badges after successful check-in
-      console.log('[CheckinStore] 🏅 Starting badge evaluation...');
-      await this.evaluateBadgesAfterCheckIn(user.uid, result);
 
     } catch (error: any) {
       console.error('[CheckinStore] ❌ performCheckIn failed:', error);
@@ -602,13 +482,8 @@ clearPointsBreakdown(): void {
    * Record successful check-in
    */
   private recordCheckinSuccess(newCheckin: CheckIn): void {
-    const extended = {
-      ...newCheckin,
-      madeUserLandlord: newCheckin.madeUserLandlord ?? false
-    };
-
-    this.addItem(extended); // BaseStore method to add to collection
-    this._checkinSuccess.set(extended);
+    this.addItem(newCheckin); // BaseStore method to add to collection
+    this._checkinSuccess.set(newCheckin);
   }
 
 

@@ -1,17 +1,10 @@
 <div class="home-container">
 
-  <!-- Carpet Scanner (fullscreen when triggered) -->
-  @if (showCarpetTest()) {
-    <app-carpet-scanner
-      (carpetConfirmed)="onCarpetConfirmed($event)"
-      (exitScanner)="onExitCarpetTest()">
-    </app-carpet-scanner>
-  }
+
 
 
   <app-user-profile-widget
   [user]="user()"
-  [leaderboardPosition]="userLeaderboardPosition()"
   (openProfile)="handleOpenProfile()" />
 
     <!-- ✅ Onboarding Hint -->
@@ -24,32 +17,12 @@
       </div>
     }
 
-  <app-scoreboard-hero [data]="scoreboardData()" />
 
 
-  @if (carpets().length > 0 || carpetsLoading()) {
-    <app-carpet-grid
-      [carpets]="carpets"
-      [loading]="carpetsLoading"
-    />
-  }
 
 
-  <!-- ✅ Badges Showcase -->
-  @if (earnedBadges().length > 0) {
-    <app-badges-showcase
-      [badges]="earnedBadges()"
-      [maxDisplay]="6"
-      (viewAllBadges)="handleViewAllBadges()" />
-  }
 
-  <!-- ✅ Active Missions -->
-  @if (activeMissions().length > 0) {
-    <app-missions-section
-      [missions]="activeMissions()"
-      [maxDisplay]="3"
-      (viewMission)="handleViewMission($event)" />
-  }
+  <!-- Events functionality will be added here in future iterations -->
 
   <!-- ✅ Action Cards -->
   <!-- <app-action-cards

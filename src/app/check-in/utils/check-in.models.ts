@@ -8,8 +8,6 @@ export type CheckIn = {
   pubId: string;
   timestamp: Timestamp;
   dateKey: string;
-  madeUserLandlord?: boolean;
-  badgeName?: string;
   missionUpdated?: boolean;
 
   pointsEarned?: number;
@@ -35,14 +33,7 @@ export type CheckInResultData = {
   checkin?: CheckIn;
   pub?: CheckInPubData;
 
-  // Landlord status
-  isNewLandlord?: boolean;
-  landlordMessage?: string;
-  currentLandlord?: any; // TODO: Type this properly when Landlord model is ready
-  todayLandlord?: any;
 
-  // Badges and achievements
-  badges?: CheckInBadgeData[];
 
   // Carpet detection
   carpetCaptured?: boolean;
@@ -66,22 +57,12 @@ export type CheckInPubData = {
   name: string;
 };
 
-/**
- * Badge data for check-in results
- */
-export type CheckInBadgeData = {
-  badgeId: string;
-  name: string;
-};
 
 /**
  * Debug information for development
  */
 export type CheckInDebugInfo = {
-  pubLandlordStatus: string;
   checkinTime: string;
-  landlordClaimedAt?: string;
-  existingLandlordUserId?: string;
 };
 
 // =====================================
@@ -95,15 +76,6 @@ export type CheckInStatusModalData = {
   success: boolean;
   pub?: CheckInPubData;
   error?: string;
-  badges?: CheckInBadgeData[];
   checkinTime?: Timestamp;
 };
 
-/**
- * Data for landlord status modal (derived from CheckInResultData)
- */
-export type LandlordStatusModalData = {
-  isNewLandlord: boolean;
-  landlordMessage?: string;
-  pub?: CheckInPubData;
-};

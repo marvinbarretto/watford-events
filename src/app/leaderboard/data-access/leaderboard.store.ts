@@ -17,7 +17,7 @@ export class LeaderboardStore extends BaseStore<LeaderboardEntry> {
   private readonly userService = inject(UserService);
   private readonly newCheckinStore = inject(NewCheckinStore);
   private readonly pubStore = inject(PubStore);
-  
+
   // Time range filter
   private readonly _timeRange = signal<LeaderboardTimeRange>('all-time');
   readonly timeRange = this._timeRange.asReadonly();
@@ -27,17 +27,17 @@ export class LeaderboardStore extends BaseStore<LeaderboardEntry> {
   readonly filteredData = computed(() => {
     const range = this.timeRange();
     const allData = this.data();
-    
+
     console.log('[LeaderboardStore] Filtering data for range:', range, 'Total users:', allData.length);
-    
+
     if (range === 'all-time') {
       console.log('[LeaderboardStore] All-time view, returning all users:', allData.length);
       return allData;
     }
-    
+
     const now = new Date();
     const checkins = this.newCheckinStore.checkins();
-    
+
     // Calculate date threshold
     let threshold: Date;
     if (range === 'this-week') {
@@ -48,20 +48,20 @@ export class LeaderboardStore extends BaseStore<LeaderboardEntry> {
       // all-time case
       return allData;
     }
-    
+
     console.log('[LeaderboardStore] Time threshold:', threshold, 'Total checkins:', checkins.length);
-    
+
     // Show all users but adjust their stats for the time period
     const filteredUsers = allData.map(entry => {
-      const userCheckins = checkins.filter(c => 
-        c.userId === entry.userId && 
+      const userCheckins = checkins.filter(c =>
+        c.userId === entry.userId &&
         c.timestamp.toDate() >= threshold
       );
-      
+
       // Recalculate stats for the time period
       const uniquePubsInPeriod = new Set(userCheckins.map(c => c.pubId)).size;
       const totalCheckinsInPeriod = userCheckins.length;
-      
+
       // For time-based views, show period-specific stats but keep total points
       const adjustedEntry = {
         ...entry,
@@ -69,27 +69,27 @@ export class LeaderboardStore extends BaseStore<LeaderboardEntry> {
         uniquePubs: range === 'this-week' || range === 'this-month' ? uniquePubsInPeriod : entry.uniquePubs,
         // Points stay the same - they're cumulative
       };
-      
+
       return adjustedEntry;
     });
-    
+
     // For time-based views, show users with activity OR users with significant all-time stats
     const result = filteredUsers.filter(entry => {
       // Show users who either:
       // 1. Have activity in the time period, OR
       // 2. Have significant all-time stats (more than 5 total points or 3+ pubs visited)
-      const hasRecentActivity = (range === 'this-week' || range === 'this-month') ? 
+      const hasRecentActivity = (range === 'this-week' || range === 'this-month') ?
         entry.totalCheckins > 0 : true;
       const originalUser = allData.find(u => u.userId === entry.userId);
       const hasSignificantStats = entry.totalPoints > 5 || (originalUser?.uniquePubs ?? 0) >= 3;
-      
+
       return hasRecentActivity || hasSignificantStats;
     });
-    
+
     console.log('[LeaderboardStore] Filtered users:', result.length, 'Time range:', range);
     return result;
   });
-  
+
   // 📊 Different ranking views - now by POINTS first
   readonly topByPoints = computed(() =>
     this.filteredData()
@@ -126,7 +126,7 @@ export class LeaderboardStore extends BaseStore<LeaderboardEntry> {
     );
     return index >= 0 ? index + 1 : null;
   });
-  
+
   readonly userRankByVisits = computed(() => {
     const userId = this.authStore.user()?.uid;
     if (!userId) return null;
@@ -194,11 +194,11 @@ protected async fetchData(): Promise<LeaderboardEntry[]> {
   return validUsers.map(user => {
     const userId = user.uid || (user as any).id;
     const displayName = this.getDisplayName(userId, user);
-    
+
     // Get user's check-ins for accurate counts
     const userCheckins = allCheckins.filter(c => c.userId === userId);
     const uniquePubIds = new Set(userCheckins.map(c => c.pubId));
-    
+
     // 🔍 DETAILED LOGGING for pub count calculation
     const currentUser = this.authStore.user();
     if (currentUser && userId === currentUser.uid) {
@@ -224,7 +224,7 @@ protected async fetchData(): Promise<LeaderboardEntry[]> {
           userId: c.userId?.slice(0, 8)
         }))
       });
-      
+
       // Compare with user object data
       const userStoredPubIds = user.checkedInPubIds || [];
       console.log('🏆 [LeaderboardStore] Data source comparison:', {
@@ -234,12 +234,12 @@ protected async fetchData(): Promise<LeaderboardEntry[]> {
         checkinsSourcePubIds: Array.from(uniquePubIds),
         dataMatch: uniquePubIds.size === userStoredPubIds.length
       });
-      
+
       if (uniquePubIds.size !== userStoredPubIds.length) {
         console.warn('⚠️ [LeaderboardStore] DATA MISMATCH: Check-ins vs User object pub counts differ!');
       }
     }
-    
+
     // Calculate last active from check-ins
     const lastCheckin = userCheckins
       .sort((a, b) => b.timestamp.toMillis() - a.timestamp.toMillis())[0];
@@ -259,10 +259,6 @@ protected async fetchData(): Promise<LeaderboardEntry[]> {
         photoURL: user.photoURL || undefined,
         generatedName: displayName,
         joinedAt: user.joinedAt || undefined,
-        badgeCount: user.badgeCount || undefined,
-        badgeIds: user.badgeIds || undefined,
-        landlordCount: user.landlordCount || undefined,
-        landlordPubIds: user.landlordPubIds || undefined,
         totalPoints: user.totalPoints || 0,
         totalCheckins: userCheckins.length,
         uniquePubs: uniquePubIds.size,
@@ -294,40 +290,40 @@ protected async fetchData(): Promise<LeaderboardEntry[]> {
  */
 private calculateStreak(userCheckins: CheckIn[]): number {
   if (userCheckins.length === 0) return 0;
-  
+
   // Sort check-ins by date (newest first)
   const sortedCheckins = userCheckins
     .sort((a, b) => b.timestamp.toMillis() - a.timestamp.toMillis());
-  
+
   // Get unique dates only (ignore multiple check-ins per day)
   const uniqueDates = Array.from(new Set(
     sortedCheckins.map(c => c.timestamp.toDate().toDateString())
   )).sort((a, b) => new Date(b).getTime() - new Date(a).getTime());
-  
+
   if (uniqueDates.length === 0) return 0;
-  
+
   // Check if streak is current (must include today or yesterday)
   const today = new Date().toDateString();
   const yesterday = new Date(Date.now() - 24 * 60 * 60 * 1000).toDateString();
-  
+
   if (uniqueDates[0] !== today && uniqueDates[0] !== yesterday) {
     return 0; // Streak is broken
   }
-  
+
   // Count consecutive days
   let streak = 1;
   for (let i = 1; i < uniqueDates.length; i++) {
     const currentDate = new Date(uniqueDates[i-1]);
     const previousDate = new Date(uniqueDates[i]);
     const daysDiff = Math.floor((currentDate.getTime() - previousDate.getTime()) / (24 * 60 * 60 * 1000));
-    
+
     if (daysDiff === 1) {
       streak++;
     } else {
       break; // Streak broken
     }
   }
-  
+
   return streak;
 }
 
@@ -374,7 +370,7 @@ private getDisplayName(userId: string, user: User): string {
 
     return this.filteredData().find(entry => entry.userId === userId) || null;
   });
-  
+
   /**
    * Set the time range filter
    */
@@ -390,7 +386,7 @@ private getDisplayName(userId: string, user: User): string {
     console.log('[LeaderboardStore] Refreshing leaderboard...');
     await this.load();
   }
-  
+
   /**
    * Get site-wide statistics with real data
    */
@@ -401,31 +397,31 @@ private getDisplayName(userId: string, user: User): string {
     const now = new Date();
     const weekStart = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
     const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
-    
+
     // This week's stats
-    const weekCheckins = checkins.filter(c => 
+    const weekCheckins = checkins.filter(c =>
       c.timestamp.toDate() >= weekStart
     );
     const weekActiveUsers = new Set(weekCheckins.map(c => c.userId)).size;
-    const weekNewUsers = allData.filter(u => 
+    const weekNewUsers = allData.filter(u =>
       new Date(u.joinedDate) >= weekStart
     ).length;
-    
-    // This month's stats  
-    const monthCheckins = checkins.filter(c => 
+
+    // This month's stats
+    const monthCheckins = checkins.filter(c =>
       c.timestamp.toDate() >= monthStart
     );
     const monthActiveUsers = new Set(monthCheckins.map(c => c.userId)).size;
-    const monthNewUsers = allData.filter(u => 
+    const monthNewUsers = allData.filter(u =>
       new Date(u.joinedDate) >= monthStart
     ).length;
-    
+
     // All time stats
     const totalUsers = allData.length;
     const totalCheckins = checkins.length;
     const totalPubsVisited = new Set(checkins.map(c => c.pubId)).size;
     const totalPoints = allData.reduce((sum, u) => sum + u.totalPoints, 0);
-    
+
     return {
       thisWeek: {
         activeUsers: weekActiveUsers,

@@ -10,8 +10,6 @@ import { AuthStore } from '../../auth/data-access/auth.store';
 import { PubStore } from '../../pubs/data-access/pub.store';
 import { PointsStore } from '../../points/data-access/points.store';
 import { UserStore } from '../../users/data-access/user.store';
-import { BadgeAwardService } from '../../badges/data-access/badge-award.service';
-import { LandlordStore, type LandlordResult } from '../../landlord/data-access/landlord.store';
 import { CheckInModalService } from '../../check-in/data-access/check-in-modal.service';
 import { BaseStore } from '../../shared/data-access/base.store';
 import { CameraService } from '../../shared/data-access/camera.service';
@@ -26,8 +24,6 @@ export class NewCheckinStore extends BaseStore<CheckIn> {
   private readonly pubStore = inject(PubStore);
   private readonly pointsStore = inject(PointsStore);
   private readonly userStore = inject(UserStore);
-  private readonly badgeAwardService = inject(BadgeAwardService);
-  private readonly landlordStore = inject(LandlordStore);
   private readonly checkInModalService = inject(CheckInModalService);
   private readonly cameraService = inject(CameraService);
 
@@ -35,7 +31,7 @@ export class NewCheckinStore extends BaseStore<CheckIn> {
   private readonly _isProcessing = signal(false);
   private readonly _carpetDetectionEnabled = signal(true);
   private readonly _needsCarpetScan = signal<string | null>(null);
-  
+
   // Check-in success state
   private readonly _checkinSuccess = signal<CheckIn | null>(null);
   private readonly _landlordMessage = signal<string | null>(null);
@@ -60,10 +56,6 @@ export class NewCheckinStore extends BaseStore<CheckIn> {
 
   readonly checkedInPubIds = computed(() =>
     new Set(this.data().map(checkIn => checkIn.pubId))
-  );
-
-  readonly landlordPubs = computed(() =>
-    this.checkins().filter(c => c.madeUserLandlord).map(c => c.pubId)
   );
 
   readonly todayCheckins = computed(() => {
@@ -123,9 +115,9 @@ export class NewCheckinStore extends BaseStore<CheckIn> {
     console.log('📡 [NewCheckinStore] === FETCHING CHECK-INS ===');
     console.log('📡 [NewCheckinStore] User ID:', userId?.slice(0, 8));
     console.log('📡 [NewCheckinStore] Timestamp:', new Date().toISOString());
-    
+
     const checkins = await this.newCheckinService.loadUserCheckins(userId);
-    
+
     console.log('📡 [NewCheckinStore] === CHECK-INS LOADED ===');
     console.log('📡 [NewCheckinStore] Total checkins received:', checkins.length);
     console.log('📡 [NewCheckinStore] Unique pubs from checkins:', new Set(checkins.map(c => c.pubId)).size);
@@ -135,7 +127,7 @@ export class NewCheckinStore extends BaseStore<CheckIn> {
       userId: c.userId?.slice(0, 8),
       dateKey: c.dateKey
     })));
-    
+
     return checkins;
   }
 
@@ -197,19 +189,19 @@ export class NewCheckinStore extends BaseStore<CheckIn> {
     let carpetImageKey: string | undefined;
     if (this._carpetDetectionEnabled()) {
       console.log('[NewCheckinStore] 📸 Starting carpet detection phase...');
-      
+
       // Check if pub has carpet references (for now always true)
       const hasReferences = await this.pubHasCarpetReferences(pubId);
-      
+
       if (hasReferences) {
         console.log('[NewCheckinStore] 📸 Requesting carpet scan for pub:', pubId);
-        
+
         // Signal that we need carpet scanning
         this._needsCarpetScan.set(pubId);
-        
+
         // Wait for carpet scan result
         carpetImageKey = await this.waitForCarpetScanResult();
-        
+
         if (carpetImageKey) {
           console.log('[NewCheckinStore] ✅ Carpet captured successfully:', carpetImageKey);
         } else {
@@ -235,7 +227,7 @@ export class NewCheckinStore extends BaseStore<CheckIn> {
     // Add to local store immediately
     const userId = this.authStore.uid();
     console.log('[NewCheckinStore] 🔄 Adding to local store:', { userId, newCheckinId, hasUserId: !!userId, hasId: !!newCheckinId });
-    
+
     if (userId && newCheckinId) {
       const newCheckin: CheckIn = {
         id: newCheckinId,
@@ -248,11 +240,11 @@ export class NewCheckinStore extends BaseStore<CheckIn> {
         pointsEarned: pointsData?.total || 0,
         pointsBreakdown: pointsData ? JSON.stringify(pointsData) : undefined
       };
-      
+
       console.log('[NewCheckinStore] 🔄 Before addItem - current data count:', this.data().length);
       this.addItem(newCheckin);
       console.log('[NewCheckinStore] 🔄 After addItem - new data count:', this.data().length);
-      
+
       this._checkinSuccess.set(newCheckin);
       console.log('[NewCheckinStore] ✅ Added new check-in to local store:', newCheckin);
 
@@ -301,12 +293,12 @@ export class NewCheckinStore extends BaseStore<CheckIn> {
    */
   private async waitForCarpetScanResult(): Promise<string | undefined> {
     console.log('[NewCheckinStore] Waiting for carpet scan result...');
-    
+
     // Create a promise that will be resolved when we receive the scan result
     return new Promise<string | undefined>((resolve) => {
       // Store the resolver so we can call it from processCarpetScanResult
       this.carpetScanResolver = resolve;
-      
+
       // Set a timeout to auto-resolve if user takes too long or cancels
       setTimeout(() => {
         if (this.carpetScanResolver) {
@@ -326,16 +318,16 @@ export class NewCheckinStore extends BaseStore<CheckIn> {
    */
   processCarpetScanResult(imageKey: string | undefined): void {
     console.log('[NewCheckinStore] Processing carpet scan result:', imageKey);
-    
+
     // 🎥 STOP CAMERA IMMEDIATELY - carpet scan is complete
     console.log('%c*** CAMERA: Carpet scan complete, stopping camera immediately...', 'color: red; font-weight: bold;');
     this.stopAllCameraStreams();
-    
+
     if (this.carpetScanResolver) {
       this.carpetScanResolver(imageKey);
       this.carpetScanResolver = null;
     }
-    
+
     // Clear the signal
     this._needsCarpetScan.set(null);
   }
@@ -345,10 +337,10 @@ export class NewCheckinStore extends BaseStore<CheckIn> {
    */
   private stopAllCameraStreams(): void {
     console.log('%c*** CAMERA: NewCheckinStore requesting camera cleanup via CameraService...', 'color: red; font-weight: bold;');
-    
+
     // Use centralized camera service + keep defensive manual cleanup for now
     this.cameraService.releaseCamera();
-    
+
     // Defensive: Also do manual cleanup (remove this if CameraService works well)
     console.log('%c*** CAMERA: Also doing defensive manual cleanup...', 'color: orange; font-weight: bold;');
     document.querySelectorAll('video').forEach((video, index) => {
@@ -360,7 +352,7 @@ export class NewCheckinStore extends BaseStore<CheckIn> {
         video.pause();
       }
     });
-    
+
     console.log('%c*** CAMERA: NewCheckinStore camera cleanup complete', 'color: red; font-weight: bold;');
   }
 
@@ -408,62 +400,6 @@ export class NewCheckinStore extends BaseStore<CheckIn> {
         console.error('[NewCheckinStore] No check-in data available for badge evaluation');
         return;
       }
-
-      // Get all user check-ins including the new one
-      const allUserCheckIns = this.checkins().filter(c => c.userId === userId);
-      
-      // Evaluate and award badges using the same method as legacy flow
-      let awardedBadges: any[] = [];
-      try {
-        awardedBadges = await this.badgeAwardService.evaluateAndAwardBadges(
-          userId,
-          newCheckin,
-          allUserCheckIns
-        );
-        console.log('[NewCheckinStore] 🏅 Badges evaluated, awarded:', awardedBadges);
-      } catch (error) {
-        console.error('[NewCheckinStore] Badge evaluation error:', error);
-        // Don't let badge errors break the check-in flow
-        awardedBadges = [];
-      }
-
-      // ✅ STEP 6: Handle landlord logic via LandlordStore
-      console.log('[NewCheckinStore] 👑 Processing landlord logic...');
-      const landlordResult = await this.landlordStore.tryAwardLandlordForCheckin(pubId, userId, new Date());
-      
-      // Set landlord message signal
-      const landlordMessage = landlordResult.isNewLandlord ? '👑 You\'re the landlord today!' : '✅ Check-in complete!';
-      this._landlordMessage.set(landlordMessage);
-
-      // ✅ STEP 7: UserStore updates (DataAggregatorService computes pubsVisited from our data)
-      console.log('[NewCheckinStore] 👤 UserStore.checkedInPubIds updates not needed - DataAggregatorService computes from our check-ins');
-
-      // Assemble success data
-      const successData = {
-        success: true,
-        checkin: {
-          pubId,
-          timestamp: new Date().toISOString(),
-          carpetImageKey,
-          madeUserLandlord: landlordResult.isNewLandlord
-        },
-        pub: {
-          name: pub?.name || 'Unknown Pub',
-          location: pub?.location
-        },
-        points: pointsData,
-        badges: awardedBadges,
-        isNewLandlord: landlordResult.isNewLandlord,
-        landlordMessage: landlordMessage,
-        isFirstEver,
-        carpetCaptured: !!carpetImageKey
-      };
-
-      console.log('[NewCheckinStore] 🎉 Success data assembled:', successData);
-      console.log('[NewCheckinStore] ✅ Check-in workflow complete - showing modals');
-
-      // Show success overlay
-      this.showCheckinResults(successData);
 
     } catch (error) {
       console.error('[NewCheckinStore] ❌ Error in success flow:', error);
@@ -558,14 +494,14 @@ export class NewCheckinStore extends BaseStore<CheckIn> {
 
     if (data.success) {
       console.log('[NewCheckinStore] 🎉 Calling CheckInModalService.showCheckInResults for SUCCESS');
-      
+
       // Log modal coordination decision
       if (data.isNewLandlord) {
         console.log('[NewCheckinStore] 🎭 ✅ CELEBRATORY: User became landlord → Second modal will show');
       } else {
         console.log('[NewCheckinStore] 🎭 ❌ ROUTINE: Normal check-in → First modal only');
       }
-      
+
       // Show success modal like the old flow
       this.checkInModalService.showCheckInResults({
         success: true,
@@ -585,16 +521,13 @@ export class NewCheckinStore extends BaseStore<CheckIn> {
           name: data.pub.name
         },
         points: data.points,
-        badges: data.badges || [],
-        isNewLandlord: data.isNewLandlord,
-        landlordMessage: data.landlordMessage,
         carpetCaptured: data.carpetCaptured
       });
-      
+
       console.log('[NewCheckinStore] ✅ CheckInModalService.showCheckInResults called');
     } else {
       console.log('[NewCheckinStore] ❌ Calling CheckInModalService.showCheckInResults for ERROR');
-      
+
       // Show error modal
       this.checkInModalService.showCheckInResults({
         success: false,

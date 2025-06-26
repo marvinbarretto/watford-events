@@ -111,10 +111,6 @@ export class AuthService {
           streaks: {},
           displayName,
           joinedAt: new Date().toISOString(),
-          badgeCount: 0,
-          badgeIds: [],
-          landlordCount: 0,
-          landlordPubIds: [],
           joinedMissionIds: [],
         };
 
@@ -188,10 +184,6 @@ export class AuthService {
           streaks: {},
           displayName: firebaseUser.displayName || firebaseUser.email?.split('@')[0] || 'User',
           joinedAt: new Date().toISOString(),
-          badgeCount: 0,
-          badgeIds: [],
-          landlordCount: 0,
-          landlordPubIds: [],
           joinedMissionIds: [],
         };
 
