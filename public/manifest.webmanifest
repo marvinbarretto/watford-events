@@ -1,6 +1,6 @@
 {
-  "name": "spoons",
-  "short_name": "spoons",
+  "name": "Watford Events",
+  "short_name": "Watford Events",
   "display": "standalone",
   "scope": "./",
   "start_url": "./",

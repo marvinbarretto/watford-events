@@ -1,17 +1,17 @@
 export const APP = {
-  name: 'Spoonscount',
-  tagline: 'Track your Spoons visits',
-  description: 'Gamified pub check-in app where you photograph carpets, earn points, and compete on leaderboards',
+  name: 'Watford Events',
+  tagline: 'Discover local events in Watford',
+  description: 'The definitive events discovery platform for Watford - aggregating all local events into one searchable, user-friendly destination',
   
   // URLs
   urls: {
-    production: 'https://spoons-15e03.firebaseapp.com',
+    production: 'https://watford-events.firebaseapp.com',
     // Add other environment URLs as needed
   },
   
   // Social media handles (for future use)
   social: {
-    twitter: '@spoonscount',  // TODO: Set up actual handles
-    instagram: '@spoonscount',
+    twitter: '@watfordevents',  // TODO: Set up actual handles
+    instagram: '@watfordevents',
   }
 } as const;

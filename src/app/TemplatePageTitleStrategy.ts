@@ -14,7 +14,7 @@ export class TemplatePageTitleStrategy extends TitleStrategy {
     const title = this.buildTitle(routerState);
 
     // TODO: Get this from a global service
-    const companyName = 'SPOONS';
+    const companyName = 'Watford Events';
 
     if (title !== undefined) {
       this.title.setTitle(`${customTitle} - ${companyName}`);

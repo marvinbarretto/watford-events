@@ -8,7 +8,7 @@ export class PageTitleService {
   constructor(private titleService: Title) {}
 
   setTitle(title: string): void {
-    const finalTitle = title ? `${title} - Spoons` : 'Spoons';
+    const finalTitle = title ? `${title} - Watford Events` : 'Watford Events';
     this.titleService.setTitle(finalTitle);
   }
 }

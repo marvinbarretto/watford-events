@@ -311,7 +311,6 @@ handleOpenProfile(): void {
   protected override async onInit() {
     console.log('[Home] Initializing home component with micro-widgets...');
 
-
     await this.loadCarpets();
 
     // Load only the stores we have available

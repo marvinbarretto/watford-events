@@ -1,6 +1,6 @@
 {
   "hosting": {
-    "public": "dist/spoons/browser",
+    "public": "dist/watford-events/browser",
     "ignore": [
       "firebase.json",
       "**/.*",
