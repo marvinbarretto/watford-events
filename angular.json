@@ -20,35 +20,41 @@
         "build": {
           "builder": "@angular-devkit/build-angular:application",
           "options": {
-          "allowedCommonJsDependencies": [
-            "dotenv",
-            "compression",
-            "cors",
-            "cookie-parser",
-            "debug",
-            "redis",
-            "form-data",
-            "proxy-from-env",
-            "follow-redirects"
-          ],
-          "outputPath": "dist/spoons",
-          "index": "src/index.html",
-          "browser": "src/main.ts",
-          "polyfills": ["zone.js"],
-          "tsConfig": "tsconfig.app.json",
-          "inlineStyleLanguage": "scss",
-          "assets": [
-            {
-              "glob": "**/*",
-              "input": "public"
-            }
-          ],
-          "styles": ["src/styles.scss"],
-          "stylePreprocessorOptions": {
-            "includePaths": ["src"]
+            "allowedCommonJsDependencies": [
+              "dotenv",
+              "compression",
+              "cors",
+              "cookie-parser",
+              "debug",
+              "redis",
+              "form-data",
+              "proxy-from-env",
+              "follow-redirects"
+            ],
+            "outputPath": "dist/spoons",
+            "index": "src/index.html",
+            "browser": "src/main.ts",
+            "polyfills": [
+              "zone.js"
+            ],
+            "tsConfig": "tsconfig.app.json",
+            "inlineStyleLanguage": "scss",
+            "assets": [
+              {
+                "glob": "**/*",
+                "input": "public"
+              }
+            ],
+            "styles": [
+              "src/styles.scss"
+            ],
+            "stylePreprocessorOptions": {
+              "includePaths": [
+                "src"
+              ]
+            },
+            "scripts": []
           },
-          "scripts": []
-        },
           "configurations": {
             "production": {
               "outputHashing": "all",
@@ -102,14 +108,27 @@
               "zone.js/testing"
             ],
             "tsConfig": "tsconfig.spec.json",
-            "include": ["src/**/*.spec.ts"]
+            "include": [
+              "src/**/*.spec.ts"
+            ]
+          }
+        },
+        "lint": {
+          "builder": "@angular-eslint/builder:lint",
+          "options": {
+            "lintFilePatterns": [
+              "src/**/*.ts",
+              "src/**/*.html"
+            ]
           }
         }
       }
-
     }
   },
   "cli": {
-    "analytics": false
+    "analytics": false,
+    "schematicCollections": [
+      "angular-eslint"
+    ]
   }
 }
