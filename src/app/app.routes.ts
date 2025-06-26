@@ -26,12 +26,6 @@ export const appRoutes: Routes = [
       import('./missions/data-access/mission.routes').then((m) => m.MISSIONS_ROUTES),
   },
   {
-    path: 'leaderboard',
-    title: 'Leaderboard',
-    loadChildren: () =>
-      import('./leaderboard/data-access/leaderboard.routes').then((m) => m.LEADERBOARD_ROUTES),
-  },
-  {
     path: 'admin/missions',
     loadComponent: () =>
       import('./missions/feature/mission-admin/mission-admin.component')
