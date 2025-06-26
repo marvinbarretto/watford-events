@@ -1,7 +1,7 @@
 {
   "name": "watford-events",
   "description": "Aggregating all local events into one searchable, user-friendly destination",
-  "version": "0.0.0",
+  "version": "0.0.1",
   "scripts": {
     "ng": "ng",
     "start": "ng serve",
