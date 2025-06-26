@@ -1,4 +1,4 @@
-# Watford Events Platform
+# Watford Events
 
 > The definitive events discovery platform for Watford - aggregating all local events into one searchable, user-friendly destination.
 
