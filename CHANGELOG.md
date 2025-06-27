@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.0.2](https://github.com/marvinbarretto/watford-events/compare/v0.0.1...v0.0.2) (2025-06-27)
+
+
+### Features
+
+* Change theme colour options ([6730635](https://github.com/marvinbarretto/watford-events/commit/67306355d2d8f3833789cb90a9b9014fbbc3fa73))
+
 ### 0.0.1 (2025-06-26)
 
 ### [0.0.58](https://github.com/marvinbarretto/spoons-ng/compare/v0.0.57...v0.0.58) (2025-06-25)
