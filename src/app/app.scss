@@ -1,0 +1,16 @@
+.container {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 2rem;
+}
+
+.platform-info, .browser-only {
+  background: #f5f5f5;
+  padding: 1rem;
+  margin: 1rem 0;
+  border-radius: 8px;
+}
+
+.platform-info p {
+  margin: 0.5rem 0;
+}
