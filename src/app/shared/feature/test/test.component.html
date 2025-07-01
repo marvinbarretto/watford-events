@@ -1,0 +1,87 @@
+<div class="container">
+  <h1>Watford Events Hub - Development Test Page</h1>
+
+  <div class="platform-info">
+    <h2>Platform Detection Test</h2>
+    <p><strong>Is Browser:</strong> {{ platform.isBrowser }}</p>
+    <p><strong>Is Server:</strong> {{ platform.isServer }}</p>
+    <!-- <p><strong>Is Development:</strong> {{ platform.isDevelopment }}</p>
+    <p><strong>User Agent:</strong> {{ platform.getUserAgent() }}</p> -->
+    <!-- <p><strong>localStorage Available:</strong> {{ !!platform.localStorage }}</p> -->
+  </div>
+
+  <div class="browser-only">
+    <h2>Browser-Only Content</h2>
+    <p>{{ browserOnlyMessage }}</p>
+  </div>
+  <div class="server-only">
+    <h2>Server-Only Content</h2>
+    <p>{{ serverOnlyMessage }}</p>
+  </div>
+
+  <div class="test-controls">
+    <h2>Service Test Controls</h2>
+    
+    <section class="auth-section">
+      <h3>Auth Store</h3>
+      <div class="auth-info">
+        <p><strong>Authenticated:</strong> {{ authStore.isAuthenticated() }}</p>
+        <p><strong>User UID:</strong> {{ authStore.uid() || 'Not logged in' }}</p>
+        <p><strong>Anonymous:</strong> {{ authStore.isAnonymous() }}</p>
+      </div>
+      <div class="button-group">
+        <button (click)="loginWithGoogle()">Login with Google</button>
+        <button (click)="logout()" [disabled]="!authStore.isAuthenticated()">Logout</button>
+      </div>
+    </section>
+
+    <section class="toast-section">
+      <h3>Toast Service</h3>
+      <div class="toast-count">
+        <p><strong>Active Toasts:</strong> {{ toastService.toasts$$Readonly().length }}</p>
+      </div>
+      <div class="button-group">
+        <button (click)="showSuccessToast()">Success Toast</button>
+        <button (click)="showErrorToast()">Error Toast</button>
+        <button (click)="showWarningToast()">Warning Toast</button>
+        <button (click)="showInfoToast()">Info Toast</button>
+        <button (click)="showStickyToast()">Sticky Toast</button>
+        <button (click)="clearAllToasts()" [disabled]="toastService.toasts$$Readonly().length === 0">Clear All</button>
+      </div>
+      <div class="toast-list" *ngIf="toastService.toasts$$Readonly().length > 0">
+        <h4>Active Toasts:</h4>
+        <div *ngFor="let toast of toastService.toasts$$Readonly()" class="toast-item" [class]="'toast-' + toast.type">
+          <span>{{ toast.message }}</span>
+          <button (click)="toastService.dismiss(toast.id)">×</button>
+        </div>
+      </div>
+    </section>
+
+    <section class="store-section">
+      <h3>Base Store (Test Store)</h3>
+      <div class="store-info">
+        <p><strong>Loading:</strong> {{ testStore.loading() }}</p>
+        <p><strong>Error:</strong> {{ testStore.error() || 'None' }}</p>
+        <p><strong>Item Count:</strong> {{ testStore.itemCount() }}</p>
+        <p><strong>Has Data:</strong> {{ testStore.hasData() }}</p>
+        <p><strong>Is Empty:</strong> {{ testStore.isEmpty() }}</p>
+        <p><strong>User ID:</strong> {{ testStore.userId() || 'None' }}</p>
+      </div>
+      <div class="button-group">
+        <button (click)="loadTestStore()">Load Data</button>
+        <button (click)="addTestItem()">Add Item</button>
+        <button (click)="updateFirstItem()" [disabled]="testStore.isEmpty()">Update First</button>
+        <button (click)="removeFirstItem()" [disabled]="testStore.isEmpty()">Remove First</button>
+        <button (click)="resetTestStore()">Reset Store</button>
+        <button (click)="getStoreDebugInfo()">Debug Info</button>
+      </div>
+      <div class="data-list" *ngIf="testStore.hasData()">
+        <h4>Store Data:</h4>
+        <div *ngFor="let item of testStore.data()" class="data-item">
+          <span><strong>{{ item.name }}</strong> (ID: {{ item.id }})</span>
+          <span>Value: {{ item.value }}</span>
+        </div>
+      </div>
+    </section>
+  </div>
+</div>

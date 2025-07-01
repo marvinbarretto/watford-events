@@ -6,20 +6,20 @@ import {
   signOut,
   GoogleAuthProvider,
   signInWithPopup,
-  User,
+  User as FirebaseUser, // Firebase Auth user (contains auth tokens, email verification, etc.)
   onAuthStateChanged,
   Unsubscribe,
   signInAnonymously,
 } from '@angular/fire/auth';
 import { generateAnonymousName } from '../../shared/utils/anonymous-names';
-import type { User as SpoonsUser } from '../../users/utils/user.model';
+import type { User } from '../../users/utils/user.model'; // Our application user model (stored in Firestore)
 import { FirestoreService } from '../../shared/data-access/firestore.service';
 
 @Injectable({ providedIn: 'root' })
 export class AuthService extends FirestoreService {
   private readonly auth = inject(Auth);
 
-  private readonly userInternal = signal<User | null>(null);
+  private readonly userInternal = signal<FirebaseUser | null>(null);
   private readonly loading = signal<boolean>(true);
 
   // Track if we're in the middle of setting up a new anonymous user
@@ -30,6 +30,7 @@ export class AuthService extends FirestoreService {
   readonly loading$$ = computed(() => this.loading());
 
   constructor() {
+    super();
     this.initAuthListener();
   }
 
@@ -85,15 +86,15 @@ export class AuthService extends FirestoreService {
    * ✅ Ensures anonymous user document exists in Firestore
    * Called by onAuthStateChanged before setting the user
    */
-  private async ensureAnonymousUserDocument(firebaseUser: User): Promise<void> {
+  private async ensureAnonymousUserDocument(firebaseUser: FirebaseUser): Promise<void> {
     try {
-      const existingUser = await this.getDocByPath<SpoonsUser>(`users/${firebaseUser.uid}`);
+      const existingUser = await this.getDocByPath<User>(`users/${firebaseUser.uid}`);
 
       if (!existingUser) {
         console.log('[AuthService] Creating anonymous user document...');
 
         const displayName = generateAnonymousName(firebaseUser.uid);
-        const newUser: SpoonsUser = {
+        const newUser: User = {
           uid: firebaseUser.uid,
           email: null,
           photoURL: null,
@@ -119,7 +120,7 @@ export class AuthService extends FirestoreService {
     }
   }
 
-  async loginWithEmail(email: string, password: string): Promise<User> {
+  async loginWithEmail(email: string, password: string): Promise<FirebaseUser> {
     try {
       this.loading.set(true);
       const cred = await signInWithEmailAndPassword(this.auth, email, password);
@@ -137,7 +138,7 @@ export class AuthService extends FirestoreService {
     }
   }
 
-  async loginWithGoogle(): Promise<User> {
+  async loginWithGoogle(): Promise<FirebaseUser> {
     try {
       this.loading.set(true);
       const provider = new GoogleAuthProvider();
@@ -156,36 +157,11 @@ export class AuthService extends FirestoreService {
 
   /**
    * ✅ Ensures registered user document exists in Firestore
+   * TODO: Fix Firestore abstraction
    */
-  private async ensureRegisteredUserDocument(firebaseUser: User): Promise<void> {
-    const userRef = doc(this.firestore, `users/${firebaseUser.uid}`);
-
-    try {
-      const userSnap = await getDoc(userRef);
-
-      if (!userSnap.exists()) {
-        console.log('[AuthService] Creating registered user document...');
-
-        const newUser: SpoonsUser = {
-          uid: firebaseUser.uid,
-          email: firebaseUser.email,
-          photoURL: firebaseUser.photoURL,
-          emailVerified: firebaseUser.emailVerified,
-          isAnonymous: false,
-          checkedInPubIds: [],
-          streaks: {},
-          displayName: firebaseUser.displayName || firebaseUser.email?.split('@')[0] || 'User',
-          joinedAt: new Date().toISOString(),
-          joinedMissionIds: [],
-        };
-
-        await setDoc(userRef, newUser);
-        console.log('[AuthService] ✅ Registered user document created');
-      }
-    } catch (error) {
-      console.error('[AuthService] Failed to ensure registered user document:', error);
-      // Don't throw here - registered users might work without Firestore document
-    }
+  private async ensureRegisteredUserDocument(firebaseUser: FirebaseUser): Promise<void> {
+    // TODO: Use FirestoreService methods instead of direct Firestore imports
+    console.log('[AuthService] TODO: Implement proper Firestore abstraction');
   }
 
   async logout(): Promise<void> {
@@ -199,7 +175,7 @@ export class AuthService extends FirestoreService {
     }
   }
 
-  onAuthChange(callback: (user: User | null) => void): () => void {
+  onAuthChange(callback: (user: FirebaseUser | null) => void): () => void {
     return onAuthStateChanged(this.auth, callback);
   }
 

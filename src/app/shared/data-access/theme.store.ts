@@ -144,46 +144,54 @@ export class ThemeStore {
     }
 
     // ✅ UPDATED: Respect user's system preference with new themes
-    if (!cookieTheme && this._hasSystemThemePreference()) {
-      const systemPrefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+    if (!cookieTheme && this.hasSystemThemePreference()) {
+      this._platform.onlyOnBrowser(() => {
+        const window = this._platform.getWindow();
+        const systemPrefersDark = window?.matchMedia('(prefers-color-scheme: dark)').matches;
 
-      if (systemPrefersDark) {
-        const darkThemes = this.getDarkThemes();
-        const systemTheme = darkThemes[0]?.type || 'midnight';
-        this._themeType.set(systemTheme);
-      } else {
-        const lightThemes = this.getLightThemes();
-        const systemTheme = lightThemes[0]?.type || 'ocean';
-        this._themeType.set(systemTheme);
-      }
+        if (systemPrefersDark) {
+          const darkThemes = this.getDarkThemes();
+          const systemTheme = darkThemes[0]?.type || 'midnight';
+          this._themeType.set(systemTheme);
+        } else {
+          const lightThemes = this.getLightThemes();
+          const systemTheme = lightThemes[0]?.type || 'ocean';
+          this._themeType.set(systemTheme);
+        }
+      });
     }
   }
 
-  private _hasSystemThemePreference(): boolean {
-    return window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches !== undefined;
+  hasSystemThemePreference(): boolean {
+    return this._platform.onlyOnBrowser(() => {
+      const window = this._platform.getWindow();
+      return window?.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches !== undefined;
+    }) ?? false;
   }
 
   private _applyThemeToDOM(theme: Theme): void {
-    const root = this._platform.getDocument()?.documentElement;
-    if (!root) return;
+    this._platform.onlyOnBrowser(() => {
+      const root = this._platform.getDocument()?.documentElement;
+      if (!root) return;
 
-    // Apply CSS custom properties
-    const variables = this.getCSSVariables();
-    Object.entries(variables).forEach(([property, value]) => {
-      root.style.setProperty(property, value);
+      // Apply CSS custom properties
+      const variables = this.getCSSVariables();
+      Object.entries(variables).forEach(([property, value]) => {
+        root.style.setProperty(property, value);
+      });
+
+      // ✅ UPDATED: Use theme type instead of theme name for classes
+      const themeClasses = Object.keys(themes).map(t => `theme--${t}`);
+      root.classList.remove(...themeClasses);
+      root.classList.add(`theme--${this._themeType()}`);
+
+      // Add dark mode class for easier CSS targeting
+      root.classList.toggle('dark', theme.isDark);
+
+      // ✅ NEW: Add theme-specific classes for advanced styling
+      root.setAttribute('data-theme', this._themeType());
+      root.setAttribute('data-theme-mode', theme.isDark ? 'dark' : 'light');
     });
-
-    // ✅ UPDATED: Use theme type instead of theme name for classes
-    const themeClasses = Object.keys(themes).map(t => `theme--${t}`);
-    root.classList.remove(...themeClasses);
-    root.classList.add(`theme--${this._themeType()}`);
-
-    // Add dark mode class for easier CSS targeting
-    root.classList.toggle('dark', theme.isDark);
-
-    // ✅ NEW: Add theme-specific classes for advanced styling
-    root.setAttribute('data-theme', this._themeType());
-    root.setAttribute('data-theme-mode', theme.isDark ? 'dark' : 'light');
   }
 
   private _kebabCase(str: string): string {

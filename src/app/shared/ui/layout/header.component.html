@@ -1,0 +1,54 @@
+<header class="header">
+  <div class="header__container">
+    <!-- Logo/Branding -->
+    <div class="header__brand">
+      <a routerLink="/" class="header__logo">
+        <h1>Watford Events</h1>
+      </a>
+    </div>
+
+    <!-- Navigation -->
+    <nav class="header__nav">
+      <a routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}">Home</a>
+      <a routerLink="/events" routerLinkActive="active">Events</a>
+    </nav>
+
+    <!-- Actions -->
+    <div class="header__actions">
+      <!-- Theme Toggle -->
+      <button 
+        class="header__theme-toggle"
+        (click)="onThemeToggle()"
+        [attr.aria-label]="themeStore.isDark() ? 'Switch to light theme' : 'Switch to dark theme'"
+        type="button">
+        @if (themeStore.isDark()) {
+          ☀️
+        } @else {
+          🌙
+        }
+      </button>
+
+      <!-- Auth -->
+      <div class="header__auth">
+        @if (authStore.isAuthenticated()) {
+          <div class="header__user">
+            <span class="header__username">{{ authStore.user()?.displayName }}</span>
+            <button 
+              class="header__logout-btn"
+              (click)="onLogout()"
+              type="button">
+              Logout
+            </button>
+          </div>
+        } @else {
+          <button 
+            class="header__login-btn"
+            (click)="onLogin()"
+            type="button">
+            Login
+          </button>
+        }
+      </div>
+    </div>
+  </div>
+</header>

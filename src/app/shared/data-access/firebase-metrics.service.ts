@@ -26,7 +26,8 @@
  * - Enables before/after optimization comparisons
  */
 
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
+import { SsrPlatformService } from '../utils/ssr/ssr-platform.service';
 
 export type FirebaseOperation = 'read' | 'write' | 'delete' | 'batch-write' | 'transaction';
 
@@ -50,6 +51,8 @@ export type SessionSummary = {
 
 @Injectable({ providedIn: 'root' })
 export class FirebaseMetricsService {
+  private readonly platform = inject(SsrPlatformService);
+  
   // Session tracking
   private sessionCalls = new Map<string, number>();
   private operationCalls = new Map<FirebaseOperation, number>();
@@ -64,9 +67,12 @@ export class FirebaseMetricsService {
     console.log('🔥 [FirebaseMetrics] Session started - tracking Firebase operations');
     this.logSessionInfo();
     
-    // Reset on page unload and show summary
-    window.addEventListener('beforeunload', () => {
-      this.logSessionSummary('Session ending');
+    // Reset on page unload and show summary - only in browser
+    this.platform.onlyOnBrowser(() => {
+      const window = this.platform.getWindow();
+      window?.addEventListener('beforeunload', () => {
+        this.logSessionSummary('Session ending');
+      });
     });
   }
 
