@@ -11,19 +11,13 @@ import {
   Unsubscribe,
   signInAnonymously,
 } from '@angular/fire/auth';
-import {
-  Firestore,
-  doc,
-  getDoc,
-  setDoc,
-} from '@angular/fire/firestore';
 import { generateAnonymousName } from '../../shared/utils/anonymous-names';
 import type { User as SpoonsUser } from '../../users/utils/user.model';
+import { FirestoreService } from '../../shared/data-access/firestore.service';
 
 @Injectable({ providedIn: 'root' })
-export class AuthService {
+export class AuthService extends FirestoreService {
   private readonly auth = inject(Auth);
-  private readonly firestore = inject(Firestore);
 
   private readonly userInternal = signal<User | null>(null);
   private readonly loading = signal<boolean>(true);
@@ -92,12 +86,10 @@ export class AuthService {
    * Called by onAuthStateChanged before setting the user
    */
   private async ensureAnonymousUserDocument(firebaseUser: User): Promise<void> {
-    const userRef = doc(this.firestore, `users/${firebaseUser.uid}`);
-
     try {
-      const userSnap = await getDoc(userRef);
+      const existingUser = await this.getDocByPath<SpoonsUser>(`users/${firebaseUser.uid}`);
 
-      if (!userSnap.exists()) {
+      if (!existingUser) {
         console.log('[AuthService] Creating anonymous user document...');
 
         const displayName = generateAnonymousName(firebaseUser.uid);
@@ -114,7 +106,7 @@ export class AuthService {
           joinedMissionIds: [],
         };
 
-        await setDoc(userRef, newUser);
+        await this.setDoc(`users/${firebaseUser.uid}`, newUser);
         console.log('[AuthService] ✅ Anonymous user document created');
       } else {
         console.log('[AuthService] Anonymous user document already exists');
