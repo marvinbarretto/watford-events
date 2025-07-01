@@ -13,7 +13,7 @@ export class App {
   protected readonly platform = inject(SsrPlatformService);
 
   get browserOnlyMessage(): string {
-    return this.platform.onlyOnBrowser(() =>
+  return this.platform.onlyOnBrowser(() =>
       'This message only appears in the browser!'
     ) ?? 'dfdf';
   }
