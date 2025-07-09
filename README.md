@@ -19,6 +19,31 @@ An Angular 20 application for managing Watford events with AI-powered flyer pars
 
 This project was generated using [Angular CLI](https://github.com/angular/angular-cli) version 20.0.4.
 
+
+🔄 Your Refined Workflow
+Keep Your Existing Workflow (Unchanged)
+
+bash
+npm run release        # standard-version magic
+git push --follow-tags # Push release + tags
+npm run deploy         # Deploy to Firebase Hosting
+
+## New: Mobile Deployment Options
+bash# Android only
+npm run release
+git push --follow-tags  
+npm run deploy:android
+
+# Everything (web + Android)
+npm run release
+git push --follow-tags
+npm run deploy:all
+New: One-Command Shipping
+bashnpm run ship           # release + push + deploy everything
+npm run ship:web       # release + push + deploy web only
+npm run ship:android   # release + push + deploy android only
+
+
 ## Development server
 
 To start a local development server, run:

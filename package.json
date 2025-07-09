@@ -30,7 +30,7 @@
     "build:ios": "npm run cap:sync && npx cap build ios",
     "build:all": "npm run build:firebase && npm run build:android",
     "deploy": "npm run build:firebase && firebase deploy --only hosting",
-    "deploy:android": "npm run build:android && firebase appdistribution:distribute android/app/build/outputs/apk/debug/app-debug.apk --app $FIREBASE_APP_ID --groups 'testers' --release-notes \"$(git log -1 --pretty=%B)\"",
+    "deploy:android": "npm run build:android && echo 'APK built, starting distribution...' && firebase appdistribution:distribute android/app/build/outputs/apk/debug/app-debug.apk --app $FIREBASE_APP_ID --groups 'testers' --release-notes \"$(git log -1 --pretty=%B)\" --debug",
     "deploy:android:release": "npm run build:android:release && firebase appdistribution:distribute android/app/build/outputs/apk/release/app-release.apk --app $FIREBASE_APP_ID --groups 'beta-testers' --release-notes \"$(git log -1 --pretty=%B)\"",
     "deploy:ios": "npm run build:ios && echo 'iOS deployment requires Xcode - open ios/App.xcworkspace'",
     "deploy:all": "npm run deploy && npm run deploy:android",

@@ -12,7 +12,7 @@ import { Event } from '../utils/event.model';
   template: `
     <div class="event-list-container">
       <div class="header">
-        <h1>My Events</h1>
+        <h1>My Events...</h1>
         <button class="add-event-btn" (click)="addEvent()">
           <span class="plus-icon">+</span>
           <span>Add Event</span>
