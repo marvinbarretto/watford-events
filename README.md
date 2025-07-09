@@ -115,3 +115,139 @@ For detailed optimization strategies, see [Flyer Parser Strategies](docs/flyer-p
 ## Additional Resources
 
 For more information on using the Angular CLI, including detailed command references, visit the [Angular CLI Overview and Command Reference](https://angular.dev/tools/cli) page.
+
+
+
+🚀 Quick Start
+Web Development
+bashnpm install
+npm run dev                    # Start with network access
+# Visit http://localhost:4200 or http://your-ip:4200
+Mobile Development
+bash# Terminal 1: Start dev server
+npm run cap:live
+
+# Terminal 2: Deploy to phone with live reload
+npm run cap:android:live
+📱 Platform Support
+
+Web: Progressive Web App with Firebase hosting
+Android: Native Android app via Capacitor
+iOS: Native iOS app via Capacitor
+
+🏗️ Tech Stack
+Frontend
+
+Angular 18+ - Framework with signals and standalone components
+Tailwind CSS - Utility-first styling
+TypeScript - Type-safe development
+
+Backend & Services
+
+Firebase Auth - User authentication
+Firestore - Real-time database
+Firebase Storage - Image and file storage
+Firebase Hosting - Web app deployment
+
+Mobile
+
+Capacitor - Native mobile app framework
+Camera API - Direct photo capture for flyer scanning
+File System API - Local file management
+
+AI & Processing
+
+Gemini LLM - Flyer text extraction and parsing
+Custom parsing pipeline - Structure unstructured event data
+
+🔧 Development Commands
+CommandPurposenpm run devWeb development with network accessnpm run cap:liveStart dev server for mobile live reloadnpm run cap:android:liveDeploy to Android with live reloadnpm run cap:syncBuild and sync to native projectsnpm run cap:androidDeploy to Android devicenpm run cap:iosDeploy to iOS device
+📂 Project Structure
+src/
+├── app/
+│   ├── core/              # Singleton services, guards, interceptors
+│   ├── shared/            # Reusable components and utilities
+│   ├── features/          # Feature modules
+│   │   ├── auth/          # Authentication
+│   │   ├── events/        # Event browsing and management
+│   │   └── flyer-parser/  # AI-powered flyer analysis
+│   └── data-access/       # Firebase services and data models
+├── assets/                # Static assets
+└── environments/          # Environment configurations
+
+android/                   # Capacitor Android project
+ios/                      # Capacitor iOS project
+capacitor.config.ts       # Capacitor configuration
+🎯 Core Features
+Current
+
+Event Discovery - Browse and search local events
+User Authentication - Firebase Auth integration
+Responsive Design - Works on all screen sizes
+
+In Development
+
+Flyer Parser - Upload flyer images for AI analysis
+Camera Integration - Direct photo capture on mobile
+Structured Data Extraction - Title, date, time, location, description
+Confidence Scoring - AI confidence ratings for extracted data
+
+Planned
+
+Manual Correction Interface - Edit AI-extracted data
+Duplicate Detection - Identify similar events
+Event Categorization - Auto-tag by type and location
+Public Event Database - Searchable event listings
+Analytics Dashboard - Event trends and insights
+
+🚀 Deployment
+Web (Firebase Hosting)
+bashnpm run build
+firebase deploy
+Android
+bashnpm run cap:sync
+npm run cap:android
+# Or build APK: npx cap build android
+iOS
+bashnpm run cap:sync
+npm run cap:ios
+# Or build for App Store: npx cap build ios
+🔑 Environment Setup
+Required Environment Variables
+typescript// src/environments/environment.ts
+export const environment = {
+  production: false,
+  firebase: {
+    apiKey: "your-api-key",
+    authDomain: "your-project.firebaseapp.com",
+    projectId: "your-project-id",
+    storageBucket: "your-project.appspot.com",
+    messagingSenderId: "123456789",
+    appId: "your-app-id"
+  },
+  gemini: {
+    apiKey: "your-gemini-api-key"
+  }
+};
+Mobile Development Prerequisites
+
+Android: Android Studio, Java 17+, Android SDK
+iOS: Xcode 14+, iOS 13+ deployment target
+Both: Node.js 18+, npm/yarn
+
+🤝 Contributing
+
+Fork the repository
+Create a feature branch: git checkout -b feature/amazing-feature
+Commit changes: git commit -m 'Add amazing feature'
+Push to branch: git push origin feature/amazing-feature
+Open a Pull Request
+
+📄 License
+This project is licensed under the MIT License - see the LICENSE file for details.
+🙏 Acknowledgments
+
+Angular Team for the amazing framework
+Ionic Team for Capacitor
+Firebase for backend services
+Google AI for Gemini LLM capabilities
