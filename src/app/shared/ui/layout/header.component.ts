@@ -14,6 +14,8 @@ import { AuthStore } from '@auth/data-access/auth.store';
 export class HeaderComponent {
   protected readonly themeStore = inject(ThemeStore);
   protected readonly authStore = inject(AuthStore);
+  
+  showExamplesDropdown = false;
 
   onThemeToggle(): void {
     this.themeStore.toggleTheme();
@@ -25,5 +27,13 @@ export class HeaderComponent {
 
   onLogout(): void {
     this.authStore.logout();
+  }
+  
+  toggleExamplesDropdown(): void {
+    this.showExamplesDropdown = !this.showExamplesDropdown;
+  }
+  
+  closeDropdown(): void {
+    this.showExamplesDropdown = false;
   }
 }

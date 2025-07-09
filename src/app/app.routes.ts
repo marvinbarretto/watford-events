@@ -30,5 +30,46 @@ export const routes: Routes = [
     path: 'login',
     data: { shell: 'fullscreen' },
     loadComponent: () => import('./auth/feature/login.component').then(m => m.LoginComponent)
+  },
+  // Example pages
+  {
+    path: 'examples/web-dashboard',
+    data: { shell: 'main' },
+    loadComponent: () => import('./examples/web-dashboard.component').then(m => m.WebDashboardComponent)
+  },
+  {
+    path: 'examples/web-form',
+    data: { shell: 'main' },
+    loadComponent: () => import('./examples/web-form.component').then(m => m.WebFormComponent)
+  },
+  {
+    path: 'examples/mobile-dashboard',
+    data: { shell: 'main' },
+    loadComponent: () => import('./examples/mobile-dashboard.component').then(m => m.MobileDashboardComponent)
+  },
+  {
+    path: 'examples/mobile-form',
+    data: { shell: 'main' },
+    loadComponent: () => import('./examples/mobile-form.component').then(m => m.MobileFormComponent)
+  },
+  {
+    path: 'examples/mobile-actions',
+    data: { shell: 'main' },
+    loadComponent: () => import('./examples/mobile-actions.component').then(m => m.MobileActionsComponent)
+  },
+  {
+    path: 'examples/fullscreen-onboarding',
+    data: { shell: 'fullscreen' },
+    loadComponent: () => import('./examples/fullscreen-onboarding.component').then(m => m.FullscreenOnboardingComponent)
+  },
+  {
+    path: 'examples/fullscreen-welcome',
+    data: { shell: 'fullscreen' },
+    loadComponent: () => import('./examples/fullscreen-welcome.component').then(m => m.FullscreenWelcomeComponent)
+  },
+  {
+    path: 'examples/flyer-demo',
+    data: { shell: 'flyer-parser' },
+    loadComponent: () => import('./examples/flyer-demo.component').then(m => m.FlyerDemoComponent)
   }
 ];

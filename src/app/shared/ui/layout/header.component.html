@@ -11,6 +11,36 @@
     <nav class="header__nav">
       <a routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}">Home</a>
       <a routerLink="/events" routerLinkActive="active">Events</a>
+      
+      <!-- Examples Dropdown -->
+      <div class="header__dropdown">
+        <button class="header__dropdown-btn" (click)="toggleExamplesDropdown()" type="button">
+          Examples
+          <span class="dropdown-arrow" [class.open]="showExamplesDropdown">▼</span>
+        </button>
+        <div class="header__dropdown-menu" [class.show]="showExamplesDropdown">
+          <div class="dropdown-section">
+            <h3>Web Examples</h3>
+            <a routerLink="/examples/web-dashboard" (click)="closeDropdown()">Web Dashboard</a>
+            <a routerLink="/examples/web-form" (click)="closeDropdown()">Web Form</a>
+          </div>
+          <div class="dropdown-section">
+            <h3>Mobile Examples</h3>
+            <a routerLink="/examples/mobile-dashboard" (click)="closeDropdown()">Mobile Dashboard</a>
+            <a routerLink="/examples/mobile-form" (click)="closeDropdown()">Mobile Form</a>
+            <a routerLink="/examples/mobile-actions" (click)="closeDropdown()">Mobile Actions</a>
+          </div>
+          <div class="dropdown-section">
+            <h3>Fullscreen Examples</h3>
+            <a routerLink="/examples/fullscreen-onboarding" (click)="closeDropdown()">Onboarding</a>
+            <a routerLink="/examples/fullscreen-welcome" (click)="closeDropdown()">Welcome</a>
+          </div>
+          <div class="dropdown-section">
+            <h3>Flyer Parser</h3>
+            <a routerLink="/examples/flyer-demo" (click)="closeDropdown()">Flyer Demo</a>
+          </div>
+        </div>
+      </div>
     </nav>
 
     <!-- Actions -->
