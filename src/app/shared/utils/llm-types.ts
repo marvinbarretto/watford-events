@@ -1,7 +1,6 @@
 export type LLMRequest = {
   prompt: string;
   image?: string; // base64 data URL
-  type?: 'carpet-detection' | 'general';
 };
 
 export type LLMResponse<T = any> = {
@@ -10,14 +9,6 @@ export type LLMResponse<T = any> = {
   error?: string;
   tokensUsed?: number;
   cached: boolean;
-};
-
-export type CarpetDetectionResult = {
-  isCarpet: boolean;
-  confidence: number;
-  reasoning: string;
-  visualElements: string[];
-  story?: string[]; // Array of engaging observations about the carpet
 };
 
 export type LLMStreamChunk = {
