@@ -2,6 +2,7 @@ import { Injectable, signal } from '@angular/core';
 import { GoogleGenerativeAI } from '@google/generative-ai';
 import { environment } from '../../../environments/environment';
 import { LLMRequest, LLMResponse } from '../utils/llm-types';
+import { EventExtractionResult, EventData, EventConfidence } from '../utils/event-extraction-types';
 
 @Injectable({
   providedIn: 'root'
@@ -58,8 +59,185 @@ export class LLMService {
     }
   }
 
+  /**
+   * Extract event data from flyer image
+   */
+  async extractEventFromImage(imageFile: File): Promise<EventExtractionResult> {
+    console.log('[LLMService] Extracting event data from image:', imageFile.name);
+
+    this._isProcessing.set(true);
+
+    try {
+      // Convert file to base64 data URL
+      const imageDataUrl = await this.fileToBase64(imageFile);
+      
+      // Optimize image for LLM processing
+      const optimizedImage = await this.optimizeImageForAnalysis(imageDataUrl);
+      
+      // Create structured prompt for event extraction
+      const prompt = this.createEventExtractionPrompt();
+      
+      // Send to Gemini with image
+      const result = await this._model.generateContent([
+        prompt,
+        {
+          inlineData: {
+            data: optimizedImage.split(',')[1], // Remove data URL prefix
+            mimeType: 'image/jpeg'
+          }
+        }
+      ]);
+
+      const response = result.response.text();
+      this._requestCount.update(count => count + 1);
+
+      console.log('[LLMService] Raw LLM response:', response);
+
+      // Parse the JSON response
+      const extractionResult = this.parseEventExtractionResponse(response);
+      
+      console.log('[LLMService] ✅ Event extraction successful:', extractionResult);
+      
+      return extractionResult;
+
+    } catch (error: any) {
+      console.error('[LLMService] ❌ Event extraction failed:', error);
+
+      return {
+        success: false,
+        eventData: null,
+        confidence: this.createEmptyConfidence(),
+        error: error?.message || 'Event extraction failed'
+      };
+    } finally {
+      this._isProcessing.set(false);
+    }
+  }
+
 
   // ===== PRIVATE HELPER METHODS =====
+
+  /**
+   * Convert File to base64 data URL
+   */
+  private async fileToBase64(file: File): Promise<string> {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(reader.result as string);
+      reader.onerror = () => reject(new Error('Failed to read file'));
+      reader.readAsDataURL(file);
+    });
+  }
+
+  /**
+   * Create structured prompt for event extraction
+   */
+  private createEventExtractionPrompt(): string {
+    return `
+You are an expert at extracting event information from flyer images. 
+
+Analyze the attached flyer image and extract the following information:
+
+1. Event title
+2. Event description 
+3. Date and time
+4. Location/venue
+5. Organizer
+6. Ticket information (price, where to buy)
+7. Contact information (phone, email)
+8. Website or social media
+
+For each field, provide:
+- The extracted value
+- A confidence score (0-100) indicating how certain you are about the extraction
+- If no information is found, use "Not found" for the value and confidence 0
+
+Return the response as a JSON object with this exact structure:
+{
+  "eventData": {
+    "title": "string",
+    "description": "string", 
+    "date": "string",
+    "location": "string",
+    "organizer": "string",
+    "ticketInfo": "string",
+    "contactInfo": "string",
+    "website": "string"
+  },
+  "confidence": {
+    "title": number,
+    "description": number,
+    "date": number,
+    "location": number,
+    "organizer": number,
+    "ticketInfo": number,
+    "contactInfo": number,
+    "website": number
+  }
+}
+
+Be thorough but concise. If text is unclear or partially obscured, still provide your best interpretation and lower the confidence score accordingly.
+`;
+  }
+
+  /**
+   * Parse LLM response into structured event data
+   */
+  private parseEventExtractionResponse(response: string): EventExtractionResult {
+    try {
+      // Clean up the response - remove markdown code blocks if present
+      const cleanedResponse = response.replace(/```json\n?|\n?```/g, '').trim();
+      
+      const parsed = JSON.parse(cleanedResponse);
+      
+      // Validate structure
+      if (!parsed.eventData || !parsed.confidence) {
+        throw new Error('Invalid response structure');
+      }
+
+      // Calculate overall confidence
+      const confidenceValues = Object.values(parsed.confidence) as number[];
+      const overall = Math.round(confidenceValues.reduce((sum, val) => sum + val, 0) / confidenceValues.length);
+
+      return {
+        success: true,
+        eventData: parsed.eventData,
+        confidence: {
+          overall,
+          ...parsed.confidence
+        },
+        rawText: response
+      };
+
+    } catch (error) {
+      console.error('[LLMService] Failed to parse LLM response:', error);
+      
+      return {
+        success: false,
+        eventData: null,
+        confidence: this.createEmptyConfidence(),
+        error: `Failed to parse response: ${error}`,
+        rawText: response
+      };
+    }
+  }
+
+  /**
+   * Create empty confidence object for error cases
+   */
+  private createEmptyConfidence(): EventConfidence {
+    return {
+      overall: 0,
+      title: 0,
+      description: 0,
+      date: 0,
+      location: 0,
+      organizer: 0,
+      ticketInfo: 0,
+      contactInfo: 0,
+      website: 0
+    };
+  }
 
   /**
    * ✅ IMAGE OPTIMIZATION - Major cost savings!
