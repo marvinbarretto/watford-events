@@ -1,6 +1,6 @@
 {
   "name": "watford-events",
-  "version": "0.0.3",
+  "version": "0.0.4",
   "scripts": {
     "ng": "ng",
     "start": "ng serve",
@@ -25,12 +25,23 @@
     "test:ci": "ng test --watch=false --browsers=ChromeHeadless",
     "serve:ssr": "node dist/watford-events/server/server.mjs",
     "build:firebase": "ng build --configuration production",
+    "build:android": "npm run cap:sync && cd android && ./gradlew assembleDebug && cd ..",
+    "build:android:release": "npm run cap:sync && cd android && ./gradlew assembleRelease && cd ..",
+    "build:ios": "npm run cap:sync && npx cap build ios",
+    "build:all": "npm run build:firebase && npm run build:android",
     "deploy": "npm run build:firebase && firebase deploy --only hosting",
+    "deploy:android": "npm run build:android && firebase appdistribution:distribute android/app/build/outputs/apk/debug/app-debug.apk --app $FIREBASE_APP_ID --groups 'testers' --release-notes \"$(git log -1 --pretty=%B)\"",
+    "deploy:android:release": "npm run build:android:release && firebase appdistribution:distribute android/app/build/outputs/apk/release/app-release.apk --app $FIREBASE_APP_ID --groups 'beta-testers' --release-notes \"$(git log -1 --pretty=%B)\"",
+    "deploy:ios": "npm run build:ios && echo 'iOS deployment requires Xcode - open ios/App.xcworkspace'",
+    "deploy:all": "npm run deploy && npm run deploy:android",
     "release": "standard-version",
     "release:minor": "standard-version --release-as minor",
     "release:patch": "standard-version --release-as patch",
     "release:major": "standard-version --release-as major",
-    "release:dry-run": "standard-version --dry-run"
+    "release:dry-run": "standard-version --dry-run",
+    "ship": "npm run release && git push --follow-tags && npm run deploy:all",
+    "ship:web": "npm run release && git push --follow-tags && npm run deploy",
+    "ship:android": "npm run release && git push --follow-tags && npm run deploy:android"
   },
   "prettier": {
     "overrides": [
