@@ -1,0 +1,261 @@
+// -----------------------------------------------------------------------------
+// Typography styles
+// -----------------------------------------------------------------------------
+
+@use '../abstracts/variables' as *;
+@use '../abstracts/mixins' as *;
+
+// Base typography
+// -----------------------------------------------------------------------------
+body {
+  font-family: $font-family-base;
+  font-size: $font-size-base;
+  font-weight: $font-weight-normal;
+  line-height: $line-height-base;
+  color: $text;
+  background-color: $background;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+// Headings
+// -----------------------------------------------------------------------------
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  @include heading-base;
+}
+
+h1 {
+  font-size: $h1-font-size;
+  
+  @include media-breakpoint-down(md) {
+    font-size: $h2-font-size;
+  }
+}
+
+h2 {
+  font-size: $h2-font-size;
+  
+  @include media-breakpoint-down(md) {
+    font-size: $h3-font-size;
+  }
+}
+
+h3 {
+  font-size: $h3-font-size;
+  
+  @include media-breakpoint-down(md) {
+    font-size: $h4-font-size;
+  }
+}
+
+h4 {
+  font-size: $h4-font-size;
+  
+  @include media-breakpoint-down(md) {
+    font-size: $h5-font-size;
+  }
+}
+
+h5 {
+  font-size: $h5-font-size;
+}
+
+h6 {
+  font-size: $h6-font-size;
+}
+
+// Text elements
+// -----------------------------------------------------------------------------
+p {
+  margin-top: 0;
+  margin-bottom: map-get($spacers, 4);
+  
+  &:last-child {
+    margin-bottom: 0;
+  }
+}
+
+// Links
+a {
+  color: $primary;
+  text-decoration: none;
+  transition: $transition-fast;
+  
+  &:hover {
+    color: $primary-hover;
+    text-decoration: underline;
+  }
+  
+  &:focus-visible {
+    outline: 2px solid $primary;
+    outline-offset: 2px;
+    border-radius: $border-radius-small;
+  }
+}
+
+// Lists
+ul,
+ol {
+  margin-top: 0;
+  margin-bottom: map-get($spacers, 4);
+  padding-left: map-get($spacers, 6);
+  
+  &:last-child {
+    margin-bottom: 0;
+  }
+}
+
+li {
+  margin-bottom: map-get($spacers, 2);
+  
+  &:last-child {
+    margin-bottom: 0;
+  }
+}
+
+// Inline elements
+// -----------------------------------------------------------------------------
+strong,
+b {
+  font-weight: $font-weight-bold;
+}
+
+em,
+i {
+  font-style: italic;
+}
+
+small {
+  font-size: $font-size-small;
+}
+
+// Code
+code,
+pre {
+  font-family: $font-family-monospace;
+  font-size: 0.9em;
+}
+
+code {
+  padding: 0.125rem 0.25rem;
+  background-color: $background-darker;
+  border-radius: $border-radius-small;
+  color: $text-secondary;
+}
+
+pre {
+  padding: map-get($spacers, 4);
+  background-color: $background-darker;
+  border: 1px solid $border-color;
+  border-radius: $border-radius;
+  overflow-x: auto;
+  
+  code {
+    padding: 0;
+    background-color: transparent;
+    border-radius: 0;
+  }
+}
+
+// Blockquotes
+blockquote {
+  margin: 0 0 map-get($spacers, 4);
+  padding-left: map-get($spacers, 4);
+  border-left: 4px solid $border-color-strong;
+  color: $text-secondary;
+  font-style: italic;
+}
+
+// Horizontal rules
+hr {
+  margin: map-get($spacers, 8) 0;
+  border: 0;
+  border-top: 1px solid $border-color;
+}
+
+// Utility classes
+// -----------------------------------------------------------------------------
+.text-small {
+  font-size: $font-size-small;
+}
+
+.text-large {
+  font-size: $font-size-large;
+}
+
+.text-primary {
+  color: $text !important;
+}
+
+.text-secondary {
+  color: $text-secondary !important;
+}
+
+.text-muted {
+  color: $text-muted !important;
+}
+
+.text-success {
+  color: $success !important;
+}
+
+.text-warning {
+  color: $warning !important;
+}
+
+.text-error {
+  color: $error !important;
+}
+
+.text-info {
+  color: $info !important;
+}
+
+.text-center {
+  text-align: center !important;
+}
+
+.text-left {
+  text-align: left !important;
+}
+
+.text-right {
+  text-align: right !important;
+}
+
+.text-truncate {
+  @include text-truncate;
+}
+
+.text-line-clamp-2 {
+  @include line-clamp(2);
+}
+
+.text-line-clamp-3 {
+  @include line-clamp(3);
+}
+
+.font-weight-light {
+  font-weight: $font-weight-light !important;
+}
+
+.font-weight-normal {
+  font-weight: $font-weight-normal !important;
+}
+
+.font-weight-medium {
+  font-weight: $font-weight-medium !important;
+}
+
+.font-weight-semibold {
+  font-weight: $font-weight-semibold !important;
+}
+
+.font-weight-bold {
+  font-weight: $font-weight-bold !important;
+}

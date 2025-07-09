@@ -1,0 +1,7 @@
+// -----------------------------------------------------------------------------
+// Main SCSS barrel file
+// Import this file to get access to variables and mixins WITHOUT any styles
+// This is safe to import in component files without code bloat
+// -----------------------------------------------------------------------------
+
+@forward 'abstracts';

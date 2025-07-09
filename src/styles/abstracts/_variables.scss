@@ -1,0 +1,157 @@
+// -----------------------------------------------------------------------------
+// Theme-aware variables using CSS custom properties
+// All colors reference the theme tokens from theme.service.ts
+// -----------------------------------------------------------------------------
+
+// Theme Colors (using CSS variables set by theme.service.ts)
+// -----------------------------------------------------------------------------
+// Backgrounds
+$background: var(--background);
+$background-lighter: var(--background-lighter);
+$background-lightest: var(--background-lightest);
+$background-darker: var(--background-darker);
+$background-darkest: var(--background-darkest);
+
+// Text
+$text: var(--text);
+$text-secondary: var(--text-secondary);
+$text-muted: var(--text-muted);
+
+// Borders
+$border-color: var(--border);
+$border-color-strong: var(--border-strong);
+
+// Interactive colors
+$primary: var(--primary);
+$primary-hover: var(--primary-hover);
+$on-primary: var(--on-primary);
+
+$secondary: var(--secondary);
+$secondary-hover: var(--secondary-hover);
+$on-secondary: var(--on-secondary);
+
+$accent: var(--accent);
+$accent-hover: var(--accent-hover);
+$on-accent: var(--on-accent);
+
+// Semantic colors
+$success: var(--success);
+$warning: var(--warning);
+$error: var(--error);
+$info: var(--info);
+
+// Legacy support
+$overlay: var(--overlay);
+$shadow: var(--shadow);
+
+// Typography (non-theme dependent)
+// -----------------------------------------------------------------------------
+$font-family-base: 'Red Hat Display', 'Segoe UI', -apple-system, BlinkMacSystemFont, Roboto,
+  'Helvetica Neue', Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji',
+  'Segoe UI Symbol';
+$font-family-monospace: 'SF Mono', Monaco, Consolas, 'Liberation Mono',
+  'Courier New', monospace;
+
+// Font sizes
+$font-size-base: 1rem; // 16px
+$font-size-small: 0.875rem; // 14px
+$font-size-large: 1.125rem; // 18px
+
+$h1-font-size: 2.5rem; // 40px
+$h2-font-size: 2rem; // 32px
+$h3-font-size: 1.75rem; // 28px
+$h4-font-size: 1.5rem; // 24px
+$h5-font-size: 1.25rem; // 20px
+$h6-font-size: 1rem; // 16px
+
+// Font weights
+$font-weight-light: 300;
+$font-weight-normal: 400;
+$font-weight-medium: 500;
+$font-weight-semibold: 600;
+$font-weight-bold: 700;
+
+// Line heights
+$line-height-base: 1.5;
+$line-height-heading: 1.2;
+$line-height-tight: 1.25;
+$line-height-loose: 1.75;
+
+// Spacing
+// -----------------------------------------------------------------------------
+$spacer: 1rem;
+$spacers: (
+  0: 0,
+  1: $spacer * 0.25,  // 4px
+  2: $spacer * 0.5,   // 8px
+  3: $spacer * 0.75,  // 12px
+  4: $spacer,         // 16px
+  5: $spacer * 1.25,  // 20px
+  6: $spacer * 1.5,   // 24px
+  8: $spacer * 2,     // 32px
+  10: $spacer * 2.5,  // 40px
+  12: $spacer * 3,    // 48px
+  16: $spacer * 4,    // 64px
+  20: $spacer * 5,    // 80px
+);
+
+// Layout
+// -----------------------------------------------------------------------------
+$container-max-width: 1200px;
+$container-padding: 1rem;
+
+// Breakpoints
+$breakpoints: (
+  xs: 0,
+  sm: 576px,
+  md: 768px,
+  lg: 992px,
+  xl: 1200px,
+  xxl: 1400px,
+);
+
+// Grid
+$grid-columns: 12;
+$grid-gutter: 1.5rem;
+
+// Borders
+// -----------------------------------------------------------------------------
+$border-width: 1px;
+$border-radius: 0.25rem;
+$border-radius-large: 0.5rem;
+$border-radius-small: 0.125rem;
+$border-radius-pill: 50rem;
+$border-radius-circle: 50%;
+
+// Transitions
+// -----------------------------------------------------------------------------
+$transition-base: all 0.3s ease-in-out;
+$transition-fast: all 0.15s ease-in-out;
+$transition-slow: all 0.45s ease-in-out;
+
+// Z-index layers
+// -----------------------------------------------------------------------------
+$z-index-dropdown: 1000;
+$z-index-sticky: 1020;
+$z-index-fixed: 1030;
+$z-index-modal-backdrop: 1040;
+$z-index-modal: 1050;
+$z-index-popover: 1060;
+$z-index-tooltip: 1070;
+
+// Forms
+// -----------------------------------------------------------------------------
+$input-height: 2.5rem;
+$input-padding-x: 0.75rem;
+$input-padding-y: 0.5rem;
+$input-border-width: $border-width;
+$input-placeholder-opacity: 0.6;
+$input-disabled-opacity: 0.5;
+
+// Buttons
+// -----------------------------------------------------------------------------
+$button-padding-x: 1rem;
+$button-padding-y: 0.5rem;
+$button-font-weight: $font-weight-medium;
+$button-border-radius: $border-radius;
+$button-border-width: $border-width;

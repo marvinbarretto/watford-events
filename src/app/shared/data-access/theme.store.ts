@@ -62,7 +62,7 @@ export class ThemeStore {
 
     if (this.isDark()) {
       // Switch to a light theme (default to first light theme)
-      const newTheme = lightThemes[0]?.[0] as ThemeType || 'ocean';
+      const newTheme = lightThemes[0]?.[0] as ThemeType || 'fresh';
       this.setTheme(newTheme);
     } else {
       // Switch to a dark theme (default to first dark theme)
@@ -108,25 +108,11 @@ export class ThemeStore {
     // ✅ UPDATED: Handle new theme names and legacy names
     const themeMap: Record<string, ThemeType> = {
       // Current themes
-      'ocean': 'ocean',
-      'sunset': 'sunset',
+      'fresh': 'fresh',
+      'sunshine': 'sunshine',
       'midnight': 'midnight',
-      'lavender': 'lavender',
-      'emerald': 'emerald',
-
-      // Legacy mappings (old theme names)
-      'sage': 'ocean',
-      'amber': 'sunset',
-      'slate': 'midnight',
-      'coral': 'lavender',
-      'forest': 'emerald',
-
-      // Generic legacy mappings
-      'default': 'ocean',
-      'light': 'ocean',
-      'dark': 'midnight',
-      'highcontrast': 'midnight',
-      'cvdsafe': 'ocean'
+      'coral': 'coral',
+      'forest': 'fresh',
     };
 
     const normalized = themeInput.toLowerCase();
@@ -155,7 +141,7 @@ export class ThemeStore {
           this._themeType.set(systemTheme);
         } else {
           const lightThemes = this.getLightThemes();
-          const systemTheme = lightThemes[0]?.type || 'ocean';
+          const systemTheme = lightThemes[0]?.type || 'fresh';
           this._themeType.set(systemTheme);
         }
       });

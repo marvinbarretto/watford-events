@@ -1,0 +1,289 @@
+// -----------------------------------------------------------------------------
+// This file contains all application-wide Sass mixins.
+// -----------------------------------------------------------------------------
+
+@use 'sass:map';
+@use 'variables' as *;
+
+// Media Query Mixins
+// -----------------------------------------------------------------------------
+@mixin media-breakpoint-up($name) {
+  $min: map.get($breakpoints, $name);
+  @if $min {
+    @media (min-width: $min) {
+      @content;
+    }
+  } @else {
+    @content;
+  }
+}
+
+@mixin media-breakpoint-down($name) {
+  $max: map.get($breakpoints, $name) - 0.02px;
+  @if $max {
+    @media (max-width: $max) {
+      @content;
+    }
+  } @else {
+    @content;
+  }
+}
+
+@mixin media-breakpoint-between($lower, $upper) {
+  $min: map.get($breakpoints, $lower);
+  $max: map.get($breakpoints, $upper) - 0.02px;
+  
+  @if $min != null and $max != null {
+    @media (min-width: $min) and (max-width: $max) {
+      @content;
+    }
+  } @else if $max == null {
+    @include media-breakpoint-up($lower) {
+      @content;
+    }
+  } @else if $min == null {
+    @include media-breakpoint-down($upper) {
+      @content;
+    }
+  }
+}
+
+// Typography Mixins
+// -----------------------------------------------------------------------------
+@mixin heading-base {
+  font-weight: $font-weight-semibold;
+  line-height: $line-height-heading;
+  color: $text;
+  margin-top: 0;
+  margin-bottom: map.get($spacers, 3);
+}
+
+@mixin text-truncate {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+@mixin line-clamp($lines: 3) {
+  display: -webkit-box;
+  -webkit-line-clamp: $lines;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+// Layout Mixins
+// -----------------------------------------------------------------------------
+@mixin container {
+  width: 100%;
+  max-width: $container-max-width;
+  margin-left: auto;
+  margin-right: auto;
+  padding-left: $container-padding;
+  padding-right: $container-padding;
+}
+
+@mixin flex-center {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+@mixin absolute-center {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+
+@mixin cover-parent {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+}
+
+// Visual Effects
+// -----------------------------------------------------------------------------
+@mixin elevation($level: 1) {
+  @if $level == 1 {
+    box-shadow: 0 2px 4px -1px rgba(0, 0, 0, 0.06),
+                0 4px 6px -1px rgba(0, 0, 0, 0.1);
+  } @else if $level == 2 {
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.08),
+                0 10px 15px -3px rgba(0, 0, 0, 0.1);
+  } @else if $level == 3 {
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1),
+                0 20px 25px -5px rgba(0, 0, 0, 0.08);
+  }
+}
+
+@mixin glass-effect {
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+// Form Mixins
+// -----------------------------------------------------------------------------
+@mixin form-input-base {
+  display: block;
+  width: 100%;
+  height: $input-height;
+  padding: $input-padding-y $input-padding-x;
+  font-family: inherit;
+  font-size: $font-size-base;
+  line-height: $line-height-base;
+  color: $text;
+  background-color: $background-lighter;
+  border: $input-border-width solid $border-color;
+  border-radius: $border-radius;
+  transition: $transition-fast;
+  
+  &::placeholder {
+    color: $text-muted;
+    opacity: $input-placeholder-opacity;
+  }
+  
+  &:focus {
+    outline: none;
+    border-color: $primary;
+    box-shadow: 0 0 0 3px rgba(var(--primary-rgb), 0.1);
+  }
+  
+  &:disabled {
+    cursor: not-allowed;
+    opacity: $input-disabled-opacity;
+    background-color: $background-darker;
+  }
+}
+
+// Button Mixins
+// -----------------------------------------------------------------------------
+@mixin button-base {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: $button-padding-y $button-padding-x;
+  font-family: inherit;
+  font-size: $font-size-base;
+  font-weight: $button-font-weight;
+  line-height: $line-height-base;
+  text-align: center;
+  text-decoration: none;
+  vertical-align: middle;
+  cursor: pointer;
+  user-select: none;
+  border: $button-border-width solid transparent;
+  border-radius: $button-border-radius;
+  transition: $transition-fast;
+  
+  &:disabled {
+    opacity: 0.65;
+    cursor: not-allowed;
+  }
+}
+
+@mixin button-variant($bg, $bg-hover, $color) {
+  background-color: $bg;
+  color: $color;
+  
+  &:hover:not(:disabled) {
+    background-color: $bg-hover;
+  }
+  
+  &:active:not(:disabled) {
+    transform: scale(0.98);
+  }
+  
+  &:focus:not(:disabled) {
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(var(--primary-rgb), 0.2);
+  }
+}
+
+// Utility Mixins
+// -----------------------------------------------------------------------------
+@mixin visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+@mixin reset-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+@mixin reset-button {
+  padding: 0;
+  border: none;
+  background: none;
+  font: inherit;
+  color: inherit;
+  cursor: pointer;
+}
+
+// Animation Mixins
+// -----------------------------------------------------------------------------
+@mixin fade-in($duration: 0.3s, $delay: 0s) {
+  opacity: 0;
+  animation: fadeIn $duration ease-in-out $delay forwards;
+}
+
+@mixin slide-up($distance: 20px, $duration: 0.3s, $delay: 0s) {
+  opacity: 0;
+  transform: translateY($distance);
+  animation: slideUp $duration ease-out $delay forwards;
+}
+
+// Spacing Mixins
+// -----------------------------------------------------------------------------
+@mixin margin-x($value) {
+  margin-left: $value;
+  margin-right: $value;
+}
+
+@mixin margin-y($value) {
+  margin-top: $value;
+  margin-bottom: $value;
+}
+
+@mixin padding-x($value) {
+  padding-left: $value;
+  padding-right: $value;
+}
+
+@mixin padding-y($value) {
+  padding-top: $value;
+  padding-bottom: $value;
+}
+
+// Focus Mixins
+// -----------------------------------------------------------------------------
+@mixin focus-visible {
+  &:focus {
+    outline: none;
+  }
+  
+  &:focus-visible {
+    outline: 2px solid $primary;
+    outline-offset: 2px;
+  }
+}
+
+// Dark Mode Support
+// -----------------------------------------------------------------------------
+@mixin dark-mode {
+  :host-context(.dark-theme) & {
+    @content;
+  }
+}

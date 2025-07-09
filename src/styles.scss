@@ -1,1 +1,51 @@
-/* You can add global styles to this file, and also import other style files */
+// -----------------------------------------------------------------------------
+// Global styles entry point
+// This file includes all actual CSS output
+// -----------------------------------------------------------------------------
+
+// Base styles (reset, typography)
+@use 'styles/base';
+
+// Utilities (spacing, display, etc.)
+@use 'styles/utilities';
+
+// Global app styles
+html {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  min-height: 100%;
+}
+
+// Angular-specific global styles
+app-root {
+  display: block;
+  min-height: 100vh;
+}
+
+// Focus management for better accessibility
+:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
+}
+
+// Scrollbar styling (webkit browsers)
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--background-darker);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--border-strong);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--text-muted);
+}
