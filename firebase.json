@@ -1,15 +1,4 @@
 {
-  "apphosting": {
-    "backendId": "watford-events",
-    "rootDir": "/",
-    "ignore": [
-      "node_modules",
-      ".git",
-      "firebase-debug.log",
-      "firebase-debug.*.log",
-      "functions"
-    ]
-  },
   "hosting": {
     "public": "dist/watford-events/browser",
     "ignore": [
