@@ -59,48 +59,6 @@ export class LLMService {
   }
 
 
-  /**
-   * General purpose method for any LLM request
-   */
-  async processRequest(request: LLMRequest): Promise<LLMResponse> {
-    console.log('[LLMService] Processing request:', request.type || 'general');
-
-    this._isProcessing.set(true);
-
-    try {
-      const parts: any[] = [{ text: request.prompt }];
-
-      if (request.image) {
-        // ✅ Optimize images for all requests
-        const optimizedImage = await this.optimizeImageForAnalysis(request.image);
-        parts.push(this.prepareImagePart(optimizedImage));
-      }
-
-      const result = await this._model.generateContent(parts);
-      const response = result.response.text();
-
-      this._requestCount.update(count => count + 1);
-
-      return {
-        success: true,
-        data: response,
-        cached: false
-      };
-
-    } catch (error: any) {
-      console.error('[LLMService] ❌ Request failed:', error);
-
-      return {
-        success: false,
-        data: null,
-        error: error?.message || 'Request failed',
-        cached: false
-      };
-    } finally {
-      this._isProcessing.set(false);
-    }
-  }
-
   // ===== PRIVATE HELPER METHODS =====
 
   /**
