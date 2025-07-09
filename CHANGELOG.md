@@ -2,6 +2,20 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.0.3](https://github.com/marvinbarretto/watford-events/compare/v0.0.2...v0.0.3) (2025-07-09)
+
+
+### Features
+
+* [Events] extract utils out from functionality ([9bf7679](https://github.com/marvinbarretto/watford-events/commit/9bf7679d64381a3fcccd4e80764268d847077c1d))
+* Add shells for different types of views ([34f04a3](https://github.com/marvinbarretto/watford-events/commit/34f04a3793c1e595664b634e75ed95ad03c918fa))
+* Upload iOS and Android builds ([df08146](https://github.com/marvinbarretto/watford-events/commit/df081467212152567925e57dc8083677fdea4e9b))
+
+
+### Bug Fixes
+
+* Regenerate API keys ([aa40e1b](https://github.com/marvinbarretto/watford-events/commit/aa40e1b73613c9c05eb9eaccbdfac21f440a36c9))
+
 ### [0.0.2](https://github.com/marvinbarretto/watford-events/compare/v0.0.1...v0.0.2) (2025-07-09)
 
 

@@ -1,30 +1,24 @@
 {
   "name": "watford-events",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "scripts": {
     "ng": "ng",
     "start": "ng serve",
     "phone": "ng serve --host 0.0.0.0",
     "build": "ng build",
     "watch": "ng build --watch --configuration development",
-
     "cap:install": "npm install @capacitor/core @capacitor/cli @capacitor/ios @capacitor/android",
     "cap:init": "npx cap init",
     "cap:add": "npx cap add ios && npx cap add android",
-
     "cap:build": "ng build && npx cap copy",
     "cap:sync": "ng build && npx cap sync",
-
     "cap:android": "npx cap run android",
     "cap:ios": "npx cap run ios",
-
     "cap:live": "ng serve --host=0.0.0.0 --port=3000",
     "cap:android:live": "npx cap run android --live-reload",
     "cap:ios:live": "npx cap run ios --live-reload",
-
     "cap:open:android": "npx cap open android",
     "cap:open:ios": "npx cap open ios",
-
     "test": "ng test",
     "test:watch": "ng test --watch",
     "test:coverage": "ng test --coverage",
