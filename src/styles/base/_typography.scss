@@ -4,6 +4,7 @@
 
 @use '../abstracts/variables' as *;
 @use '../abstracts/mixins' as *;
+@use 'sass:map';
 
 // Base typography
 // -----------------------------------------------------------------------------
@@ -73,7 +74,7 @@ h6 {
 // -----------------------------------------------------------------------------
 p {
   margin-top: 0;
-  margin-bottom: map-get($spacers, 4);
+  margin-bottom: map.get($spacers, 4);
   
   &:last-child {
     margin-bottom: 0;
@@ -102,8 +103,8 @@ a {
 ul,
 ol {
   margin-top: 0;
-  margin-bottom: map-get($spacers, 4);
-  padding-left: map-get($spacers, 6);
+  margin-bottom: map.get($spacers, 4);
+  padding-left: map.get($spacers, 6);
   
   &:last-child {
     margin-bottom: 0;
@@ -111,7 +112,7 @@ ol {
 }
 
 li {
-  margin-bottom: map-get($spacers, 2);
+  margin-bottom: map.get($spacers, 2);
   
   &:last-child {
     margin-bottom: 0;
@@ -149,7 +150,7 @@ code {
 }
 
 pre {
-  padding: map-get($spacers, 4);
+  padding: map.get($spacers, 4);
   background-color: $background-darker;
   border: 1px solid $border-color;
   border-radius: $border-radius;
@@ -164,8 +165,8 @@ pre {
 
 // Blockquotes
 blockquote {
-  margin: 0 0 map-get($spacers, 4);
-  padding-left: map-get($spacers, 4);
+  margin: 0 0 map.get($spacers, 4);
+  padding-left: map.get($spacers, 4);
   border-left: 4px solid $border-color-strong;
   color: $text-secondary;
   font-style: italic;
@@ -173,7 +174,7 @@ blockquote {
 
 // Horizontal rules
 hr {
-  margin: map-get($spacers, 8) 0;
+  margin: map.get($spacers, 8) 0;
   border: 0;
   border-top: 1px solid $border-color;
 }
