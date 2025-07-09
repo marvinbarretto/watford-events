@@ -1,3 +1,7 @@
+export const GLOBAL = {
+  COMPANY_NAME: 'Watford Events',
+};
+
 export const BREAKPOINTS = {
   MOBILE_MAX: 599,
   DESKTOP_MIN: 600,

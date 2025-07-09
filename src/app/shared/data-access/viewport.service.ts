@@ -1,6 +1,6 @@
 import { inject, Injectable, signal } from '@angular/core';
 import { SsrPlatformService } from '../utils/ssr/ssr-platform.service';
-import { BREAKPOINTS } from '../utils/constants';
+import { BREAKPOINTS } from '../../constants';
 
 @Injectable({ providedIn: 'root' })
 export class ViewportService {
