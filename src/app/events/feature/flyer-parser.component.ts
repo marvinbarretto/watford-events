@@ -5,8 +5,6 @@ import { EventExtractionResult } from '../../shared/utils/event-extraction-types
 
 @Component({
   selector: 'app-flyer-parser',
-  standalone: true,
-  imports: [CommonModule],
   template: `
     <div class="flyer-parser-container">
       <div class="header">

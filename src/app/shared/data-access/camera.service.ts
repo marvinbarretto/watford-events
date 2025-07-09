@@ -76,7 +76,7 @@ export class CameraService {
    * Ideal for flyer/document capture
    */
   async requestRearCamera(): Promise<MediaStream> {
-    console.log('%c*** CAMERA: Requesting rear-facing camera...', 'color: blue; font-weight: bold;');
+    console.log('[Camera] Requesting rear-facing camera with environment facing mode');
     
     const constraints: MediaStreamConstraints = {
       video: {
@@ -92,7 +92,7 @@ export class CameraService {
    * Request front-facing camera for selfies/video calls
    */
   async requestFrontCamera(): Promise<MediaStream> {
-    console.log('%c*** CAMERA: Requesting front-facing camera...', 'color: blue; font-weight: bold;');
+    console.log('[Camera] Requesting front-facing camera with user facing mode');
     
     const constraints: MediaStreamConstraints = {
       video: {
@@ -112,7 +112,7 @@ export class CameraService {
       const devices = await navigator.mediaDevices.enumerateDevices();
       return devices.filter(device => device.kind === 'videoinput');
     } catch (error) {
-      console.error('Failed to enumerate camera devices:', error);
+      console.error('[Camera] Failed to enumerate camera devices:', error);
       return [];
     }
   }
@@ -134,14 +134,13 @@ export class CameraService {
    * Based on MDN getUserMedia best practices
    */
   async requestCamera(constraints: MediaStreamConstraints = { video: true, audio: false }): Promise<MediaStream> {
-    console.log('%c*** CAMERA: Service requesting camera access...', 'color: blue; font-weight: bold;');
-    console.log('%c*** CAMERA: Using constraints:', 'color: blue;', constraints);
+    console.log('[Camera] Requesting camera access with constraints:', JSON.stringify(constraints));
     
     try {
       // OPTIMIZATION: Reuse existing stream if already active to avoid multiple getUserMedia calls
       // This prevents the "multiple MediaStream" issue that causes camera light persistence
       if (this._currentStream && this.isActive) {
-        console.log('%c*** CAMERA: Reusing existing stream', 'color: blue; font-weight: bold;');
+        console.log('[Camera] Reusing existing stream:', this._currentStream.id);
         return this._currentStream;
       }
 
@@ -150,7 +149,6 @@ export class CameraService {
       await this.releaseCamera();
 
       // CORE: Request new MediaStream from browser - this is the main camera access point
-      console.log('%c*** CAMERA: Calling navigator.mediaDevices.getUserMedia', 'color: blue; font-weight: bold;');
       const stream = await navigator.mediaDevices.getUserMedia(constraints);
       
       // STATE: Store the stream reference so we can manage it later
@@ -167,15 +165,12 @@ export class CameraService {
         streamId: stream.id       // Store stream ID for debugging
       });
 
-      // DEBUG: Log success info for troubleshooting
-      console.log('%c*** CAMERA: Camera access granted, stream ID:', 'color: green; font-weight: bold;', stream.id);
-      console.log('%c*** CAMERA: Stream has', 'color: green; font-weight: bold;', stream.getTracks().length, 'tracks');
+      console.log('[Camera] Camera access granted - stream:', stream.id, 'tracks:', stream.getTracks().length);
 
       return stream;
 
     } catch (error: any) {
-      // ERROR HANDLING: Log the specific error for debugging
-      console.log('%c*** CAMERA: Failed to get camera access:', 'color: red; font-weight: bold;', error.message);
+      console.error('[Camera] Failed to get camera access:', error.message);
       
       // STATE UPDATE: Update state to reflect camera access failed
       this._state.next({
@@ -195,18 +190,19 @@ export class CameraService {
    * Based on research into browser camera persistence issues
    */
   async releaseCamera(force = false): Promise<void> {
-    console.log('%c*** CAMERA: Service releasing camera...', 'color: red; font-weight: bold; font-size: 14px;');
+    const streamId = this._currentStream?.id || 'none';
+    console.log(`[Camera] Releasing camera - stream: ${streamId}, force: ${force}`);
     
     // PREVENT CONCURRENT CLEANUP: Avoid multiple cleanup operations running simultaneously
     if (this._isCleaningUp && !force) {
-      console.log('%c*** CAMERA: Cleanup already in progress', 'color: orange; font-weight: bold;');
+      console.log('[Camera] Cleanup already in progress');
       return;
     }
     
     // EARLY EXIT: Skip if no stream to clean up (unless forced)
     // This avoids unnecessary cleanup work when camera isn't active
     if (!this._currentStream && !force) {
-      console.log('%c*** CAMERA: No active stream to release', 'color: orange; font-weight: bold;');
+      console.log('[Camera] No active stream to release');
       return;
     }
 
@@ -220,13 +216,13 @@ export class CameraService {
 
     try {
       await Promise.race([cleanupPromise, timeoutPromise]);
-      console.log('%c*** CAMERA: Camera release complete', 'color: green; font-weight: bold;');
+      console.log('[Camera] Camera release complete');
     } catch (error: any) {
-      console.log('%c*** CAMERA: Error during release:', 'color: red; font-weight: bold;', error);
+      console.error('[Camera] Error during release:', error.message);
       
       // Force emergency cleanup if normal cleanup failed
       if (error.message === 'Cleanup timeout') {
-        console.log('%c*** CAMERA: Cleanup timed out, forcing emergency cleanup...', 'color: red; font-weight: bold;');
+        console.log('[Camera] Cleanup timed out, forcing emergency cleanup');
         await this._forceEmergencyCleanup();
       }
       
@@ -248,7 +244,7 @@ export class CameraService {
   private async _performCleanup(): Promise<void> {
     // TRACKING: Increment cleanup attempts for debugging persistent issues
     this._cleanupAttempts++;
-    console.log('%c*** CAMERA: Cleanup attempt #' + this._cleanupAttempts, 'color: red; font-weight: bold;');
+    console.log(`[Camera] Cleanup attempt ${this._cleanupAttempts}/${this.MAX_CLEANUP_ATTEMPTS}`);
 
     // STRATEGY 1: Stop all tracks in the main MediaStream
     if (this._currentStream) {
@@ -290,8 +286,8 @@ export class CameraService {
    * Components should call this in their constructor/init and detachFromComponent in ngOnDestroy
    */
   registerComponent(componentId: string): void {
-    console.log('%c*** CAMERA: Registering component:', 'color: blue; font-weight: bold;', componentId);
     this._activeComponents.add(componentId);
+    console.log(`[Camera] Component '${componentId}' registered (${this._activeComponents.size} active components)`);
   }
 
   /**
@@ -299,13 +295,12 @@ export class CameraService {
    * Components should call this in ngOnDestroy to ensure proper cleanup
    */
   async detachFromComponent(componentId: string): Promise<void> {
-    console.log('%c*** CAMERA: Detaching component:', 'color: blue; font-weight: bold;', componentId);
-    
     this._activeComponents.delete(componentId);
+    console.log(`[Camera] Component '${componentId}' detached (${this._activeComponents.size} active components)`);
     
     // If no components are using the camera, automatically clean up
     if (this._activeComponents.size === 0 && this.isActive) {
-      console.log('%c*** CAMERA: No active components, auto-cleaning up...', 'color: orange; font-weight: bold;');
+      console.log('[Camera] No active components, auto-cleaning up');
       await this.releaseCamera();
     }
   }
@@ -314,7 +309,7 @@ export class CameraService {
    * Attach stream to video element with proper management
    */
   attachToVideoElement(videoElement: HTMLVideoElement, stream: MediaStream): void {
-    console.log('%c*** CAMERA: Attaching stream to video element', 'color: blue; font-weight: bold;');
+    console.log(`[Camera] Attaching stream ${stream.id} to video element`);
     
     // Clean up previous video element
     if (this._videoElement && this._videoElement !== videoElement) {
@@ -323,15 +318,13 @@ export class CameraService {
 
     this._videoElement = videoElement;
     videoElement.srcObject = stream;
-    
-    console.log('%c*** CAMERA: Video element attached', 'color: blue; font-weight: bold;');
   }
 
   /**
    * Detach from video element without full camera cleanup
    */
   detachFromVideoElement(videoElement: HTMLVideoElement): void {
-    console.log('%c*** CAMERA: Detaching from video element', 'color: blue; font-weight: bold;');
+    console.log('[Camera] Detaching from video element');
     
     if (this._videoElement === videoElement) {
       this._cleanupVideoElement(videoElement);
@@ -344,7 +337,7 @@ export class CameraService {
    * Based on Stack Overflow solutions for browser camera bugs
    */
   async emergencyCleanup(): Promise<void> {
-    console.log('%c*** CAMERA: 🚨 EMERGENCY CLEANUP 🚨', 'color: red; font-weight: bold; font-size: 16px;');
+    console.log('[Camera] EMERGENCY CLEANUP - clearing all components and forcing release');
     
     // Clear all component references
     this._activeComponents.clear();
@@ -352,7 +345,7 @@ export class CameraService {
     // Force cleanup regardless of current state
     await this.releaseCamera(true);
     
-    console.log('%c*** CAMERA: Emergency cleanup complete', 'color: red; font-weight: bold;');
+    console.log('[Camera] Emergency cleanup complete');
   }
 
   /**
@@ -360,7 +353,7 @@ export class CameraService {
    * Used when normal cleanup times out or fails
    */
   private async _forceEmergencyCleanup(): Promise<void> {
-    console.log('%c*** CAMERA: 🚨 FORCE EMERGENCY CLEANUP 🚨', 'color: red; font-weight: bold; font-size: 16px;');
+    console.log('[Camera] FORCE EMERGENCY CLEANUP - resetting all state');
     
     try {
       // Stop everything we can find
@@ -382,9 +375,9 @@ export class CameraService {
         streamId: null
       });
       
-      console.log('%c*** CAMERA: Force emergency cleanup complete', 'color: red; font-weight: bold;');
+      console.log('[Camera] Force emergency cleanup complete');
     } catch (error) {
-      console.log('%c*** CAMERA: Force emergency cleanup failed:', 'color: red; font-weight: bold;', error);
+      console.error('[Camera] Force emergency cleanup failed:', error);
     }
   }
 
@@ -392,8 +385,6 @@ export class CameraService {
    * Validate that cleanup was successful
    */
   private async _validateCleanup(): Promise<boolean> {
-    console.log('%c*** CAMERA: Validating cleanup...', 'color: orange; font-weight: bold;');
-    
     try {
       // Check if we can access camera again (if we can, cleanup was successful)
       const testStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: false });
@@ -401,22 +392,21 @@ export class CameraService {
       // Immediately stop the test stream
       testStream.getTracks().forEach(track => track.stop());
       
-      console.log('%c*** CAMERA: Cleanup validation successful', 'color: green; font-weight: bold;');
+      console.log('[Camera] Cleanup validation successful');
       return true;
     } catch (error) {
       // If we can't access camera, it might mean:
       // 1. Camera is still in use (bad)
       // 2. User revoked permission (neutral)
       // 3. No camera available (neutral)
-      console.log('%c*** CAMERA: Cleanup validation failed:', 'color: orange; font-weight: bold;', error);
-      
-      // Check if error indicates camera is still in use
       const errorMessage = (error as Error).message.toLowerCase();
       if (errorMessage.includes('use') || errorMessage.includes('busy') || errorMessage.includes('already')) {
+        console.log('[Camera] Cleanup validation failed - camera still in use:', errorMessage);
         return false; // Camera likely still in use
       }
       
       // Other errors (permission, no camera) are acceptable
+      console.log('[Camera] Cleanup validation - camera unavailable (acceptable):', errorMessage);
       return true;
     }
   }
@@ -424,79 +414,64 @@ export class CameraService {
   // Private helper methods
 
   private async _stopStreamTracks(stream: MediaStream): Promise<void> {
-    console.log('%c*** CAMERA: Stopping stream tracks...', 'color: red; font-weight: bold;');
-    
     // GET ALL TRACKS: Both video and audio tracks need to be stopped
     // This is the most important step - any active track will keep camera light on
     const tracks = stream.getTracks();
-    console.log('%c*** CAMERA: Found', 'color: red; font-weight: bold;', tracks.length, 'tracks to stop');
+    console.log(`[Camera] Stopping ${tracks.length} tracks from stream ${stream.id}`);
     
     // STOP EACH TRACK: Iterate through all tracks and stop them individually
-    // We log before/after readyState to verify the track actually stopped
     tracks.forEach((track, index) => {
-      console.log(`%c*** CAMERA: Stopping track #${index}: ${track.kind} (${track.label}) - readyState: ${track.readyState}`, 'color: red; font-weight: bold;');
-      
-      // CORE STOP: This is the main browser API call that releases camera hardware
+      const beforeState = track.readyState;
       track.stop();
-      
-      // VERIFICATION: Log the new state to confirm track was stopped
-      // readyState should change from 'live' to 'ended'
-      console.log(`%c*** CAMERA: Track #${index} stopped - new readyState: ${track.readyState}`, 'color: red; font-weight: bold;');
+      console.log(`[Camera] Track ${index} (${track.kind}) stopped: ${beforeState} -> ${track.readyState}`);
     });
   }
 
   private _cleanupVideoElement(videoElement: HTMLVideoElement): void {
-    console.log('%c*** CAMERA: Cleaning up video element...', 'color: red; font-weight: bold;');
-    
     try {
       // CHECK FOR ATTACHED STREAM: Video elements can hold MediaStream references
       // Even after we stop our main stream, video elements might still reference it
       if (videoElement.srcObject) {
         const stream = videoElement.srcObject as MediaStream;
         if (stream && stream.getTracks) {
+          const tracks = stream.getTracks();
+          console.log(`[Camera] Cleaning video element with ${tracks.length} tracks`);
           // STOP VIDEO ELEMENT TRACKS: Stop any tracks attached to this specific video element
-          // This catches cases where video element has a different stream reference
-          stream.getTracks().forEach(track => {
-            console.log('%c*** CAMERA: Stopping video element track:', 'color: red; font-weight: bold;', track.kind);
-            track.stop();  // Stop track associated with this video element
+          tracks.forEach(track => {
+            track.stop();
           });
         }
       }
       
       // CLEAR VIDEO ELEMENT: Reset the video element to remove all stream references
-      videoElement.pause();           // Stop video playback
-      videoElement.srcObject = null;  // Remove MediaStream reference
-      videoElement.load();            // Reset video element to initial state
+      videoElement.pause();
+      videoElement.srcObject = null;
+      videoElement.load();
       
-      console.log('%c*** CAMERA: Video element cleaned up', 'color: red; font-weight: bold;');
     } catch (error) {
       // LOG BUT CONTINUE: Video element cleanup errors shouldn't break the whole cleanup process
-      console.log('%c*** CAMERA: Error cleaning video element:', 'color: red; font-weight: bold;', error);
+      console.error('[Camera] Error cleaning video element:', error);
     }
   }
 
   private _cleanupOrphanedVideoElements(): void {
-    console.log('%c*** CAMERA: Searching for orphaned video elements...', 'color: red; font-weight: bold;');
-    
     // FIND ALL VIDEO ELEMENTS: Search the entire DOM for video elements
     // Other components might have created video elements that weren't properly cleaned up
     const videoElements = document.querySelectorAll('video');
-    console.log('%c*** CAMERA: Found', 'color: red; font-weight: bold;', videoElements.length, 'video elements');
+    const orphanedElements = Array.from(videoElements).filter(video => video.srcObject);
     
-    // CLEAN EACH VIDEO ELEMENT: Check each video element for attached MediaStreams
-    videoElements.forEach((video, index) => {
-      if (video.srcObject) {
-        // ORPHANED STREAM FOUND: This video element has a MediaStream attached
-        // Clean it up using our standard video element cleanup method
-        console.log(`%c*** CAMERA: Cleaning orphaned video element #${index}`, 'color: red; font-weight: bold;');
+    if (orphanedElements.length > 0) {
+      console.log(`[Camera] Found ${orphanedElements.length} orphaned video elements from ${videoElements.length} total`);
+      
+      // CLEAN EACH VIDEO ELEMENT: Check each video element for attached MediaStreams
+      orphanedElements.forEach((video, index) => {
+        console.log(`[Camera] Cleaning orphaned video element ${index + 1}/${orphanedElements.length}`);
         this._cleanupVideoElement(video);
-      }
-    });
+      });
+    }
   }
 
   private async _emergencyCleanup(): Promise<void> {
-    console.log('%c*** CAMERA: Attempting emergency fresh stream cleanup...', 'color: red; font-weight: bold;');
-    
     try {
       // EMERGENCY TECHNIQUE: Request a fresh MediaStream and immediately stop it
       // This is a workaround for browser bugs where camera hardware doesn't release properly
@@ -509,20 +484,17 @@ export class CameraService {
       });
       
       const emergencyStream = await Promise.race([emergencyStreamPromise, timeoutPromise]);
-      console.log('%c*** CAMERA: Got emergency stream, stopping immediately...', 'color: red; font-weight: bold;');
       
       // IMMEDIATE STOP: Stop all tracks in the emergency stream right away
       // The goal isn't to use this stream, but to force browser to reset camera state
-      emergencyStream.getTracks().forEach(track => {
-        console.log('%c*** CAMERA: Emergency stopping track:', 'color: red; font-weight: bold;', track.kind);
-        track.stop();  // Stop the emergency track immediately
-      });
+      const tracks = emergencyStream.getTracks();
+      tracks.forEach(track => track.stop());
       
-      console.log('%c*** CAMERA: Emergency cleanup successful', 'color: green; font-weight: bold;');
+      console.log(`[Camera] Emergency cleanup successful - stopped ${tracks.length} fresh tracks`);
     } catch (error) {
       // ERROR IS OKAY: If this fails, it might mean camera is already properly released
       // Some browsers throw errors when camera isn't available, which can be a good sign
-      console.log('%c*** CAMERA: Emergency cleanup failed (this might be good):', 'color: orange; font-weight: bold;', error);
+      console.log('[Camera] Emergency cleanup failed (camera may already be released):', (error as Error).message);
     }
   }
 }

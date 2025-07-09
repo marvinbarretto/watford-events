@@ -8,8 +8,7 @@ import { Event } from '../utils/event.model';
 
 @Component({
   selector: 'app-event-list',
-  standalone: true,
-  imports: [CommonModule, RouterModule],
+  imports: [RouterModule],
   template: `
     <div class="event-list-container">
       <div class="header">
@@ -81,28 +80,28 @@ import { Event } from '../utils/event.model';
 
           <!-- Filter Tabs -->
           <div class="filter-tabs">
-            <button 
+            <button
               class="filter-tab"
               [class.active]="currentFilter() === 'all'"
               (click)="setFilter('all')"
             >
               All ({{ totalEvents() }})
             </button>
-            <button 
+            <button
               class="filter-tab"
               [class.active]="currentFilter() === 'published'"
               (click)="setFilter('published')"
             >
               Published ({{ publishedCount() }})
             </button>
-            <button 
+            <button
               class="filter-tab"
               [class.active]="currentFilter() === 'draft'"
               (click)="setFilter('draft')"
             >
               Drafts ({{ draftCount() }})
             </button>
-            <button 
+            <button
               class="filter-tab"
               [class.active]="currentFilter() === 'upcoming'"
               (click)="setFilter('upcoming')"
@@ -164,14 +163,14 @@ import { Event } from '../utils/event.model';
                       <span>✏️</span>
                       <span>Edit</span>
                     </button>
-                    
+
                     @if (event.status === 'draft') {
                       <button class="action-btn publish-btn" (click)="publishEvent(event)">
                         <span>🚀</span>
                         <span>Publish</span>
                       </button>
                     }
-                    
+
                     @if (event.status === 'published') {
                       <button class="action-btn share-btn" (click)="shareEvent(event)">
                         <span>📤</span>
@@ -564,21 +563,21 @@ import { Event } from '../utils/event.model';
       .event-list-container {
         padding: 15px;
       }
-      
+
       .header {
         flex-direction: column;
         gap: 15px;
         align-items: stretch;
       }
-      
+
       .events-grid {
         grid-template-columns: 1fr;
       }
-      
+
       .stats-row {
         grid-template-columns: repeat(2, 1fr);
       }
-      
+
       .filter-tabs {
         justify-content: center;
       }
@@ -615,7 +614,7 @@ export class EventListComponent {
   readonly filteredEvents = computed(() => {
     const filter = this.currentFilter();
     const allEvents = this.events();
-    
+
     switch (filter) {
       case 'published':
         return allEvents.filter(e => e.status === 'published');
@@ -661,7 +660,7 @@ export class EventListComponent {
   shareEvent(event: Event) {
     // TODO: Implement sharing functionality
     console.log('Share event:', event.id);
-    
+
     // Basic web share API if available
     if (navigator.share) {
       navigator.share({

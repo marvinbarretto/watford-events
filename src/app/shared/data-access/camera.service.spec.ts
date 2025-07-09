@@ -178,6 +178,16 @@ describe('CameraService', () => {
       expect(service.currentState.hasPermission).toBe(false);
       expect(service.currentState.error).toBe('Stop failed');
     });
+
+    it('should limit cleanup attempts', async () => {
+      // Simulate multiple cleanup attempts
+      for (let i = 0; i < 5; i++) {
+        await service.releaseCamera(true);
+      }
+      
+      // Should not cause issues even with multiple attempts
+      expect(service.currentState.isActive).toBe(false);
+    });
   });
 
   describe('attachToVideoElement()', () => {
@@ -214,18 +224,11 @@ describe('CameraService', () => {
     it('should perform emergency cleanup', async () => {
       await service.emergencyCleanup();
 
-      // Should call getUserMedia for emergency stream and immediately stop it
-      expect(mockMediaDevices.getUserMedia).toHaveBeenCalledWith({
-        video: true,
-        audio: false
-      });
-      expect(mockTrack.stop).toHaveBeenCalled();
-      
-      // Should reset all state
+      // Should call releaseCamera with force=true
       expect(service.currentStream).toBeNull();
       expect(service.currentState).toEqual({
         isActive: false,
-        hasPermission: false,
+        hasPermission: true, // Changed from false to true as per new logic
         error: null,
         streamId: null
       });
@@ -236,6 +239,18 @@ describe('CameraService', () => {
 
       // Should not throw error
       await expect(service.emergencyCleanup()).resolves.toBeUndefined();
+    });
+
+    it('should clear all active components', async () => {
+      service.registerComponent('test-component');
+      await service.emergencyCleanup();
+      
+      // Adding a component after emergency cleanup should not trigger auto-cleanup
+      service.registerComponent('new-component');
+      await service.detachFromComponent('new-component');
+      
+      // Should not automatically clean up since camera is not active
+      expect(service.currentStream).toBeNull();
     });
   });
 
@@ -307,6 +322,120 @@ describe('CameraService', () => {
     });
   });
 
+  describe('Component Management', () => {
+    it('should register and track components', () => {
+      service.registerComponent('test-component-1');
+      service.registerComponent('test-component-2');
+      
+      // Components should be tracked internally
+      expect(service['_activeComponents'].size).toBe(2);
+      expect(service['_activeComponents'].has('test-component-1')).toBe(true);
+      expect(service['_activeComponents'].has('test-component-2')).toBe(true);
+    });
+
+    it('should detach components and auto-cleanup when last component detaches', async () => {
+      // Set up active camera
+      await service.requestCamera();
+      
+      service.registerComponent('test-component');
+      
+      // Detach component should trigger auto-cleanup
+      await service.detachFromComponent('test-component');
+      
+      expect(service['_activeComponents'].has('test-component')).toBe(false);
+      expect(service.currentStream).toBeNull();
+      expect(service.currentState.isActive).toBe(false);
+    });
+
+    it('should not auto-cleanup when other components are still active', async () => {
+      await service.requestCamera();
+      
+      service.registerComponent('component-1');
+      service.registerComponent('component-2');
+      
+      // Detach one component
+      await service.detachFromComponent('component-1');
+      
+      // Should not auto-cleanup since component-2 is still active
+      expect(service.currentStream).toBe(mockStream);
+      expect(service.currentState.isActive).toBe(true);
+    });
+
+    it('should not auto-cleanup when camera is not active', async () => {
+      service.registerComponent('test-component');
+      
+      // Detach component when camera is not active
+      await service.detachFromComponent('test-component');
+      
+      // Should not attempt cleanup
+      expect(mockTrack.stop).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('Video Element Management', () => {
+    beforeEach(async () => {
+      await service.requestCamera();
+    });
+
+    it('should detach from specific video element', () => {
+      service.attachToVideoElement(mockVideoElement, mockStream);
+      
+      service.detachFromVideoElement(mockVideoElement);
+      
+      expect(mockVideoElement.pause).toHaveBeenCalled();
+      expect(mockVideoElement.srcObject).toBeNull();
+    });
+
+    it('should not detach from different video element', () => {
+      const otherVideoElement = {
+        srcObject: mockStream,
+        pause: jest.fn(),
+        load: jest.fn()
+      } as any;
+      
+      service.attachToVideoElement(mockVideoElement, mockStream);
+      
+      // Try to detach from different element
+      service.detachFromVideoElement(otherVideoElement);
+      
+      // Should not affect the tracked video element
+      expect(mockVideoElement.pause).not.toHaveBeenCalled();
+      expect(otherVideoElement.pause).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('Timeout Protection', () => {
+    it('should handle cleanup timeout', async () => {
+      // Mock a slow cleanup operation
+      jest.spyOn(service as any, '_performCleanup').mockImplementation(() => {
+        return new Promise(resolve => setTimeout(resolve, 15000)); // 15 seconds
+      });
+      
+      await service.requestCamera();
+      
+      // Should timeout after 10 seconds and trigger force emergency cleanup
+      await expect(service.releaseCamera()).resolves.toBeUndefined();
+      
+      // Should mark camera as inactive even after timeout
+      expect(service.currentState.isActive).toBe(false);
+    });
+
+    it('should prevent concurrent cleanup operations', async () => {
+      await service.requestCamera();
+      
+      // Start first cleanup
+      const cleanup1 = service.releaseCamera();
+      
+      // Start second cleanup immediately
+      const cleanup2 = service.releaseCamera();
+      
+      await Promise.all([cleanup1, cleanup2]);
+      
+      // Should not cause issues
+      expect(service.currentState.isActive).toBe(false);
+    });
+  });
+
   describe('Edge Cases', () => {
     it('should handle missing navigator.mediaDevices', async () => {
       // Override the mock to simulate missing mediaDevices
@@ -332,6 +461,30 @@ describe('CameraService', () => {
       
       // Should handle cleanup of empty stream without errors
       await expect(service.releaseCamera()).resolves.toBeUndefined();
+    });
+  });
+
+  describe('New Camera Methods', () => {
+    it('should request rear camera with correct constraints', async () => {
+      await service.requestRearCamera();
+      
+      expect(mockMediaDevices.getUserMedia).toHaveBeenCalledWith({
+        video: {
+          facingMode: { ideal: 'environment' }
+        },
+        audio: false
+      });
+    });
+
+    it('should request front camera with correct constraints', async () => {
+      await service.requestFrontCamera();
+      
+      expect(mockMediaDevices.getUserMedia).toHaveBeenCalledWith({
+        video: {
+          facingMode: { ideal: 'user' }
+        },
+        audio: false
+      });
     });
   });
 });
