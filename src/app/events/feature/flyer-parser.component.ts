@@ -16,9 +16,9 @@ import { EventExtractionResult } from '../../shared/utils/event-extraction-types
 
       <!-- File Upload Section -->
       <div class="upload-section">
-        <input 
-          type="file" 
-          accept="image/*" 
+        <input
+          type="file"
+          accept="image/*"
           (change)="onFileSelected($event)"
           [disabled]="isProcessing()"
           class="file-input"
@@ -57,7 +57,7 @@ import { EventExtractionResult } from '../../shared/utils/event-extraction-types
                   <div class="confidence-fill" [style.width.%]="extractionResult()?.confidence?.overall || 0"></div>
                 </div>
               </div>
-              
+
               <div class="event-fields">
                 <!-- Title -->
                 <div class="field">
@@ -164,7 +164,6 @@ import { EventExtractionResult } from '../../shared/utils/event-extraction-types
       max-width: 600px;
       margin: 0 auto;
       padding: 20px;
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
     }
 
     .header {
@@ -363,12 +362,12 @@ import { EventExtractionResult } from '../../shared/utils/event-extraction-types
       .flyer-parser-container {
         padding: 15px;
       }
-      
+
       .field-content {
         flex-direction: column;
         align-items: flex-start;
       }
-      
+
       .confidence-score {
         margin-left: 0;
         margin-top: 5px;
@@ -378,7 +377,7 @@ import { EventExtractionResult } from '../../shared/utils/event-extraction-types
 })
 export class FlyerParserComponent {
   private llmService = inject(LLMService);
-  
+
   readonly selectedImageUrl = signal<string | null>(null);
   readonly extractionResult = signal<EventExtractionResult | null>(null);
   readonly isProcessing = signal(false);
@@ -386,7 +385,7 @@ export class FlyerParserComponent {
   async onFileSelected(event: Event): Promise<void> {
     const input = event.target as HTMLInputElement;
     const file = input.files?.[0];
-    
+
     if (!file) return;
 
     // Show image preview

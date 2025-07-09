@@ -11,10 +11,18 @@ export const routes: Routes = [
   },
   {
     path: 'events',
-    loadComponent: () => import('./shared/feature/home/home.component').then(m => m.HomeComponent) // Placeholder until events component is created
+    loadComponent: () => import('./events/feature/event-list.component').then(m => m.EventListComponent)
   },
   {
     path: 'flyer-parser',
     loadComponent: () => import('./events/feature/flyer-parser.component').then(m => m.FlyerParserComponent)
+  },
+  {
+    path: 'events/add',
+    loadComponent: () => import('./events/feature/add-event.component').then(m => m.AddEventComponent)
+  },
+  {
+    path: 'login',
+    loadComponent: () => import('./auth/feature/login.component').then(m => m.LoginComponent)
   }
 ];

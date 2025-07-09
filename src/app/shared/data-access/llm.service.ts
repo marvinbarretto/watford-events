@@ -138,17 +138,23 @@ You are an expert at extracting event information from flyer images.
 
 Analyze the attached flyer image and extract the following information:
 
-1. Event title
-2. Event description 
-3. Date and time
-4. Location/venue
-5. Organizer
-6. Ticket information (price, where to buy)
-7. Contact information (phone, email)
-8. Website or social media
+1. **Event title** - The main title/name of the event
+2. **Event description** - Brief description of what the event is about
+3. **Date and time** - When the event takes place (be specific about format)
+4. **Location/venue** - Where the event is happening
+5. **Organizer** - Who is organizing/hosting the event
+6. **Ticket information** - Price, where to buy, booking details
+7. **Contact information** - Phone numbers, email addresses
+8. **Website or social media** - URLs, social handles, QR codes
+
+SPECIAL INSTRUCTIONS:
+- For **dates**: Keep the original format but be precise (e.g., "Sunday 20th July 2025, 3 PM")
+- For **QR codes**: If you see a QR code, try to determine what it links to. If it's near ticket info, it's likely a booking URL. If it's near contact info, it might be a website. Describe what the QR code is for (e.g., "QR code for ticket booking", "QR code for website link")
+- For **ticket info**: If you see a QR code near ticket information, include it in your response (e.g., "£15 advance, £20 on door - QR code for online booking")
+- For **websites**: Look for URLs, social media handles (@username), and describe QR codes that might contain links
 
 For each field, provide:
-- The extracted value
+- The extracted value (keep original formatting when possible)
 - A confidence score (0-100) indicating how certain you are about the extraction
 - If no information is found, use "Not found" for the value and confidence 0
 
@@ -157,12 +163,12 @@ Return the response as a JSON object with this exact structure:
   "eventData": {
     "title": "string",
     "description": "string", 
-    "date": "string",
+    "date": "string (keep original format)",
     "location": "string",
     "organizer": "string",
-    "ticketInfo": "string",
+    "ticketInfo": "string (include QR code info if relevant)",
     "contactInfo": "string",
-    "website": "string"
+    "website": "string (include social handles and QR code descriptions)"
   },
   "confidence": {
     "title": number,

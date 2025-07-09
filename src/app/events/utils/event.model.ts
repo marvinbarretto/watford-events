@@ -8,11 +8,26 @@ export type Event = {
   createdAt: Date;
   updatedAt: Date;
 
-  // Future fields for image scanner integration
+  // Owner/Creator fields
+  createdBy: string; // User UID who created the event
+  ownerId: string;   // Primary owner UID (for permissions)
+
+  // Event status
+  status: 'draft' | 'published' | 'cancelled';
+
+  // LLM extraction metadata
   imageUrl?: string;
   scannedAt?: Date;
   scannerConfidence?: number;
   rawTextData?: string;
+  llmModel?: string;
+  processingTime?: number;
+  
+  // Additional event details
+  organizer?: string;
+  ticketInfo?: string;
+  contactInfo?: string;
+  website?: string;
 };
 
 /**
