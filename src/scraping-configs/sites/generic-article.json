@@ -1,0 +1,96 @@
+{
+  "domain": "*",
+  "enabled": true,
+  "name": "Generic Article",
+  "description": "Fallback configuration for any website - extracts basic metadata",
+  "instructions": [
+    {
+      "step": 1,
+      "action": "navigate",
+      "description": "Navigate to the target URL"
+    },
+    {
+      "step": 2,
+      "action": "wait",
+      "waitFor": "networkidle",
+      "timeout": 10000,
+      "description": "Wait for page to fully load",
+      "optional": true
+    },
+    {
+      "step": 3,
+      "action": "extract",
+      "description": "Extract all basic metadata"
+    }
+  ],
+  "selectors": {
+    "cookieBanner": "[data-testid*='cookie'], [class*='cookie'], [id*='cookie'], .gdpr-banner, .consent-banner",
+    "loadingSpinner": ".loading, .spinner, [data-testid='loading']",
+    "mainContent": "main, article, .content, .post, [role='main']"
+  },
+  "extractors": [
+    {
+      "name": "title",
+      "selector": "title, h1, [property='og:title'], [name='twitter:title']",
+      "required": true,
+      "transform": "trim"
+    },
+    {
+      "name": "description",
+      "selector": "[name='description'], [property='og:description'], [name='twitter:description']",
+      "attribute": "content",
+      "required": false,
+      "transform": "trim"
+    },
+    {
+      "name": "canonical",
+      "selector": "[rel='canonical']",
+      "attribute": "href",
+      "required": false
+    },
+    {
+      "name": "image",
+      "selector": "[property='og:image'], [name='twitter:image']",
+      "attribute": "content",
+      "required": false
+    },
+    {
+      "name": "author",
+      "selector": "[name='author'], [rel='author'], .author, .byline",
+      "required": false,
+      "transform": "trim"
+    },
+    {
+      "name": "publishDate",
+      "selector": "[property='article:published_time'], time[datetime], .date, .published",
+      "attribute": "datetime",
+      "required": false
+    },
+    {
+      "name": "headings",
+      "selector": "h1, h2, h3",
+      "multiple": true,
+      "required": false,
+      "transform": "trim"
+    },
+    {
+      "name": "links",
+      "selector": "a[href]",
+      "attribute": "href",
+      "multiple": true,
+      "required": false
+    }
+  ],
+  "options": {
+    "headless": true,
+    "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+    "viewport": { "width": 1920, "height": 1080 },
+    "waitForNetworkIdle": true,
+    "screenshotOnError": true,
+    "respectRobotsTxt": true,
+    "politenessDelay": 1000,
+    "maxRetries": 2
+  },
+  "lastUpdated": "2025-01-01T00:00:00Z",
+  "version": "1.0.0"
+}

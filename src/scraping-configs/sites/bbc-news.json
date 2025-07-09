@@ -1,0 +1,104 @@
+{
+  "domain": "bbc.co.uk",
+  "enabled": true,
+  "name": "BBC News",
+  "description": "Configuration for BBC News articles",
+  "instructions": [
+    {
+      "step": 1,
+      "action": "navigate",
+      "description": "Navigate to BBC article"
+    },
+    {
+      "step": 2,
+      "action": "click",
+      "target": "[data-testid='banner-accept'], #bbccookies-continue-button, .fc-cta-consent",
+      "timeout": 5000,
+      "description": "Accept cookie banner if present",
+      "optional": true
+    },
+    {
+      "step": 3,
+      "action": "wait",
+      "waitFor": "selector",
+      "target": "[data-component='text-block'], .story-body, main",
+      "timeout": 10000,
+      "description": "Wait for main article content to load"
+    },
+    {
+      "step": 4,
+      "action": "extract",
+      "description": "Extract BBC article content"
+    }
+  ],
+  "selectors": {
+    "cookieBanner": "[data-testid='banner-accept'], #bbccookies-continue-button, .fc-cta-consent",
+    "loadingSpinner": ".loading, .spinner",
+    "mainContent": "main, .story-body, [data-component='story']"
+  },
+  "extractors": [
+    {
+      "name": "headline",
+      "selector": "h1, [data-component='headline']",
+      "required": true,
+      "transform": "trim"
+    },
+    {
+      "name": "summary",
+      "selector": "[data-component='text-block'] p:first-child, .story-body p:first-child",
+      "required": false,
+      "transform": "trim"
+    },
+    {
+      "name": "content",
+      "selector": "[data-component='text-block'], .story-body p",
+      "multiple": true,
+      "required": true,
+      "transform": "trim"
+    },
+    {
+      "name": "publishDate",
+      "selector": "time[datetime], [data-testid='timestamp']",
+      "attribute": "datetime",
+      "required": false
+    },
+    {
+      "name": "category",
+      "selector": "[data-testid='topic-list'] a, .tags a",
+      "multiple": true,
+      "required": false,
+      "transform": "trim"
+    },
+    {
+      "name": "image",
+      "selector": "[data-component='image-block'] img, .story-body img",
+      "attribute": "src",
+      "required": false
+    },
+    {
+      "name": "imageCaption",
+      "selector": "[data-component='image-block'] figcaption, .story-body figcaption",
+      "required": false,
+      "transform": "trim"
+    },
+    {
+      "name": "relatedLinks",
+      "selector": "[data-component='related-content'] a, .related-links a",
+      "attribute": "href",
+      "multiple": true,
+      "required": false
+    }
+  ],
+  "options": {
+    "headless": true,
+    "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+    "viewport": { "width": 1920, "height": 1080 },
+    "waitForNetworkIdle": true,
+    "screenshotOnError": true,
+    "respectRobotsTxt": true,
+    "politenessDelay": 2000,
+    "maxRetries": 3
+  },
+  "lastUpdated": "2025-01-01T00:00:00Z",
+  "version": "1.0.0"
+}

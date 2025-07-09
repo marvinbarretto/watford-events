@@ -47,3 +47,14 @@ Thumbs.db
 *-debug.log
 .runtimeconfig.json
 CLAUDE.md
+scrape-1751393143722.png
+scrape-1751393236669.png
+scrape-1751393503067.png
+scrape-1751393622093.png
+scrape-1751394425772.png
+scrape-1751394460667.png
+scrape-1751394579103.png
+scrape-1751399246635.png
+
+# Environment files
+src/environments/environment.ts

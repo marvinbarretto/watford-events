@@ -1,0 +1,40 @@
+{
+  "id": "watford-actually-upcoming",
+  "name": "Watford Actually - Upcoming Events",
+  "domain": "watfordactually.com",
+  "targetUrls": [
+    "https://www.watfordactually.com/upcoming-events"
+  ],
+  "checkIntervalDays": 7,
+  "rulesPath": "generic-article",
+  "enabled": true,
+  "priority": "high",
+  "timeoutMinutes": 15,
+  "tags": ["events", "watford", "local"],
+  
+  "notifications": {
+    "onNewContent": true,
+    "onError": true,
+    "webhookUrl": null,
+    "emailRecipients": []
+  },
+  
+  "scrapingOptions": {
+    "respectRobotsTxt": true,
+    "politenessDelayMs": 2000,
+    "includeIframes": true,
+    "takeScreenshots": false,
+    "maxRetries": 3
+  },
+  
+  "schedule": {
+    "lastCheckedAt": null,
+    "nextCheckAt": "2025-01-01T12:00:00.000Z",
+    "lastSuccessAt": null,
+    "consecutiveFailures": 0,
+    "totalRuns": 0
+  },
+  
+  "createdAt": "2025-01-01T10:00:00.000Z",
+  "updatedAt": "2025-01-01T10:00:00.000Z"
+}

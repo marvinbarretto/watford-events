@@ -1,3 +1,5 @@
+// Jest setup for Angular testing - no Firebase polyfills needed
+
 // Custom Jest matchers for Angular and Firebase testing
 import { ComponentFixture } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
@@ -109,6 +111,7 @@ if (typeof setImmediate === 'undefined') {
     return setTimeout(fn, 0, ...args);
   };
 }
+
 
 // Global test setup
 beforeEach(() => {

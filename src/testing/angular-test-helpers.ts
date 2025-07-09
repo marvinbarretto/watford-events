@@ -24,6 +24,44 @@ export const setupTestBed = (config: TestModuleMetadata = {}) => {
   return TestBed.configureTestingModule(defaultConfig);
 };
 
+// Enhanced TestBed setup with provider presets
+export const setupTestBedWithPreset = (
+  presetName: 'basic' | 'firebase' | 'authenticated' | 'firestoreService' | 'authService',
+  additionalConfig: TestModuleMetadata = {}
+) => {
+  // Import here to avoid circular dependency issues
+  const { TestProviderPresets } = require('./test-providers');
+  
+  const presetProviders = TestProviderPresets[presetName] || [];
+  
+  const config: TestModuleMetadata = {
+    providers: [
+      ...presetProviders,
+      ...(additionalConfig.providers || [])
+    ],
+    imports: additionalConfig.imports || []
+  };
+
+  console.log(`🧪 Setting up TestBed with "${presetName}" preset`);
+  return TestBed.configureTestingModule(config);
+};
+
+// Quick setup functions for common scenarios
+export const setupBasicTest = (additionalConfig: TestModuleMetadata = {}) => 
+  setupTestBedWithPreset('basic', additionalConfig);
+
+export const setupFirebaseTest = (additionalConfig: TestModuleMetadata = {}) => 
+  setupTestBedWithPreset('firebase', additionalConfig);
+
+export const setupAuthenticatedTest = (additionalConfig: TestModuleMetadata = {}) => 
+  setupTestBedWithPreset('authenticated', additionalConfig);
+
+export const setupFirestoreServiceTest = (additionalConfig: TestModuleMetadata = {}) => 
+  setupTestBedWithPreset('firestoreService', additionalConfig);
+
+export const setupAuthServiceTest = (additionalConfig: TestModuleMetadata = {}) => 
+  setupTestBedWithPreset('authService', additionalConfig);
+
 // Component test setup helper
 export const createComponent = async <T>(
   component: new (...args: any[]) => T,

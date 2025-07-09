@@ -83,52 +83,62 @@ export const createSignalAuthService = (
 };
 
 // Mock Firestore Document Snapshot
-export const createMockDocumentSnapshot = <T>(data: T | null, id = 'test-doc-id') => ({
-  id,
-  data: () => data,
-  exists: data !== null,
-  get: (field: string) => data?.[field as keyof T],
-  ref: {
+export const createMockDocumentSnapshot = <T>(data: T | null, id = 'test-doc-id') => {
+  const snapshot = {
     id,
-    path: `collection/${id}`,
-    firestore: {},
-    parent: {},
-    converter: null,
-    withConverter: () => ({}),
-    isEqual: () => false,
-    delete: async () => undefined,
-    get: () => Promise.resolve(),
-    set: async () => undefined,
-    update: async () => undefined,
-    onSnapshot: () => () => {}, // Returns unsubscribe function
-    collection: () => ({}),
-    listCollections: async () => []
-  },
-  metadata: {
-    hasPendingWrites: false,
-    fromCache: false,
-    isEqual: () => false
-  }
-});
+    exists: () => data !== null,
+    data: () => data,
+    get: (field: string) => data?.[field as keyof T],
+    ref: {
+      id,
+      path: `collection/${id}`,
+      firestore: {},
+      parent: {},
+      converter: null,
+      withConverter: () => ({}),
+      isEqual: () => false,
+      delete: async () => undefined,
+      get: () => Promise.resolve(),
+      set: async () => undefined,
+      update: async () => undefined,
+      onSnapshot: () => () => {}, // Returns unsubscribe function
+      collection: () => ({}),
+      listCollections: async () => []
+    },
+    metadata: {
+      hasPendingWrites: false,
+      fromCache: false,
+      isEqual: () => false
+    }
+  };
+  
+  console.log(`📄 Created mock document snapshot for ${id}:`, { exists: snapshot.exists(), data: snapshot.data() });
+  return snapshot;
+};
 
 // Mock Firestore Query Snapshot
-export const createMockQuerySnapshot = <T>(docs: T[], ids?: string[]) => ({
-  docs: docs.map((data, index) =>
+export const createMockQuerySnapshot = <T>(docs: T[], ids?: string[]) => {
+  const mockDocs = docs.map((data, index) =>
     createMockDocumentSnapshot(data, ids?.[index] || `doc-${index}`)
-  ),
-  empty: docs.length === 0,
-  size: docs.length,
-  forEach: (callback: Function) => {
-    docs.forEach((data, index) => {
-      callback(createMockDocumentSnapshot(data, ids?.[index] || `doc-${index}`));
-    });
-  },
-  metadata: {
-    hasPendingWrites: false,
-    fromCache: false,
-    isEqual: () => false
-  }
-});
+  );
+  
+  const querySnapshot = {
+    docs: mockDocs,
+    empty: docs.length === 0,
+    size: docs.length,
+    forEach: (callback: Function) => {
+      mockDocs.forEach(callback);
+    },
+    metadata: {
+      hasPendingWrites: false,
+      fromCache: false,
+      isEqual: () => false
+    }
+  };
+  
+  console.log(`📑 Created mock query snapshot with ${docs.length} documents`);
+  return querySnapshot;
+};
 
 // Mock Firebase Service Methods
 export const createFirebaseServiceMock = () => {
