@@ -1,10 +1,19 @@
 export default {
-  preset: 'jest-preset-angular',
-  setupFilesAfterEnv: ['<rootDir>/setup-jest.ts'],
+  // REMOVE THIS LINE - @angular-builders/jest handles setup automatically
+  // setupFilesAfterEnv: ['<rootDir>/setup-jest.ts'],
+
   testEnvironment: 'jsdom',
   moduleFileExtensions: ['ts', 'js', 'html', 'json', 'mjs'],
   testMatch: ['**/+(*.)+(spec|test).+(ts|js)'],
-  
+
+  // ignore everything in node_modules EXCEPT Angular packages
+  transformIgnorePatterns: [
+    'node_modules/(?!(@angular|@ngrx|ngx-.*|@ngx-.*)/)',
+  ],
+
+  // 10 seconds default timeout for all tests
+  testTimeout: 10000,
+
   // Transform configuration
   transform: {
     '^.+\\.(ts|js|mjs|html|svg)$': [

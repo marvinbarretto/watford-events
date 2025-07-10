@@ -6,7 +6,9 @@ describe('ListFilterStore', () => {
   let service: ListFilterStore;
 
   beforeEach(() => {
-    TestBed.configureTestingModule({});
+    TestBed.configureTestingModule({
+      providers: [ListFilterStore]
+    });
     service = TestBed.inject(ListFilterStore);
   });
 

@@ -411,6 +411,7 @@ export class FlyerParserComponent {
           description: 0,
           date: 0,
           location: 0,
+          venueId: 0,
           organizer: 0,
           ticketInfo: 0,
           contactInfo: 0,

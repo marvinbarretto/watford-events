@@ -1,23 +1,23 @@
 /**
- * @fileoverview EventStore - Single source of truth for user's events
+ * @fileoverview EventStore - Single source of truth for published events
  * 
  * RESPONSIBILITIES:
- * - User's events state management (auth-reactive pattern)
- * - Event CRUD operations
+ * - Published events state management (public viewing)
+ * - Event CRUD operations (requires authentication)
  * - Loading states and error handling
- * - Auto-load events when user changes
+ * - Auto-load all published events on initialization
  * 
  * DATA FLOW IN:
- * - AuthStore.user() changes → triggers loadUserEvents()
+ * - App initialization → triggers loadPublishedEvents()
  * - Components call createEvent() → optimistically updates events list
  * - Components call updateEvent() → optimistically updates specific event
  * 
  * DATA FLOW OUT:
- * - EventListComponent → reads userEvents from here
+ * - EventListComponent → reads userEvents from here (now contains all published events)
  * - All UI components → read event data from here
  * - Navigation → reads hasEvents for conditional routing
  * 
- * @architecture Auth-Reactive Pattern - automatically loads/clears based on auth state
+ * @architecture Public Event Pattern - loads all published events for public viewing
  */
 import { Injectable, signal, computed, inject, effect } from '@angular/core';
 import { firstValueFrom } from 'rxjs';
@@ -60,30 +60,17 @@ export class EventStore {
     })
   );
 
-  // 🔄 Track auth user changes
-  private lastLoadedUserId: string | null = null;
+  // 🔄 Track if events have been loaded
+  private hasLoadedEvents = false;
 
   constructor() {
-    // ✅ Listen to auth changes and load user events
+    // ✅ Load all published events on initialization
     effect(() => {
-      const authUser = this.authStore.user();
-
-      if (!authUser) {
-        console.log('[EventStore] 🚪 User logged out, clearing events');
-        this.reset();
-        this.lastLoadedUserId = null;
-        return;
+      if (!this.hasLoadedEvents) {
+        console.log('[EventStore] 📅 Loading all published events');
+        this.loadPublishedEvents();
+        this.hasLoadedEvents = true;
       }
-
-      // Only reload if the AUTH USER ID changed
-      if (authUser.uid === this.lastLoadedUserId) {
-        console.log('[EventStore] ⏭ Auth user unchanged, skipping reload');
-        return;
-      }
-
-      console.log('[EventStore] 📅 Loading events for user:', authUser.uid);
-      this.lastLoadedUserId = authUser.uid;
-      this.loadUserEvents(authUser.uid);
     });
   }
 
@@ -92,7 +79,31 @@ export class EventStore {
   // ===================================
 
   /**
-   * Load events for a specific user ID
+   * Load all published events for public viewing
+   */
+  async loadPublishedEvents(): Promise<void> {
+    if (this._loading()) {
+      console.log('[EventStore] Load already in progress, skipping');
+      return;
+    }
+
+    this._loading.set(true);
+    this._error.set(null);
+
+    try {
+      const events = await this.eventService.getPublishedEvents();
+      this._userEvents.set(events || []);
+      console.log('[EventStore] ✅ Published events loaded:', events?.length || 0);
+    } catch (error: any) {
+      this._error.set(error?.message || 'Failed to load events');
+      console.error('[EventStore] ❌ Load events failed:', error);
+    } finally {
+      this._loading.set(false);
+    }
+  }
+
+  /**
+   * Load events for a specific user ID (for authenticated views)
    */
   async loadUserEvents(userId: string): Promise<void> {
     if (this._loading()) {
@@ -116,14 +127,11 @@ export class EventStore {
   }
 
   /**
-   * Force reload current user events
+   * Force reload published events
    */
   async reload(): Promise<void> {
-    const authUser = this.authStore.user();
-    if (authUser) {
-      console.log('[EventStore] 🔄 Reloading events for user:', authUser.uid);
-      await this.loadUserEvents(authUser.uid);
-    }
+    console.log('[EventStore] 🔄 Reloading published events');
+    await this.loadPublishedEvents();
   }
 
   // ===================================
@@ -280,6 +288,30 @@ export class EventStore {
     await this.updateEvent(eventId, { status: 'cancelled' });
   }
 
+  /**
+   * Add user to event attendees
+   */
+  async addAttendee(eventId: string, userId: string): Promise<void> {
+    // Check if we have the event in our local state
+    const event = this.getEventById(eventId);
+    if (event && !event.attendeeIds.includes(userId)) {
+      const updatedAttendees = [...event.attendeeIds, userId];
+      await this.updateEvent(eventId, { attendeeIds: updatedAttendees });
+    }
+  }
+
+  /**
+   * Remove user from event attendees
+   */
+  async removeAttendee(eventId: string, userId: string): Promise<void> {
+    // Check if we have the event in our local state
+    const event = this.getEventById(eventId);
+    if (event && event.attendeeIds.includes(userId)) {
+      const updatedAttendees = event.attendeeIds.filter(id => id !== userId);
+      await this.updateEvent(eventId, { attendeeIds: updatedAttendees });
+    }
+  }
+
   // ===================================
   // SINGLE EVENT MANAGEMENT
   // ===================================
@@ -322,6 +354,46 @@ export class EventStore {
   }
 
   /**
+   * Fetch any event by ID from database (for event detail view)
+   */
+  async fetchEventById(eventId: string): Promise<Event | null> {
+    this._loading.set(true);
+    this._error.set(null);
+
+    try {
+      const event = await firstValueFrom(this.eventService.getEvent(eventId));
+      console.log('[EventStore] ✅ Event fetched by ID:', eventId);
+      return event || null;
+    } catch (error: any) {
+      this._error.set(error?.message || 'Failed to fetch event');
+      console.error('[EventStore] ❌ Fetch event by ID failed:', error);
+      return null;
+    } finally {
+      this._loading.set(false);
+    }
+  }
+
+  /**
+   * Fetch event by slug from database
+   */
+  async fetchEventBySlug(slug: string): Promise<Event | null> {
+    this._loading.set(true);
+    this._error.set(null);
+
+    try {
+      const event = await this.eventService.getEventBySlug(slug);
+      console.log('[EventStore] ✅ Event fetched by slug:', slug);
+      return event || null;
+    } catch (error: any) {
+      this._error.set(error?.message || 'Failed to fetch event');
+      console.error('[EventStore] ❌ Fetch event by slug failed:', error);
+      return null;
+    } finally {
+      this._loading.set(false);
+    }
+  }
+
+  /**
    * Check if user owns event
    */
   isEventOwner(eventId: string): boolean {
@@ -355,7 +427,6 @@ export class EventStore {
       eventsCount: this._userEvents().length,
       loading: this._loading(),
       error: this._error(),
-      lastLoadedUserId: this.lastLoadedUserId,
       hasCurrentEvent: !!this._currentEvent(),
     };
   }

@@ -1,26 +1,28 @@
+// TODO: Revisit UserStore for our needs
+
 /**
  * @fileoverview UserStore - Single source of truth for user display data
- * 
+ *
  * RESPONSIBILITIES:
  * - User profile state management (auth-reactive pattern)
  * - Display data for scoreboard (totalPoints, pubsVisited)
  * - User document CRUD operations in Firestore
  * - Sync with Firebase Auth profile updates
- * 
+ *
  * DATA FLOW IN:
  * - AuthStore.user() changes → triggers loadOrCreateUser()
  * - PointsStore.awardPoints() → updates totalPoints via patchUser()
  * - CheckinStore.checkinToPub() → updates checkedInPubIds via patchUser()
- * 
+ *
  * DATA FLOW OUT:
  * - HomeComponent.scoreboardData → reads totalPoints, pubsVisited from here
  * - All UI components → read user profile data from here
  * - Other stores → read user context for operations
- * 
+ *
  * CRITICAL: This store must stay in sync with all user data changes
  * to ensure scoreboard and UI accuracy. Any operation that changes user
  * stats must update this store immediately.
- * 
+ *
  * @architecture Auth-Reactive Pattern - automatically loads/clears based on auth state
  */
 import { Injectable, signal, computed, inject, effect } from '@angular/core';
@@ -29,6 +31,7 @@ import { firstValueFrom } from 'rxjs';
 import { UserService } from './user.service';
 import { AuthStore } from '../../auth/data-access/auth.store';
 import type { User } from '../utils/user.model';
+import { Roles } from '../../auth/utils/roles.enum';
 
 @Injectable({ providedIn: 'root' })
 export class UserStore {
@@ -231,6 +234,7 @@ export class UserStore {
             streaks: {},
             joinedAt: new Date().toISOString(),
             joinedMissionIds: [],
+            role: Roles.Authenticated,
           };
 
           // ✅ Create the document in Firestore
@@ -265,10 +269,10 @@ export class UserStore {
    * @description CRITICAL for scoreboard accuracy. Used by other stores
    * to immediately update user stats (points, badges, check-ins).
    * Only updates local state - does not persist to Firestore.
-   * @example 
+   * @example
    * // PointsStore awards points
    * userStore.patchUser({ totalPoints: newTotal });
-   * 
+   *
    * // CheckinStore adds pub visit
    * userStore.patchUser({ checkedInPubIds: [...existing, newPubId] });
    */

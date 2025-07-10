@@ -13,6 +13,7 @@ import {
 } from '@angular/fire/auth';
 import { generateAnonymousName } from '../../shared/utils/anonymous-names';
 import type { User } from '../../users/utils/user.model'; // Our application user model (stored in Firestore)
+import { Roles } from '../utils/roles.enum';
 import { FirestoreService } from '../../shared/data-access/firestore.service';
 
 @Injectable({ providedIn: 'root' })
@@ -105,6 +106,7 @@ export class AuthService extends FirestoreService {
           displayName,
           joinedAt: new Date().toISOString(),
           joinedMissionIds: [],
+          role: Roles.Public,
         };
 
         await this.setDoc(`users/${firebaseUser.uid}`, newUser);

@@ -69,3 +69,6 @@ dist/
 android/app/build/
 ios/build/
 .env
+test-output.log
+scripts/seed-events.ts
+scripts/README.md

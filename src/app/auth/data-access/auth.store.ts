@@ -25,6 +25,7 @@ import { SsrPlatformService } from '@shared/utils/ssr/ssr-platform.service';
 import { generateAnonymousName } from '@shared/utils/anonymous-names';
 import type { User } from '@users/utils/user.model';
 import { OverlayService } from '@shared/data-access/overlay.service';
+import { Roles } from '../utils/roles.enum';
 
 @Injectable({ providedIn: 'root' })
 export class AuthStore {
@@ -89,6 +90,7 @@ export class AuthStore {
         displayName: displayName ?? generateAnonymousName(firebaseUser.uid),
         isAnonymous: firebaseUser.isAnonymous,
         emailVerified: firebaseUser.emailVerified,
+        role: this.getDefaultRole(firebaseUser),
         checkedInPubIds: [],
         streaks: {},
         joinedAt: new Date().toISOString(),
@@ -139,5 +141,23 @@ export class AuthStore {
     this.authService.loginWithEmail(email, password);
   }
 
-
+  /**
+   * Determines the default role for a user based on their Firebase Auth data
+   * @param firebaseUser - Firebase User object
+   * @returns Default role for the user
+   */
+  private getDefaultRole(firebaseUser: FirebaseUser): Roles {
+    // For now, assign authenticated role to all users
+    // In the future, you might want to check email domains or other criteria
+    if (firebaseUser.isAnonymous) {
+      return Roles.Public;
+    }
+    
+    // TODO: Add admin email check or other admin assignment logic
+    // if (firebaseUser.email === 'admin@watford-events.com') {
+    //   return Roles.Admin;
+    // }
+    
+    return Roles.Authenticated;
+  }
 }

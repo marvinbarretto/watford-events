@@ -19,13 +19,13 @@ describe('PageTitleService', () => {
     expect(service).toBeTruthy();
   });
 
-  it('should set the title with "BPCN" suffix', () => {
+  it('should set the title with "Watford Events" suffix', () => {
     const setTitleSpy = jest.spyOn(titleService, 'setTitle');
 
     // Call the service to set the title
     service.setTitle('You Orns');
 
     // Ensure the title is set correctly
-    expect(setTitleSpy).toHaveBeenCalledWith('You Orns - BPCN');
+    expect(setTitleSpy).toHaveBeenCalledWith('You Orns - Watford Events');
   });
 });

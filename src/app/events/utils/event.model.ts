@@ -1,10 +1,14 @@
-export type Event = {
+/**
+ * Base type for all events in the system
+ * Provides core properties that all event types should have
+ */
+export type GenericEvent = {
   id: string;
   title: string;
   description: string;
   date: Date;
-  location: string;
-  attendeeIds: string[];
+  location?: string; // Optional - can be derived from venue
+  venueId?: string; // Reference to venue for location data
   createdAt: Date;
   updatedAt: Date;
 
@@ -14,6 +18,15 @@ export type Event = {
 
   // Event status
   status: 'draft' | 'published' | 'cancelled';
+};
+
+/**
+ * Main domain event type for Watford events
+ * Extends GenericEvent with domain-specific fields
+ */
+export type Event = GenericEvent & {
+  attendeeIds: string[];
+  slug?: string; // SEO-friendly URL slug generated from title
 
   // LLM extraction metadata
   imageUrl?: string;
@@ -28,6 +41,9 @@ export type Event = {
   ticketInfo?: string;
   contactInfo?: string;
   website?: string;
+  
+  // Development/Testing fields
+  isMockEvent?: boolean;
 };
 
 /**

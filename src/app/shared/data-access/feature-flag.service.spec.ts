@@ -1,37 +1,58 @@
-import { TestBed } from '@angular/core/testing';
 import { FeatureFlagService } from './feature-flag.service';
 import { environment } from '../../../environments/environment';
 
-// Define a type for feature flags for easier mocking
-type FeatureFlags = Record<string, boolean>;
-
-// TODO: Where should I be storing these mocks?
-// Mock the environment
+// Mock the environment module
 jest.mock('../../../environments/environment', () => ({
-  __esModule: true, // Mark as ES Module
+  __esModule: true,
   environment: {
     production: false,
-    enableAllFeaturesForDev: false,
-    featureFlags: {} as FeatureFlags,
-  },
+    ENABLE_ALL_FEATURES_FOR_DEV: false,
+    featureFlags: {
+      patchwork: false,
+      landlord: false,
+      theme: false,
+      search: false,
+      badges: false,
+      missions: false,
+      photoUpload: false,
+      carpets: false
+    }
+  }
 }));
 
 describe('FeatureFlagService', () => {
   let service: FeatureFlagService;
+  const mockEnvironment = environment as jest.Mocked<typeof environment>;
 
-
-  // Helper function to set environment properties for a test
-  const setEnvironment = (prod: boolean, enableAll: boolean, flags: FeatureFlags) => {
-    Object.defineProperty(environment, 'production', { value: prod, configurable: true });
-    Object.defineProperty(environment, 'enableAllFeaturesForDev', { value: enableAll, configurable: true });
-    Object.defineProperty(environment, 'featureFlags', { value: flags, configurable: true });
+  // Helper to set environment state
+  const setEnvironment = (
+    production: boolean,
+    enableAll: boolean,
+    flags: Partial<typeof environment.featureFlags> = {}
+  ) => {
+    mockEnvironment.production = production;
+    mockEnvironment.ENABLE_ALL_FEATURES_FOR_DEV = enableAll;
+    mockEnvironment.featureFlags = {
+      ...mockEnvironment.featureFlags,
+      ...flags
+    };
   };
 
   beforeEach(() => {
-    TestBed.configureTestingModule({
-      providers: [FeatureFlagService]
+    // Reset to default state before each test
+    setEnvironment(false, false, {
+      patchwork: false,
+      landlord: false,
+      theme: false,
+      search: false,
+      badges: false,
+      missions: false,
+      photoUpload: false,
+      carpets: false
     });
-    service = TestBed.inject(FeatureFlagService);
+
+    // Create service instance directly (no TestBed needed)
+    service = new FeatureFlagService();
   });
 
   afterEach(() => {
@@ -42,71 +63,63 @@ describe('FeatureFlagService', () => {
     expect(service).toBeTruthy();
   });
 
-  describe('Standard Flag Checks (production=true, enableAllFeaturesForDev=false)', () => {
-    beforeEach(() => {
-      setEnvironment(true, false, { existingFlagTrue: true, existingFlagFalse: false });
+  describe('production mode', () => {
+    it('should return true when flag is enabled', () => {
+      setEnvironment(true, false, { patchwork: true });
+
+      expect(service.isEnabled('patchwork')).toBe(true);
     });
 
-    it('1. should return true when a flag is true in environment.featureFlags', () => {
-      expect(service.isEnabled('existingFlagTrue')).toBe(true);
+    it('should return false when flag is disabled', () => {
+      setEnvironment(true, false, { patchwork: false });
+
+      expect(service.isEnabled('patchwork')).toBe(false);
     });
 
-    it('2. should return false when a flag is false in environment.featureFlags', () => {
-      expect(service.isEnabled('existingFlagFalse')).toBe(false);
+    it('should return false for undefined flag', () => {
+      setEnvironment(true, false, {});
+
+      expect(service.isEnabled('search')).toBe(false);
     });
 
-    it('3. should return false for a flag that is not defined in environment.featureFlags', () => {
-      expect(service.isEnabled('nonExistingFlag')).toBe(false);
-    });
-  });
+    it('should ignore ENABLE_ALL_FEATURES_FOR_DEV in production', () => {
+      setEnvironment(true, true, { theme: false });
 
-  describe('Development Mode: enableAllFeaturesForDev is true (production=false)', () => {
-    beforeEach(() => {
-      setEnvironment(false, true, { devFlagFalse: false });
-    });
-
-    it('4.1. should return true even if the specific flag is false in environment.featureFlags', () => {
-      expect(service.isEnabled('devFlagFalse')).toBe(true);
-    });
-
-    it('4.2. should return true even if the specific flag is not defined in environment.featureFlags', () => {
-      expect(service.isEnabled('anotherNonExistingFlag')).toBe(true);
+      expect(service.isEnabled('theme')).toBe(false);
     });
   });
 
-  describe('Production Mode with enableAllFeaturesForDev is true (SHOULD IGNORE enableAllFeaturesForDev)', () => {
-    beforeEach(() => {
-      setEnvironment(true, true, { prodFlagTrue: true, prodFlagFalse: false });
+  describe('development mode with ENABLE_ALL_FEATURES_FOR_DEV', () => {
+    it('should return true for any flag when enabled', () => {
+      setEnvironment(false, true, { landlord: false });
+
+      expect(service.isEnabled('landlord')).toBe(true);
     });
 
-    it('5.1. should return false if the specific flag is false in environment.featureFlags', () => {
-      expect(service.isEnabled('prodFlagFalse')).toBe(false);
-    });
+    it('should return true for undefined flag when enabled', () => {
+      setEnvironment(false, true, {});
 
-    it('5.2. should return true if the specific flag is true in environment.featureFlags', () => {
-      expect(service.isEnabled('prodFlagTrue')).toBe(true);
-    });
-
-    it('5.3. should return false if the specific flag is not defined', () => {
-      expect(service.isEnabled('yetAnotherNonExistingFlag')).toBe(false);
+      expect(service.isEnabled('badges')).toBe(true);
     });
   });
 
-  describe('Development Mode: enableAllFeaturesForDev is false (production=false)', () => {
-    beforeEach(() => {
-      setEnvironment(false, false, { devFlagTrueFalseScenario: true, devFlagFalseFalseScenario: false });
+  describe('development mode without ENABLE_ALL_FEATURES_FOR_DEV', () => {
+    it('should return true when flag is enabled', () => {
+      setEnvironment(false, false, { missions: true });
+
+      expect(service.isEnabled('missions')).toBe(true);
     });
 
-    it('6.1. should return false if the specific flag is false in environment.featureFlags', () => {
-      expect(service.isEnabled('devFlagFalseFalseScenario')).toBe(false);
+    it('should return false when flag is disabled', () => {
+      setEnvironment(false, false, { photoUpload: false });
+
+      expect(service.isEnabled('photoUpload')).toBe(false);
     });
 
-    it('6.2. should return true if the specific flag is true in environment.featureFlags', () => {
-      expect(service.isEnabled('devFlagTrueFalseScenario')).toBe(true);
-    });
+    it('should return false for undefined flag', () => {
+      setEnvironment(false, false, {});
 
-    it('6.3. should return false if the specific flag is not defined', () => {
-      expect(service.isEnabled('lastNonExistingFlag')).toBe(false);
+      expect(service.isEnabled('carpets')).toBe(false);
     });
   });
 });

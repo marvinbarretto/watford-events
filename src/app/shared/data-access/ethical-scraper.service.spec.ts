@@ -10,7 +10,7 @@ import { CacheService } from './cache.service';
 describe('EthicalScraperService', () => {
   let service: EthicalScraperService;
   let httpMock: HttpTestingController;
-  let cacheService: jasmine.SpyObj<CacheService>;
+  let cacheService: jest.Mocked<CacheService>;
 
   const mockScrapingResult: ScrapingResult = {
     url: 'https://example.com',
@@ -32,7 +32,11 @@ describe('EthicalScraperService', () => {
   };
 
   beforeEach(() => {
-    const cacheServiceSpy = jasmine.createSpyObj('CacheService', ['get', 'set', 'clear']);
+    const cacheServiceSpy = {
+      get: jest.fn(),
+      set: jest.fn(),
+      clear: jest.fn()
+    } as jest.Mocked<CacheService>;
 
     TestBed.configureTestingModule({
       imports: [HttpClientTestingModule],
@@ -44,7 +48,7 @@ describe('EthicalScraperService', () => {
 
     service = TestBed.inject(EthicalScraperService);
     httpMock = TestBed.inject(HttpTestingController);
-    cacheService = TestBed.inject(CacheService) as jasmine.SpyObj<CacheService>;
+    cacheService = TestBed.inject(CacheService) as jest.Mocked<CacheService>;
   });
 
   afterEach(() => {
@@ -72,7 +76,7 @@ describe('EthicalScraperService', () => {
     });
 
     it('should handle successful response with logging', () => {
-      spyOn(console, 'log');
+      jest.spyOn(console, 'log');
 
       const request: ScrapingRequest = {
         url: 'https://example.com'
@@ -84,12 +88,12 @@ describe('EthicalScraperService', () => {
       req.flush(mockScrapingResult);
 
       expect(console.log).toHaveBeenCalledWith(
-        jasmine.stringMatching(/✅ \[SCRAPER-SERVICE\] Scraping successful/)
+        expect.stringMatching(/✅ \[SCRAPER-SERVICE\] Scraping successful/)
       );
     });
 
     it('should handle HTTP errors gracefully', () => {
-      spyOn(console, 'error');
+      jest.spyOn(console, 'error');
 
       const request: ScrapingRequest = {
         url: 'https://example.com'
@@ -109,7 +113,7 @@ describe('EthicalScraperService', () => {
 
   describe('scrapeSimple', () => {
     it('should call scrapeUrl with default options', () => {
-      spyOn(service, 'scrapeUrl').and.returnValue(new Promise(() => {}) as any);
+      jest.spyOn(service, 'scrapeUrl').mockReturnValue(new Promise(() => {}) as any);
 
       const url = 'https://example.com';
       service.scrapeSimple(url);
@@ -125,7 +129,7 @@ describe('EthicalScraperService', () => {
     });
 
     it('should merge custom options with defaults', () => {
-      spyOn(service, 'scrapeUrl').and.returnValue(new Promise(() => {}) as any);
+      jest.spyOn(service, 'scrapeUrl').mockReturnValue(new Promise(() => {}) as any);
 
       const url = 'https://example.com';
       const customOptions = { screenshot: true, cacheTTL: 600 };
@@ -146,7 +150,7 @@ describe('EthicalScraperService', () => {
 
   describe('scrapeWithActions', () => {
     it('should include custom actions in request', () => {
-      spyOn(service, 'scrapeUrl').and.returnValue(new Promise(() => {}) as any);
+      jest.spyOn(service, 'scrapeUrl').mockReturnValue(new Promise(() => {}) as any);
 
       const url = 'https://example.com';
       const actions = [

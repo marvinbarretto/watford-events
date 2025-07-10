@@ -12,6 +12,11 @@
       <a routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}">Home</a>
       <a routerLink="/events" routerLinkActive="active">Events</a>
       
+      <!-- Admin Links -->
+      <a routerLink="/admin" routerLinkActive="active">Admin</a>
+      <a routerLink="/admin/events" routerLinkActive="active">Manage Events</a>
+      <a routerLink="/admin/venues" routerLinkActive="active">Manage Venues</a>
+      
       <!-- Examples Dropdown -->
       <div class="header__dropdown">
         <button class="header__dropdown-btn" (click)="toggleExamplesDropdown()" type="button">

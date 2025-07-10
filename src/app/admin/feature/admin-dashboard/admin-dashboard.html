@@ -1,0 +1,52 @@
+<div class="admin-dashboard">
+  <div class="dashboard-header">
+    <h1>Admin Dashboard</h1>
+    <p>Manage your Watford Events platform</p>
+  </div>
+
+  @if (eventsLoading()) {
+    <div class="loading">Loading dashboard data...</div>
+  } @else {
+    <div class="dashboard-stats">
+      <div class="stat-card">
+        <h3>Total Events</h3>
+        <div class="stat-number">{{ dashboardStats().totalEvents }}</div>
+      </div>
+      
+      <div class="stat-card">
+        <h3>Pending Events</h3>
+        <div class="stat-number pending">{{ dashboardStats().pendingEvents }}</div>
+      </div>
+      
+      <div class="stat-card">
+        <h3>Approved Events</h3>
+        <div class="stat-number approved">{{ dashboardStats().approvedEvents }}</div>
+      </div>
+      
+      <div class="stat-card">
+        <h3>Total Users</h3>
+        <div class="stat-number">{{ dashboardStats().totalUsers }}</div>
+      </div>
+      
+      <div class="stat-card">
+        <h3>Total Venues</h3>
+        <div class="stat-number">{{ dashboardStats().totalVenues }}</div>
+      </div>
+    </div>
+
+    <div class="dashboard-actions">
+      <h2>Quick Actions</h2>
+      <div class="action-buttons">
+        <a routerLink="/admin/events" class="action-button primary">
+          📅 Manage Events
+        </a>
+        <a routerLink="/admin/users" class="action-button secondary">
+          👥 Manage Users
+        </a>
+        <a routerLink="/admin/venues" class="action-button secondary">
+          🏢 Manage Venues
+        </a>
+      </div>
+    </div>
+  }
+</div>

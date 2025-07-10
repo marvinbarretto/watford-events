@@ -11,8 +11,7 @@
     "cap:init": "npx cap init",
     "cap:add": "npx cap add ios && npx cap add android",
     "cap:build": "ng build && npx cap copy",
-    "cap:sync": "ng build && npx cap sync",
-    "cap:android": "npx cap run android",
+    "cap:sync": "ng build && npx cap copy",
     "cap:ios": "npx cap run ios",
     "cap:live": "ng serve --host=0.0.0.0 --port=3000",
     "cap:android:live": "npx cap run android --live-reload",
@@ -25,7 +24,7 @@
     "test:ci": "ng test --watch=false --browsers=ChromeHeadless",
     "serve:ssr": "node dist/watford-events/server/server.mjs",
     "build:firebase": "ng build --configuration production",
-    "build:android": "npm run cap:sync && cd android && ./gradlew assembleDebug && cd ..",
+    "build:android": "npm run cap:build && cd android && ./gradlew assembleDebug && cd ..",
     "build:android:release": "npm run cap:sync && cd android && ./gradlew assembleRelease && cd ..",
     "build:ios": "npm run cap:sync && npx cap build ios",
     "build:all": "npm run build:firebase && npm run build:android",
@@ -41,7 +40,14 @@
     "release:dry-run": "standard-version --dry-run",
     "ship": "npm run release && git push --follow-tags && npm run deploy:all",
     "ship:web": "npm run release && git push --follow-tags && npm run deploy",
-    "ship:android": "npm run release && git push --follow-tags && npm run deploy:android"
+    "ship:android": "npm run release && git push --follow-tags && npm run deploy:android",
+    "seed:events": "tsx scripts/seed-events.ts",
+    "seed:events:clear": "tsx scripts/seed-events.ts --clear",
+    "seed:events:dry": "tsx scripts/seed-events.ts --dry-run",
+    "lint": "eslint src/app/ && tsc --noEmit",
+    "lint:fix": "eslint src/app/ --fix",
+    "format": "prettier --write src/",
+    "typecheck": "tsc --noEmit"
   },
   "prettier": {
     "overrides": [
@@ -86,6 +92,8 @@
   },
   "devDependencies": {
     "@angular-devkit/build-angular": "20.0.4",
+    "@angular-eslint/eslint-plugin": "20.1.1",
+    "@angular-eslint/template-parser": "20.1.1",
     "@angular/build": "^20.0.4",
     "@angular/cli": "^20.0.4",
     "@angular/compiler-cli": "^20.0.0",
@@ -96,6 +104,9 @@
     "@types/jest": "29.5.13",
     "@types/node": "^20.17.19",
     "@types/uuid": "10.0.0",
+    "@typescript-eslint/eslint-plugin": "8.36.0",
+    "@typescript-eslint/parser": "8.36.0",
+    "eslint": "9.30.1",
     "jasmine-core": "~5.7.0",
     "jest": "29.7.0",
     "jest-environment-jsdom": "29.7.0",
@@ -105,8 +116,10 @@
     "karma-coverage": "~2.2.0",
     "karma-jasmine": "~5.1.0",
     "karma-jasmine-html-reporter": "~2.1.0",
+    "prettier": "3.6.2",
     "source-map-explorer": "2.5.3",
     "standard-version": "9.5.0",
+    "tsx": "4.20.3",
     "typescript": "~5.8.2"
   },
   "engines": {

@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { ThemeStore } from '@shared/data-access/theme.store';
 import { AuthStore } from '@auth/data-access/auth.store';
+import { Roles } from '@auth/utils/roles.enum';
 
 @Component({
   selector: 'app-header',
@@ -16,6 +17,10 @@ export class HeaderComponent {
   protected readonly authStore = inject(AuthStore);
   
   showExamplesDropdown = false;
+
+  get isAdmin(): boolean {
+    return this.authStore.user()?.role === Roles.Admin;
+  }
 
   onThemeToggle(): void {
     this.themeStore.toggleTheme();

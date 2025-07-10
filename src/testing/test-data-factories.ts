@@ -101,10 +101,31 @@ export interface MockEvent {
   title: string;
   description: string;
   date: Date;
-  location: string;
+  location?: string;
+  venueId?: string;
   attendeeIds: string[];
   createdAt: Date;
   updatedAt: Date;
+  createdBy: string;
+  ownerId: string;
+  status: 'draft' | 'published' | 'cancelled';
+  
+  // LLM extraction metadata
+  imageUrl?: string;
+  scannedAt?: Date;
+  scannerConfidence?: number;
+  rawTextData?: string;
+  llmModel?: string;
+  processingTime?: number;
+  
+  // Additional event details
+  organizer?: string;
+  ticketInfo?: string;
+  contactInfo?: string;
+  website?: string;
+  
+  // Development/Testing fields
+  isMockEvent?: boolean;
 }
 
 export const createMockEvent = (overrides: Partial<MockEvent> = {}): MockEvent => ({
@@ -116,6 +137,10 @@ export const createMockEvent = (overrides: Partial<MockEvent> = {}): MockEvent =
   attendeeIds: [],
   createdAt: generateTimestamp(-1),
   updatedAt: generateTimestamp(),
+  createdBy: generateId('user'),
+  ownerId: generateId('user'),
+  status: 'published',
+  isMockEvent: true, // Mark as mock event by default
   ...overrides
 });
 
@@ -128,6 +153,24 @@ export const createMockUpcomingEvent = (daysFromNow: number, overrides: Partial<
 export const createMockPastEvent = (daysAgo: number, overrides: Partial<MockEvent> = {}): MockEvent =>
   createMockEvent({
     date: generateTimestamp(-Math.abs(daysAgo)),
+    ...overrides
+  });
+
+// Specific factories for real vs mock events
+export const createRealEvent = (overrides: Partial<MockEvent> = {}): MockEvent =>
+  createMockEvent({
+    isMockEvent: false,
+    ...overrides
+  });
+
+export const createMockEventWithAI = (overrides: Partial<MockEvent> = {}): MockEvent =>
+  createMockEvent({
+    imageUrl: 'https://example.com/flyer.jpg',
+    scannedAt: generateTimestamp(-1),
+    scannerConfidence: 85,
+    llmModel: 'gemini-pro',
+    processingTime: 2500,
+    rawTextData: 'Extracted text from flyer...',
     ...overrides
   });
 
@@ -146,6 +189,28 @@ export const createMockEvents = (count: number, factory: (index: number) => Part
     title: `Test Event ${index + 1}`,
     ...factory(index)
   }));
+
+// Create mixed real and mock events for development
+export const createMixedEvents = (
+  realCount: number, 
+  mockCount: number, 
+  factory: (index: number, isReal: boolean) => Partial<MockEvent> = () => ({})
+): MockEvent[] => {
+  const realEvents = Array.from({ length: realCount }, (_, index) => createRealEvent({
+    id: generateId(`real-event-${index}`),
+    title: `Real Event ${index + 1}`,
+    ...factory(index, true)
+  }));
+  
+  const mockEvents = Array.from({ length: mockCount }, (_, index) => createMockEvent({
+    id: generateId(`mock-event-${index}`),
+    title: `Mock Event ${index + 1}`,
+    ...factory(index, false)
+  }));
+  
+  // Shuffle the events to mix them
+  return [...realEvents, ...mockEvents].sort(() => Math.random() - 0.5);
+};
 
 // Form data factories
 export const createValidFormData = (formType: 'login' | 'register') => {

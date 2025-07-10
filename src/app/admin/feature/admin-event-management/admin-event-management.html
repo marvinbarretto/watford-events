@@ -1,0 +1,184 @@
+<div class="admin-event-management">
+  <div class="header">
+    <h1>Event Management</h1>
+    <div class="header-actions">
+      <a routerLink="/admin" class="back-button">← Back to Dashboard</a>
+      <a routerLink="/events/add" class="add-button">+ Add New Event</a>
+    </div>
+  </div>
+
+  <div class="controls">
+    <div class="filters">
+      <label>Filter by Status:</label>
+      <select [(ngModel)]="filterStatus" class="status-filter">
+        <option value="all">All Events</option>
+        <option value="draft">Draft</option>
+        <option value="published">Published</option>
+        <option value="cancelled">Cancelled</option>
+      </select>
+    </div>
+
+    <div class="sorting">
+      <label>Sort by:</label>
+      <select [(ngModel)]="sortBy" class="sort-select">
+        <option value="date">Date</option>
+        <option value="title">Title</option>
+        <option value="status">Status</option>
+      </select>
+      <select [(ngModel)]="sortOrder" class="order-select">
+        <option value="desc">Descending</option>
+        <option value="asc">Ascending</option>
+      </select>
+    </div>
+  </div>
+
+  @if (eventsLoading()) {
+    <div class="loading">Loading events...</div>
+  } @else {
+    <div class="events-container">
+      <div class="events-list">
+        @if (filteredAndSortedEvents.length === 0) {
+          <div class="empty-state">
+            <h3>No events found</h3>
+            <p>No events match your current filters.</p>
+          </div>
+        } @else {
+          @for (event of filteredAndSortedEvents; track event.id) {
+            <div class="event-card" 
+                 [class.selected]="selectedEvent()?.id === event.id"
+                 (click)="selectEvent(event)">
+              <div class="event-header">
+                <h3>{{ event.title }}</h3>
+                <span class="status-badge" [class]="getStatusColor(event.status)">
+                  {{ event.status }}
+                </span>
+              </div>
+              
+              <div class="event-details">
+                <div class="detail-item">
+                  <strong>Date:</strong> {{ formatDate(event.date) }}
+                </div>
+                <div class="detail-item">
+                  <strong>Location:</strong> {{ event.location }}
+                </div>
+                <div class="detail-item">
+                  <strong>Attendees:</strong> {{ event.attendeeIds.length }}
+                </div>
+                @if (event.organizer) {
+                  <div class="detail-item">
+                    <strong>Organizer:</strong> {{ event.organizer }}
+                  </div>
+                }
+              </div>
+
+              <div class="event-actions">
+                <div class="status-actions">
+                  <button class="action-btn success" 
+                          (click)="updateEventStatus(event.id, 'published')"
+                          [disabled]="event.status === 'published'">
+                    Publish
+                  </button>
+                  <button class="action-btn warning" 
+                          (click)="updateEventStatus(event.id, 'draft')"
+                          [disabled]="event.status === 'draft'">
+                    Draft
+                  </button>
+                  <button class="action-btn danger" 
+                          (click)="updateEventStatus(event.id, 'cancelled')"
+                          [disabled]="event.status === 'cancelled'">
+                    Cancel
+                  </button>
+                </div>
+                <button class="action-btn danger outline" 
+                        (click)="deleteEvent(event.id)">
+                  Delete
+                </button>
+              </div>
+            </div>
+          }
+        }
+      </div>
+
+      @if (selectedEvent()) {
+        <div class="event-details-panel">
+          <div class="panel-header">
+            <h2>Event Details</h2>
+            <button class="close-btn" (click)="clearSelection()">×</button>
+          </div>
+          
+          <div class="panel-content">
+            <div class="detail-group">
+              <label>Title:</label>
+              <p>{{ selectedEvent()!.title }}</p>
+            </div>
+            
+            <div class="detail-group">
+              <label>Description:</label>
+              <p>{{ selectedEvent()!.description }}</p>
+            </div>
+            
+            <div class="detail-group">
+              <label>Date & Time:</label>
+              <p>{{ formatDate(selectedEvent()!.date) }}</p>
+            </div>
+            
+            <div class="detail-group">
+              <label>Location:</label>
+              <p>{{ selectedEvent()!.location }}</p>
+            </div>
+            
+            <div class="detail-group">
+              <label>Status:</label>
+              <span class="status-badge" [class]="getStatusColor(selectedEvent()!.status)">
+                {{ selectedEvent()!.status }}
+              </span>
+            </div>
+            
+            @if (selectedEvent()!.organizer) {
+              <div class="detail-group">
+                <label>Organizer:</label>
+                <p>{{ selectedEvent()!.organizer }}</p>
+              </div>
+            }
+            
+            @if (selectedEvent()!.contactInfo) {
+              <div class="detail-group">
+                <label>Contact Info:</label>
+                <p>{{ selectedEvent()!.contactInfo }}</p>
+              </div>
+            }
+            
+            @if (selectedEvent()!.website) {
+              <div class="detail-group">
+                <label>Website:</label>
+                <a [href]="selectedEvent()!.website" target="_blank">{{ selectedEvent()!.website }}</a>
+              </div>
+            }
+            
+            @if (selectedEvent()!.ticketInfo) {
+              <div class="detail-group">
+                <label>Ticket Info:</label>
+                <p>{{ selectedEvent()!.ticketInfo }}</p>
+              </div>
+            }
+            
+            <div class="detail-group">
+              <label>Attendees:</label>
+              <p>{{ selectedEvent()!.attendeeIds.length }} registered</p>
+            </div>
+            
+            <div class="detail-group">
+              <label>Created:</label>
+              <p>{{ formatDate(selectedEvent()!.createdAt) }}</p>
+            </div>
+            
+            <div class="detail-group">
+              <label>Last Updated:</label>
+              <p>{{ formatDate(selectedEvent()!.updatedAt) }}</p>
+            </div>
+          </div>
+        </div>
+      }
+    </div>
+  }
+</div>

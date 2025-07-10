@@ -1,0 +1,287 @@
+<div class="admin-venue-management">
+  <div class="header">
+    <h1>Venue Management</h1>
+    <div class="header-actions">
+      <a routerLink="/admin" class="back-button">← Back to Dashboard</a>
+      <button class="add-button" (click)="createNewVenue()">+ Add New Venue</button>
+    </div>
+  </div>
+
+  <div class="controls">
+    <div class="filters">
+      <div class="filter-group">
+        <label>Status:</label>
+        <select [(ngModel)]="filterStatus" class="status-filter">
+          <option value="all">All Status</option>
+          <option value="draft">Draft</option>
+          <option value="published">Published</option>
+          <option value="archived">Archived</option>
+        </select>
+      </div>
+
+      <div class="filter-group">
+        <label>Category:</label>
+        <select [(ngModel)]="filterCategory" class="category-filter">
+          @for (category of categories; track category.value) {
+            <option [value]="category.value">{{ category.label }}</option>
+          }
+        </select>
+      </div>
+
+      <div class="filter-group">
+        <label>
+          <input type="checkbox" [(ngModel)]="showOnlyAccessible" />
+          Accessible venues only
+        </label>
+      </div>
+    </div>
+
+    <div class="sorting">
+      <label>Sort by:</label>
+      <select [(ngModel)]="sortBy" class="sort-select">
+        <option value="name">Name</option>
+        <option value="address">Address</option>
+        <option value="status">Status</option>
+        <option value="createdAt">Created Date</option>
+      </select>
+      <select [(ngModel)]="sortOrder" class="order-select">
+        <option value="asc">Ascending</option>
+        <option value="desc">Descending</option>
+      </select>
+    </div>
+  </div>
+
+  @if (venuesLoading()) {
+    <div class="loading">Loading venues...</div>
+  } @else {
+    <div class="venues-container">
+      <div class="venues-list">
+        @if (filteredAndSortedVenues.length === 0) {
+          <div class="empty-state">
+            <h3>No venues found</h3>
+            <p>No venues match your current filters.</p>
+            <button class="add-button" (click)="createNewVenue()">Create First Venue</button>
+          </div>
+        } @else {
+          @for (venue of filteredAndSortedVenues; track venue.id) {
+            <div class="venue-card" 
+                 [class.selected]="selectedVenue()?.id === venue.id"
+                 (click)="selectVenue(venue)">
+              <div class="venue-header">
+                <h3>{{ venue.name }}</h3>
+                <div class="venue-badges">
+                  <span class="status-badge" [class]="getStatusColor(venue.status)">
+                    {{ venue.status }}
+                  </span>
+                  @if (venue.category) {
+                    <span class="category-badge">{{ getCategoryDisplay(venue.category) }}</span>
+                  }
+                  @if (isAccessible(venue)) {
+                    <span class="accessibility-badge">♿ Accessible</span>
+                  }
+                </div>
+              </div>
+              
+              <div class="venue-details">
+                <div class="detail-item">
+                  <strong>Address:</strong> {{ venue.address }}
+                </div>
+                <div class="detail-item">
+                  <strong>Coordinates:</strong> {{ formatCoordinates(venue.geo) }}
+                </div>
+                @if (venue.capacity) {
+                  <div class="detail-item">
+                    <strong>Capacity:</strong> {{ venue.capacity.maxCapacity }} (recommended: {{ venue.capacity.recommendedCapacity }})
+                  </div>
+                }
+                @if (venue.contactInfo?.phone || venue.contactInfo?.email) {
+                  <div class="detail-item">
+                    <strong>Contact:</strong>
+                    @if (venue.contactInfo?.phone) {
+                      <span>📞 {{ venue.contactInfo?.phone }}</span>
+                    }
+                    @if (venue.contactInfo?.email) {
+                      <span>✉️ {{ venue.contactInfo?.email }}</span>
+                    }
+                  </div>
+                }
+              </div>
+
+              <div class="venue-actions">
+                <div class="status-actions">
+                  <button class="action-btn success" 
+                          (click)="updateVenueStatus(venue.id, 'published')"
+                          [disabled]="venue.status === 'published'"
+                          (click)="$event.stopPropagation()">
+                    Publish
+                  </button>
+                  <button class="action-btn warning" 
+                          (click)="updateVenueStatus(venue.id, 'draft')"
+                          [disabled]="venue.status === 'draft'"
+                          (click)="$event.stopPropagation()">
+                    Draft
+                  </button>
+                  <button class="action-btn medium" 
+                          (click)="updateVenueStatus(venue.id, 'archived')"
+                          [disabled]="venue.status === 'archived'"
+                          (click)="$event.stopPropagation()">
+                    Archive
+                  </button>
+                </div>
+                <button class="action-btn danger outline" 
+                        (click)="deleteVenue(venue.id)"
+                        (click)="$event.stopPropagation()">
+                  Delete
+                </button>
+              </div>
+            </div>
+          }
+        }
+      </div>
+
+      @if (selectedVenue()) {
+        <div class="venue-details-panel">
+          <div class="panel-header">
+            <h2>Venue Details</h2>
+            <button class="close-btn" (click)="clearSelection()">×</button>
+          </div>
+          
+          <div class="panel-content">
+            <div class="detail-group">
+              <label>Name:</label>
+              <p>{{ selectedVenue()!.name }}</p>
+            </div>
+            
+            <div class="detail-group">
+              <label>Address:</label>
+              <p>{{ selectedVenue()!.address }}</p>
+            </div>
+            
+            <div class="detail-group">
+              <label>Coordinates:</label>
+              <p>{{ formatCoordinates(selectedVenue()!.geo) }}</p>
+            </div>
+            
+            <div class="detail-group">
+              <label>Status:</label>
+              <span class="status-badge" [class]="getStatusColor(selectedVenue()!.status)">
+                {{ selectedVenue()!.status }}
+              </span>
+            </div>
+            
+            @if (selectedVenue()!.category) {
+              <div class="detail-group">
+                <label>Category:</label>
+                <p>{{ getCategoryDisplay(selectedVenue()!.category) }}</p>
+              </div>
+            }
+            
+            @if (selectedVenue()!.capacity) {
+              <div class="detail-group">
+                <label>Capacity:</label>
+                <p>Max: {{ selectedVenue()!.capacity!.maxCapacity }}, Recommended: {{ selectedVenue()!.capacity!.recommendedCapacity }}</p>
+              </div>
+            }
+            
+            @if (getAccessibilityFeatures(selectedVenue()!).length > 0) {
+              <div class="detail-group">
+                <label>Accessibility Features:</label>
+                <ul class="features-list">
+                  @for (feature of getAccessibilityFeatures(selectedVenue()!); track feature) {
+                    <li>{{ feature }}</li>
+                  }
+                </ul>
+              </div>
+            }
+            
+            @if (selectedVenue()!.parkingInfo) {
+              <div class="detail-group">
+                <label>Parking:</label>
+                <p>
+                  {{ selectedVenue()!.parkingInfo!.accessibleSpots }} accessible spots,
+                  {{ selectedVenue()!.parkingInfo!.free ? 'Free' : 'Paid' }},
+                  {{ selectedVenue()!.parkingInfo!.distanceToEntrance }} from entrance
+                </p>
+              </div>
+            }
+            
+            @if (selectedVenue()!.sensoryConsiderations) {
+              <div class="detail-group">
+                <label>Sensory Considerations:</label>
+                <p>
+                  Noise Level: {{ selectedVenue()!.sensoryConsiderations!.expectedNoiseLevel }},
+                  Crowd Size: {{ selectedVenue()!.sensoryConsiderations!.expectedCrowdSize }}
+                  @if (selectedVenue()!.sensoryConsiderations!.quietSpaces) {
+                    <br>Quiet spaces available
+                  }
+                </p>
+              </div>
+            }
+            
+            @if (selectedVenue()!.languageSupport && selectedVenue()!.languageSupport!.length > 0) {
+              <div class="detail-group">
+                <label>Language Support:</label>
+                <p>{{ selectedVenue()!.languageSupport!.join(', ') }}</p>
+              </div>
+            }
+            
+            @if (selectedVenue()!.amenities && selectedVenue()!.amenities!.length > 0) {
+              <div class="detail-group">
+                <label>Amenities:</label>
+                <p>{{ selectedVenue()!.amenities!.join(', ') }}</p>
+              </div>
+            }
+            
+            @if (selectedVenue()!.contactInfo) {
+              <div class="detail-group">
+                <label>Contact Information:</label>
+                <div class="contact-info">
+                  @if (selectedVenue()!.contactInfo!.phone) {
+                    <p>📞 {{ selectedVenue()!.contactInfo!.phone }}</p>
+                  }
+                  @if (selectedVenue()!.contactInfo!.email) {
+                    <p>✉️ {{ selectedVenue()!.contactInfo!.email }}</p>
+                  }
+                  @if (selectedVenue()!.contactInfo!.website) {
+                    <p>🌐 <a [href]="selectedVenue()!.contactInfo!.website" target="_blank">{{ selectedVenue()!.contactInfo!.website }}</a></p>
+                  }
+                </div>
+              </div>
+            }
+            
+            @if (selectedVenue()!.pricing) {
+              <div class="detail-group">
+                <label>Pricing:</label>
+                <p>
+                  @if (selectedVenue()!.pricing!.hireCost) {
+                    Hire Cost: {{ selectedVenue()!.pricing!.currency || '£' }}{{ selectedVenue()!.pricing!.hireCost }}
+                  }
+                  @if (selectedVenue()!.pricing!.pricingNotes) {
+                    <br>{{ selectedVenue()!.pricing!.pricingNotes }}
+                  }
+                </p>
+              </div>
+            }
+            
+            @if (selectedVenue()!.notesForVisitors) {
+              <div class="detail-group">
+                <label>Notes for Visitors:</label>
+                <p>{{ selectedVenue()!.notesForVisitors }}</p>
+              </div>
+            }
+            
+            <div class="detail-group">
+              <label>Created:</label>
+              <p>{{ formatDate(selectedVenue()!.createdAt) }}</p>
+            </div>
+            
+            <div class="detail-group">
+              <label>Last Updated:</label>
+              <p>{{ formatDate(selectedVenue()!.updatedAt) }}</p>
+            </div>
+          </div>
+        </div>
+      }
+    </div>
+  }
+</div>

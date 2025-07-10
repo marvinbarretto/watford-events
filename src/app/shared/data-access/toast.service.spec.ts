@@ -20,6 +20,11 @@ describe('ToastService', () => {
     service.clearAll();
   });
 
+  afterEach(() => {
+    jest.clearAllMocks();
+    service.clearAll();
+  });
+
   it('should be created', () => {
     expect(service).toBeTruthy();
   });
@@ -90,8 +95,9 @@ describe('ToastService', () => {
       service.error('Second toast');
       const toasts = service.toasts$$Readonly();
       expect(toasts.length).toBe(2);
-      expect(toasts[0].id).toBe('id-1');
-      expect(toasts[1].id).toBe('id-2');
+      // Toasts are added newest first, so id-2 (second) is at index 0
+      expect(toasts[0].id).toBe('id-2');
+      expect(toasts[1].id).toBe('id-1');
     });
 
     it('should use default timeout if not provided (success)', () => {
@@ -123,8 +129,9 @@ describe('ToastService', () => {
       service.success('Sticky toast', 5000, true);
       service.error('Non-sticky toast', 5000, false);
       const toasts = service.toasts$$Readonly();
-      expect(toasts[0].sticky).toBe(true);
-      expect(toasts[1].sticky).toBe(false);
+      // Toasts are added newest first, so error (second) is at index 0
+      expect(toasts[0].sticky).toBe(false); // Error toast (non-sticky)
+      expect(toasts[1].sticky).toBe(true);  // Success toast (sticky)
     });
   });
 

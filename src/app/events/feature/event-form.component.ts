@@ -2,6 +2,10 @@ import { Component, signal, inject, Input, Output, EventEmitter, OnInit } from '
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 
+import { TypeaheadComponent, TypeaheadOption } from '../../shared/ui/typeahead/typeahead.component';
+import { VenueLookupService } from '../../shared/data-access/venue-lookup.service';
+import { Venue } from '../../venues/utils/venue.model';
+
 import { EventStore } from '../data-access/event.store';
 import { Event } from '../utils/event.model';
 import { EventExtractionResult } from '../../shared/utils/event-extraction-types';
@@ -9,7 +13,7 @@ import { parseEventDateTime, isLikelyDateTime } from '../utils/date-time-parser.
 
 @Component({
   selector: 'app-event-form',
-  imports: [ReactiveFormsModule],
+  imports: [ReactiveFormsModule, TypeaheadComponent],
   template: `
     <div class="event-form-container">
       <!-- Extraction Result Summary -->
@@ -112,18 +116,44 @@ import { parseEventDateTime, isLikelyDateTime } from '../utils/date-time-parser.
         <!-- Location -->
         <div class="form-group">
           <label for="location">Location *</label>
-          <input
-            id="location"
-            type="text"
-            formControlName="location"
-            class="form-control"
-            [class.auto-filled]="isAutoFilled('location')"
-            placeholder="Enter event location"
-          />
+          <div class="location-input-container">
+            <!-- Venue Selection -->
+            <app-typeahead
+              formControlName="venue"
+              placeholder="Search for a venue or enter custom location"
+              [inputClass]="'form-control' + (isAutoFilled('venue') ? ' auto-filled' : '')"
+              [searchFunction]="searchVenues"
+              [displayFunction]="displayVenue"
+              [compareFunction]="compareVenues"
+              (selectedOption)="onVenueSelected($event)"
+            />
+            
+            <!-- Custom Location Input (shows when no venue selected) -->
+            @if (!selectedVenue()) {
+              <input
+                type="text"
+                formControlName="location"
+                class="form-control custom-location"
+                [class.auto-filled]="isAutoFilled('location')"
+                placeholder="Or enter a custom location"
+              />
+            }
+          </div>
+          
           @if (getConfidence('location') > 0) {
             <span class="confidence-badge" [class.low-confidence]="getConfidence('location') < 70">
               {{ getConfidence('location') }}% confident
             </span>
+          }
+          
+          @if (selectedVenue()) {
+            <div class="selected-venue-info">
+              <strong>{{ selectedVenue()?.name }}</strong>
+              <div class="venue-details">{{ selectedVenue()?.address }}</div>
+              <button type="button" class="btn-clear-venue" (click)="clearVenue()">
+                Use custom location instead
+              </button>
+            </div>
           }
         </div>
 
@@ -290,6 +320,51 @@ import { parseEventDateTime, isLikelyDateTime } from '../utils/date-time-parser.
       color: #212529;
     }
 
+    /* Location Input Container */
+    .location-input-container {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .custom-location {
+      margin-top: 5px;
+    }
+
+    .selected-venue-info {
+      padding: 12px;
+      background: #f8f9fa;
+      border: 1px solid #dee2e6;
+      border-radius: 6px;
+      margin-top: 8px;
+    }
+
+    .selected-venue-info strong {
+      display: block;
+      color: #333;
+      margin-bottom: 4px;
+    }
+
+    .venue-details {
+      color: #6c757d;
+      font-size: 14px;
+      margin-bottom: 8px;
+    }
+
+    .btn-clear-venue {
+      background: none;
+      border: none;
+      color: #007bff;
+      cursor: pointer;
+      font-size: 14px;
+      padding: 0;
+      text-decoration: underline;
+    }
+
+    .btn-clear-venue:hover {
+      color: #0056b3;
+    }
+
     /* Form Actions */
     .form-actions {
       display: flex;
@@ -389,13 +464,20 @@ export class EventFormComponent implements OnInit {
   // Services
   private eventStore = inject(EventStore);
   private fb = inject(FormBuilder);
+  private venueLookupService = inject(VenueLookupService);
 
   // State
   readonly isSaving = signal(false);
+  readonly selectedVenue = signal<Venue | null>(null);
 
   // Form
   eventForm: FormGroup;
   private autoFilledFields: Set<string> = new Set();
+
+  // Venue typeahead functions
+  searchVenues = (query: string) => this.venueLookupService.searchVenues(query);
+  displayVenue = (venue: Venue) => this.venueLookupService.displayVenue(venue);
+  compareVenues = (a: Venue, b: Venue) => this.venueLookupService.compareVenues(a, b);
 
   constructor() {
     this.eventForm = this.fb.group({
@@ -403,7 +485,8 @@ export class EventFormComponent implements OnInit {
       description: [''],
       date: ['', Validators.required],
       time: ['', Validators.required],
-      location: ['', Validators.required],
+      venue: [null], // Venue selection
+      location: [''], // Custom location fallback
       organizer: [''],
       ticketInfo: [''],
       contactInfo: [''],
@@ -484,6 +567,22 @@ export class EventFormComponent implements OnInit {
     }, null, 2);
   }
 
+  onVenueSelected(option: TypeaheadOption<Venue>) {
+    this.selectedVenue.set(option.value);
+    this.eventForm.patchValue({ 
+      venue: option.value,
+      location: '' // Clear custom location when venue is selected
+    });
+  }
+
+  clearVenue() {
+    this.selectedVenue.set(null);
+    this.eventForm.patchValue({ 
+      venue: null,
+      location: '' // Reset location field for manual entry
+    });
+  }
+
   async saveDraft() {
     await this.saveEventWithStatus('draft');
   }
@@ -493,6 +592,15 @@ export class EventFormComponent implements OnInit {
   }
 
   private async saveEventWithStatus(status: 'draft' | 'published') {
+    // Custom validation for location - either venue or custom location is required
+    const hasVenue = this.selectedVenue() !== null;
+    const hasLocation = this.eventForm.get('location')?.value?.trim();
+    
+    if (status === 'published' && !hasVenue && !hasLocation) {
+      this.error.emit('Please select a venue or enter a custom location');
+      return;
+    }
+    
     if (!this.eventForm.valid && status === 'published') {
       this.error.emit('Please fill in all required fields');
       return;
@@ -513,11 +621,21 @@ export class EventFormComponent implements OnInit {
         eventDateTime = new Date();
       }
 
+      // Determine location data based on venue selection
+      const selectedVenue = this.selectedVenue();
+      const locationData = selectedVenue ? {
+        location: selectedVenue.name, // Use venue name as location
+        venueId: selectedVenue.id
+      } : {
+        location: formValue.location, // Use custom location text
+        venueId: undefined
+      };
+
       const eventData = {
         title: formValue.title,
         description: formValue.description,
         date: eventDateTime,
-        location: formValue.location,
+        ...locationData,
         organizer: formValue.organizer,
         ticketInfo: formValue.ticketInfo,
         contactInfo: formValue.contactInfo,

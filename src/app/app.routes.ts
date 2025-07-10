@@ -1,4 +1,7 @@
 import { Routes } from '@angular/router';
+import { authGuard } from './auth/data-access/auth.guard';
+import { roleGuard } from './auth/data-access/role.guard';
+import { Roles } from './auth/utils/roles.enum';
 
 export const routes: Routes = [
   {
@@ -17,6 +20,11 @@ export const routes: Routes = [
     loadComponent: () => import('./events/feature/event-list.component').then(m => m.EventListComponent)
   },
   {
+    path: 'events/:id',
+    data: { shell: 'main' },
+    loadComponent: () => import('./events/feature/event-detail.component').then(m => m.EventDetailComponent)
+  },
+  {
     path: 'flyer-parser',
     data: { shell: 'flyer-parser' },
     loadComponent: () => import('./events/feature/flyer-parser.component').then(m => m.FlyerParserComponent)
@@ -30,6 +38,22 @@ export const routes: Routes = [
     path: 'login',
     data: { shell: 'fullscreen' },
     loadComponent: () => import('./auth/feature/login.component').then(m => m.LoginComponent)
+  },
+  // Admin routes
+  {
+    path: 'admin',
+    data: { shell: 'main' },
+    loadComponent: () => import('./admin/feature/admin-dashboard/admin-dashboard').then(m => m.AdminDashboard)
+  },
+  {
+    path: 'admin/events',
+    data: { shell: 'main' },
+    loadComponent: () => import('./admin/feature/admin-event-management/admin-event-management').then(m => m.AdminEventManagement)
+  },
+  {
+    path: 'admin/venues',
+    data: { shell: 'main' },
+    loadComponent: () => import('./admin/feature/admin-venue-management/admin-venue-management').then(m => m.AdminVenueManagement)
   },
   // Example pages
   {

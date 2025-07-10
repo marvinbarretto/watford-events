@@ -7,9 +7,6 @@ import {
   IonHeader, 
   IonToolbar, 
   IonTitle, 
-  IonFab, 
-  IonFabButton, 
-  IonIcon,
   IonBackButton,
   IonButtons
 } from '@ionic/angular/standalone';
@@ -26,9 +23,6 @@ import { camera, chevronBack } from 'ionicons/icons';
     IonHeader,
     IonToolbar,
     IonTitle,
-    IonFab,
-    IonFabButton,
-    IonIcon,
     IonBackButton,
     IonButtons
   ],

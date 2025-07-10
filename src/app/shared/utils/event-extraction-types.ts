@@ -11,6 +11,7 @@ export type EventData = {
   description: string;
   date: string; // ISO string or readable date from flyer
   location: string;
+  venueId?: string; // Optional venue reference if location matches known venue
   organizer?: string;
   ticketInfo?: string;
   contactInfo?: string;
@@ -24,6 +25,7 @@ export type EventConfidence = {
   description: number;
   date: number;
   location: number;
+  venueId: number;
   organizer: number;
   ticketInfo: number;
   contactInfo: number;
