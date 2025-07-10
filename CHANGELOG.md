@@ -2,6 +2,22 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.0.6](https://github.com/marvinbarretto/watford-events/compare/v0.0.5...v0.0.6) (2025-07-10)
+
+
+### Features
+
+* [Event] new ui item ([d6a9c90](https://github.com/marvinbarretto/watford-events/commit/d6a9c90798971874f08e7262e1536a846aa4e892))
+* [Home] Add event filters, apply themes and abstract icons and chips ([a0968a3](https://github.com/marvinbarretto/watford-events/commit/a0968a335bf8c6372e32d6f69a70333aa9957791))
+* [Home] stub better homepage ([aaaa51d](https://github.com/marvinbarretto/watford-events/commit/aaaa51d87224900089fd07db7c981bd5566cdf79))
+* [Venues] CRUD venues and stub the list page ([9302848](https://github.com/marvinbarretto/watford-events/commit/9302848848c23c16417943b11eda1b613d1bc630))
+* Bring in Overlay service for modals ([42e3349](https://github.com/marvinbarretto/watford-events/commit/42e33490c5787692edb17e581acb21f57b34e6d0))
+
+
+### Bug Fixes
+
+* Correct path for homepage ([0352329](https://github.com/marvinbarretto/watford-events/commit/035232990cb26dd303c867b56e8551998d811360))
+
 ### [0.0.5](https://github.com/marvinbarretto/watford-events/compare/v0.0.4...v0.0.5) (2025-07-09)
 
 ### [0.0.4](https://github.com/marvinbarretto/watford-events/compare/v0.0.3...v0.0.4) (2025-07-09)
