@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.0.7](https://github.com/marvinbarretto/watford-events/compare/v0.0.6...v0.0.7) (2025-07-10)
+
+
+### Features
+
+* Add version number to header/footer ([572c191](https://github.com/marvinbarretto/watford-events/commit/572c191057b6db60e338bfcefc019a270c0a164e))
+
 ### [0.0.6](https://github.com/marvinbarretto/watford-events/compare/v0.0.5...v0.0.6) (2025-07-10)
 
 
