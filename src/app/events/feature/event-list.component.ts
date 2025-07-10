@@ -1,14 +1,14 @@
 import { Component, signal, inject, computed, effect } from '@angular/core';
-import { CommonModule } from '@angular/common';
 import { RouterModule, Router } from '@angular/router';
 
 import { EventStore } from '../data-access/event.store';
 import { AuthStore } from '../../auth/data-access/auth.store';
 import { Event } from '../utils/event.model';
+import { EventCardComponent } from '../ui/event-card/event-card.component';
 
 @Component({
   selector: 'app-event-list',
-  imports: [RouterModule],
+  imports: [RouterModule, EventCardComponent],
   template: `
     <div class="event-list-container">
       <div class="header">
@@ -167,92 +167,15 @@ import { Event } from '../utils/event.model';
           <!-- Events Grid -->
           <div class="events-grid">
             @for (event of filteredEvents(); track event.id) {
-              <div class="event-card" (click)="viewEvent(event)">
-                <!-- Event Image -->
-                @if (event.imageUrl) {
-                  <div class="event-image">
-                    <img [src]="event.imageUrl" [alt]="event.title" />
-                    @if (event.scannerConfidence) {
-                      <div class="ai-badge">
-                        <span class="ai-icon">🤖</span>
-                        <span>{{ event.scannerConfidence }}%</span>
-                      </div>
-                    }
-                    @if (event.isMockEvent) {
-                      <div class="mock-badge">
-                        <span class="mock-icon">🧪</span>
-                        <span>Mock</span>
-                      </div>
-                    }
-                  </div>
-                } @else {
-                  <div class="event-placeholder">
-                    <span class="placeholder-icon">📅</span>
-                    @if (event.isMockEvent) {
-                      <div class="mock-badge">
-                        <span class="mock-icon">🧪</span>
-                        <span>Mock</span>
-                      </div>
-                    }
-                  </div>
-                }
-
-                <!-- Event Content -->
-                <div class="event-content">
-                  <div class="event-header">
-                    <h3 class="event-title">{{ event.title }}</h3>
-                    <span class="status-badge" [class]="'status-' + event.status">
-                      {{ getStatusLabel(event.status) }}
-                    </span>
-                  </div>
-
-                  <div class="event-details">
-                    <div class="event-date">
-                      <span class="date-icon">📅</span>
-                      <span>{{ formatDate(event.date) }}</span>
-                    </div>
-                    @if (event.location) {
-                      <div class="event-location">
-                        <span class="location-icon">📍</span>
-                        <span>{{ event.location }}</span>
-                      </div>
-                    }
-                  </div>
-
-                  @if (event.description) {
-                    <p class="event-description">{{ event.description }}</p>
-                  }
-
-                  <!-- Event Actions -->
-                  <div class="event-actions" (click)="$event.stopPropagation()">
-                    <!-- Share button for all users -->
-                    <button class="action-btn share-btn" (click)="shareEvent(event)">
-                      <span>📤</span>
-                      <span>Share</span>
-                    </button>
-
-                    <!-- Edit/Delete actions only for event owners -->
-                    @if (user() && event.createdBy === user()?.uid) {
-                      <button class="action-btn edit-btn" (click)="editEvent(event)">
-                        <span>✏️</span>
-                        <span>Edit</span>
-                      </button>
-
-                      @if (event.status === 'draft') {
-                        <button class="action-btn publish-btn" (click)="publishEvent(event)">
-                          <span>🚀</span>
-                          <span>Publish</span>
-                        </button>
-                      }
-
-                      <button class="action-btn delete-btn" (click)="deleteEvent(event)">
-                        <span>🗑️</span>
-                        <span>Delete</span>
-                      </button>
-                    }
-                  </div>
-                </div>
-              </div>
+              <app-event-card
+                [event]="event"
+                [currentUserId]="user()?.uid || null"
+                (clicked)="viewEvent($event)"
+                (shareClicked)="shareEvent($event)"
+                (editClicked)="editEvent($event)"
+                (publishClicked)="publishEvent($event)"
+                (deleteClicked)="deleteEvent($event)"
+              />
             }
           </div>
         </div>
@@ -517,198 +440,6 @@ import { Event } from '../utils/event.model';
       gap: 20px;
     }
 
-    .event-card {
-      background: white;
-      border-radius: 12px;
-      overflow: hidden;
-      box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-      cursor: pointer;
-      transition: all 0.2s;
-    }
-
-    .event-card:hover {
-      transform: translateY(-4px);
-      box-shadow: 0 8px 16px rgba(0,0,0,0.15);
-    }
-
-    .event-image {
-      position: relative;
-      height: 200px;
-      overflow: hidden;
-    }
-
-    .event-image img {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-    }
-
-    .ai-badge {
-      position: absolute;
-      top: 10px;
-      right: 10px;
-      display: flex;
-      align-items: center;
-      gap: 4px;
-      padding: 4px 8px;
-      background: rgba(0,0,0,0.8);
-      color: white;
-      border-radius: 12px;
-      font-size: 12px;
-      font-weight: 600;
-    }
-
-    .ai-icon {
-      font-size: 14px;
-    }
-
-    .mock-badge {
-      position: absolute;
-      top: 10px;
-      left: 10px;
-      display: flex;
-      align-items: center;
-      gap: 4px;
-      padding: 4px 8px;
-      background: rgba(255, 193, 7, 0.95);
-      color: #333;
-      border-radius: 12px;
-      font-size: 12px;
-      font-weight: 600;
-      border: 1px solid rgba(255, 193, 7, 0.7);
-    }
-
-    .mock-icon {
-      font-size: 14px;
-    }
-
-    .event-placeholder {
-      position: relative;
-      height: 200px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      background: linear-gradient(135deg, #f8f9fa, #e9ecef);
-    }
-
-    .placeholder-icon {
-      font-size: 48px;
-      opacity: 0.5;
-    }
-
-    .event-content {
-      padding: 20px;
-    }
-
-    .event-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: flex-start;
-      margin-bottom: 15px;
-    }
-
-    .event-title {
-      margin: 0;
-      font-size: 18px;
-      font-weight: 600;
-      color: #333;
-      line-height: 1.3;
-      flex: 1;
-    }
-
-    .status-badge {
-      padding: 4px 8px;
-      border-radius: 12px;
-      font-size: 12px;
-      font-weight: 600;
-      margin-left: 10px;
-    }
-
-    .status-badge.status-published {
-      background: #d4edda;
-      color: #155724;
-    }
-
-    .status-badge.status-draft {
-      background: #fff3cd;
-      color: #856404;
-    }
-
-    .status-badge.status-cancelled {
-      background: #f8d7da;
-      color: #721c24;
-    }
-
-    .event-details {
-      margin-bottom: 15px;
-    }
-
-    .event-date, .event-location {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      margin-bottom: 5px;
-      font-size: 14px;
-      color: #666;
-    }
-
-    .date-icon, .location-icon {
-      font-size: 16px;
-    }
-
-    .event-description {
-      margin: 0 0 15px 0;
-      color: #666;
-      font-size: 14px;
-      line-height: 1.4;
-      display: -webkit-box;
-      -webkit-line-clamp: 3;
-      -webkit-box-orient: vertical;
-      overflow: hidden;
-    }
-
-    .event-actions {
-      display: flex;
-      gap: 8px;
-      flex-wrap: wrap;
-    }
-
-    .action-btn {
-      display: flex;
-      align-items: center;
-      gap: 4px;
-      padding: 6px 12px;
-      border: none;
-      border-radius: 6px;
-      font-size: 12px;
-      cursor: pointer;
-      transition: all 0.2s;
-    }
-
-    .edit-btn {
-      background: #e7f3ff;
-      color: #007bff;
-    }
-
-    .publish-btn {
-      background: #d4edda;
-      color: #155724;
-    }
-
-    .share-btn {
-      background: #cce5ff;
-      color: #0066cc;
-    }
-
-    .delete-btn {
-      background: #f8d7da;
-      color: #721c24;
-    }
-
-    .action-btn:hover {
-      transform: translateY(-1px);
-      filter: brightness(0.9);
-    }
 
     /* Mobile Optimizations */
     @media (max-width: 768px) {
@@ -972,43 +703,4 @@ export class EventListComponent {
     this.eventStore.reload();
   }
 
-  formatDate(date: Date): string {
-    const eventDate = new Date(date);
-    const now = new Date();
-    const diffTime = eventDate.getTime() - now.getTime();
-    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-
-    // Format date nicely
-    const options: Intl.DateTimeFormatOptions = {
-      weekday: 'short',
-      month: 'short',
-      day: 'numeric',
-      hour: 'numeric',
-      minute: '2-digit'
-    };
-
-    const formatted = eventDate.toLocaleDateString('en-US', options);
-
-    // Add relative time info
-    if (diffDays === 0) {
-      return `${formatted} (Today)`;
-    } else if (diffDays === 1) {
-      return `${formatted} (Tomorrow)`;
-    } else if (diffDays > 0 && diffDays <= 7) {
-      return `${formatted} (In ${diffDays} days)`;
-    } else if (diffDays < 0 && diffDays >= -7) {
-      return `${formatted} (${Math.abs(diffDays)} days ago)`;
-    }
-
-    return formatted;
-  }
-
-  getStatusLabel(status: string): string {
-    switch (status) {
-      case 'published': return 'Published';
-      case 'draft': return 'Draft';
-      case 'cancelled': return 'Cancelled';
-      default: return status;
-    }
-  }
 }

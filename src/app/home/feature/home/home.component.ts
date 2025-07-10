@@ -97,24 +97,35 @@ export class HomeComponent {
 
   readonly eventCounts = computed<EventCounts>(() => {
     const all = this.events();
+    const search = this.searchTerm().toLowerCase();
     const today = getStartOfDay(new Date());
     const tomorrow = new Date(today);
     tomorrow.setDate(tomorrow.getDate() + 1);
     const weekRange = getThisWeekRange();
     const monthRange = getThisMonthRange();
 
+    // Apply search filter if present
+    let filteredEvents = all;
+    if (search) {
+      filteredEvents = all.filter(e =>
+        e.title.toLowerCase().includes(search) ||
+        e.description?.toLowerCase().includes(search) ||
+        e.location?.toLowerCase().includes(search)
+      );
+    }
+
     return {
-      all: all.length,
-      upcoming: all.filter(e => convertToDate(e.date) >= today).length,
-      today: all.filter(e => {
+      all: filteredEvents.length,
+      upcoming: filteredEvents.filter(e => convertToDate(e.date) >= today).length,
+      today: filteredEvents.filter(e => {
         const eventDate = convertToDate(e.date);
         return eventDate >= today && eventDate < tomorrow;
       }).length,
-      thisWeek: all.filter(e => {
+      thisWeek: filteredEvents.filter(e => {
         const eventDate = convertToDate(e.date);
         return eventDate >= weekRange.start && eventDate <= weekRange.end;
       }).length,
-      thisMonth: all.filter(e => {
+      thisMonth: filteredEvents.filter(e => {
         const eventDate = convertToDate(e.date);
         return eventDate >= monthRange.start && eventDate <= monthRange.end;
       }).length
@@ -132,6 +143,10 @@ export class HomeComponent {
 
   onEventClicked(event: Event) {
     this.router.navigate(['/events', event.id]);
+  }
+
+  addNewEvent() {
+    this.router.navigate(['/events/add']);
   }
 
   toggleEventExpanded(eventId: string) {

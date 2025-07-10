@@ -11,6 +11,14 @@
     </div>
   </header>
 
+  <!-- Add Event CTA -->
+  <div class="add-event-cta">
+    <button class="add-event-btn" (click)="addNewEvent()">
+      <span class="add-icon">+</span>
+      <span>Add New Event</span>
+    </button>
+  </div>
+
   <app-event-filter
     [activeFilter]="currentFilter()"
     [eventCounts]="eventCounts()"
@@ -47,6 +55,7 @@
               [event]="event"
               [isFeatured]="true"
               [isExpanded]="isEventExpanded(event.id)"
+              [searchTerm]="searchTerm()"
               (clicked)="onEventClicked($event)"
               (expandToggled)="toggleEventExpanded(event.id)"
             />
@@ -68,6 +77,7 @@
                 [event]="event"
                 [isFeatured]="false"
                 [isExpanded]="isEventExpanded(event.id)"
+                [searchTerm]="searchTerm()"
                 (clicked)="onEventClicked($event)"
                 (expandToggled)="toggleEventExpanded(event.id)"
               />

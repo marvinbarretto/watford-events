@@ -92,8 +92,8 @@ export interface EventCounts {
   `,
   styles: [`
     .event-filter {
-      background: white;
-      border: 1px solid #e0e0e0;
+      background: var(--background-lighter);
+      border: 1px solid var(--border);
       border-radius: 8px;
       padding: 20px;
       margin-bottom: 20px;
@@ -110,12 +110,12 @@ export interface EventCounts {
       margin: 0;
       font-size: 16px;
       font-weight: 600;
-      color: #333;
+      color: var(--text);
     }
 
     .total-count {
       font-size: 14px;
-      color: #666;
+      color: var(--text-secondary);
     }
 
     .filter-options {
@@ -130,24 +130,24 @@ export interface EventCounts {
       align-items: center;
       gap: 6px;
       padding: 8px 16px;
-      background: white;
-      border: 1px solid #e0e0e0;
+      background: var(--background-lighter);
+      border: 1px solid var(--border);
       border-radius: 20px;
       font-size: 14px;
       cursor: pointer;
       transition: all 0.2s;
-      color: #666;
+      color: var(--text-secondary);
     }
 
     .filter-option:hover {
-      border-color: #007bff;
-      color: #007bff;
+      border-color: var(--primary);
+      color: var(--primary);
     }
 
     .filter-option.active {
-      background: #007bff;
-      border-color: #007bff;
-      color: white;
+      background: var(--primary);
+      border-color: var(--primary);
+      color: var(--on-primary);
     }
 
     .option-label {
@@ -169,27 +169,29 @@ export interface EventCounts {
     }
 
     .search-section {
-      border-top: 1px solid #e0e0e0;
+      border-top: 1px solid var(--border);
       padding-top: 16px;
     }
 
     .search-input {
       width: 100%;
       padding: 10px 16px;
-      border: 1px solid #e0e0e0;
+      border: 1px solid var(--border);
       border-radius: 8px;
       font-size: 14px;
       transition: all 0.2s;
+      background: var(--background-lighter);
+      color: var(--text);
     }
 
     .search-input:focus {
       outline: none;
-      border-color: #007bff;
-      box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.1);
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
     }
 
     .search-input::placeholder {
-      color: #999;
+      color: var(--text-muted);
     }
 
     /* Mobile optimization */
@@ -230,6 +232,8 @@ export class EventFilterComponent {
 
   onSearchInput(event: Event) {
     const target = event.target as HTMLInputElement;
-    this.searchChanged.emit(target.value);
+    if (target?.value !== undefined) {
+      this.searchChanged.emit(target.value);
+    }
   }
 }

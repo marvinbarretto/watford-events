@@ -1,129 +1,241 @@
-import { Component, signal, inject } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { Component, signal, inject, OnInit } from '@angular/core';
 import { RouterModule, Router } from '@angular/router';
+import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 
-import { LLMService } from '../../shared/data-access/llm.service';
-import { EventExtractionResult } from '../../shared/utils/event-extraction-types';
+import { EventStore } from '../data-access/event.store';
 import { Event } from '../utils/event.model';
-import { FullScreenCameraComponent } from './camera/full-screen-camera.component';
-import { EventFormComponent } from './event-form.component';
+import { VenueLookupService } from '../../shared/data-access/venue-lookup.service';
+import { TypeaheadComponent, TypeaheadOption } from '../../shared/ui/typeahead/typeahead.component';
+import { Venue } from '../../venues/utils/venue.model';
 
 @Component({
   selector: 'app-add-event',
   standalone: true,
-  imports: [CommonModule, RouterModule, FullScreenCameraComponent, EventFormComponent],
+  imports: [RouterModule, ReactiveFormsModule, TypeaheadComponent],
   template: `
-    <!-- Full Screen Camera Step -->
-    @if (currentStep() === 'camera') {
-      <app-full-screen-camera
-        [showAlignmentGuide]="true"
-        [isProcessing]="isProcessing()"
-        (photoTaken)="onPhotoTaken($event)"
-        (backClicked)="goBack()"
-        (error)="onCameraError($event)"
-      />
-    }
-
-    <!-- Processing Step -->
-    @if (currentStep() === 'processing') {
-      <div class="processing-overlay">
-        <div class="processing-content">
-          <div class="spinner"></div>
-          <h2>Analyzing your flyer...</h2>
-          <p>Our AI is extracting event information from your image</p>
-        </div>
+    <div class="add-event-container">
+      <!-- Header -->
+      <div class="header">
+        <button class="back-btn" (click)="goBack()">
+          <span class="back-arrow">←</span>
+          <span>Back</span>
+        </button>
+        <h1>Add New Event</h1>
       </div>
-    }
 
-    <!-- Form Step -->
-    @if (currentStep() === 'form') {
-      <div class="form-container">
-        <div class="header">
-          <button class="back-btn" (click)="goBack()">
-            <span class="back-arrow">←</span>
-            <span>Back</span>
+      <!-- Alternative Method Link -->
+      <div class="alternative-method">
+        <p>Have a flyer? Try our camera scanner for faster entry!</p>
+        <button class="camera-btn" (click)="useCameraInstead()">
+          📸 Use Camera Instead
+        </button>
+      </div>
+
+      <!-- Manual Form -->
+      <form [formGroup]="eventForm" (ngSubmit)="saveEvent()">
+        <!-- Essential Fields Section -->
+        <section class="form-section essential">
+          <h2>Event Details</h2>
+          
+          <!-- Title -->
+          <div class="form-group">
+            <label for="title">Event Title *</label>
+            <input
+              id="title"
+              type="text"
+              formControlName="title"
+              class="form-control large"
+              placeholder="What's the event called?"
+            />
+            @if (eventForm.get('title')?.invalid && eventForm.get('title')?.touched) {
+              <div class="error-message">Event title is required</div>
+            }
+          </div>
+
+          <!-- Date & Time Row -->
+          <div class="form-row">
+            <div class="form-group">
+              <label for="date">Date *</label>
+              <input
+                id="date"
+                type="date"
+                formControlName="date"
+                class="form-control large"
+              />
+              @if (eventForm.get('date')?.invalid && eventForm.get('date')?.touched) {
+                <div class="error-message">Date is required</div>
+              }
+            </div>
+
+            <div class="form-group">
+              <label for="time">Time *</label>
+              <input
+                id="time"
+                type="time"
+                formControlName="time"
+                class="form-control large"
+              />
+              @if (eventForm.get('time')?.invalid && eventForm.get('time')?.touched) {
+                <div class="error-message">Time is required</div>
+              }
+            </div>
+          </div>
+
+          <!-- Location -->
+          <div class="form-group">
+            <label for="location">Location *</label>
+            <div class="location-input-container">
+              <!-- Venue Selection -->
+              <app-typeahead
+                formControlName="venue"
+                placeholder="Search for a venue or enter custom location"
+                [inputClass]="'form-control large'"
+                [searchFunction]="searchVenues"
+                [displayFunction]="displayVenue"
+                [compareFunction]="compareVenues"
+                (selectedOption)="onVenueSelected($event)"
+              />
+              
+              <!-- Custom Location Input (shows when no venue selected) -->
+              @if (!selectedVenue()) {
+                <input
+                  type="text"
+                  formControlName="location"
+                  class="form-control large custom-location"
+                  placeholder="Or enter a custom location"
+                />
+              }
+            </div>
+            
+            @if (selectedVenue()) {
+              <div class="selected-venue-info">
+                <strong>{{ selectedVenue()?.name }}</strong>
+                <div class="venue-details">{{ selectedVenue()?.address }}</div>
+                <button type="button" class="btn-clear-venue" (click)="clearVenue()">
+                  Use custom location instead
+                </button>
+              </div>
+            }
+
+            @if (getLocationError()) {
+              <div class="error-message">{{ getLocationError() }}</div>
+            }
+          </div>
+        </section>
+
+        <!-- Optional Details Section -->
+        <section class="form-section optional">
+          <button 
+            type="button" 
+            class="section-toggle"
+            (click)="toggleOptionalSection()"
+          >
+            <span>More Details</span>
+            <span class="toggle-icon">{{ showOptionalSection() ? '−' : '+' }}</span>
           </button>
-          <h1>Add New Event</h1>
+
+          @if (showOptionalSection()) {
+            <div class="optional-fields">
+              <!-- Description -->
+              <div class="form-group">
+                <label for="description">Description</label>
+                <textarea
+                  id="description"
+                  formControlName="description"
+                  class="form-control"
+                  rows="3"
+                  placeholder="Tell people about your event..."
+                ></textarea>
+              </div>
+
+              <!-- Organizer -->
+              <div class="form-group">
+                <label for="organizer">Organizer</label>
+                <input
+                  id="organizer"
+                  type="text"
+                  formControlName="organizer"
+                  class="form-control"
+                  placeholder="Who's organizing this event?"
+                />
+              </div>
+
+              <!-- Ticket Info -->
+              <div class="form-group">
+                <label for="ticketInfo">Ticket Information</label>
+                <input
+                  id="ticketInfo"
+                  type="text"
+                  formControlName="ticketInfo"
+                  class="form-control"
+                  placeholder="Free, £10, tickets from..."
+                />
+              </div>
+
+              <!-- Contact Info -->
+              <div class="form-group">
+                <label for="contactInfo">Contact Information</label>
+                <input
+                  id="contactInfo"
+                  type="text"
+                  formControlName="contactInfo"
+                  class="form-control"
+                  placeholder="Phone, email, or contact details"
+                />
+              </div>
+
+              <!-- Website -->
+              <div class="form-group">
+                <label for="website">Website/Social Media</label>
+                <input
+                  id="website"
+                  type="text"
+                  formControlName="website"
+                  class="form-control"
+                  placeholder="Website or social media links"
+                />
+              </div>
+            </div>
+          }
+        </section>
+
+        <!-- Form Actions -->
+        <div class="form-actions">
+          <button type="button" class="btn-secondary" (click)="saveDraft()" [disabled]="isSaving()">
+            Save as Draft
+          </button>
+          <button type="submit" class="btn-primary" [disabled]="!canPublish() || isSaving()">
+            {{ isSaving() ? 'Publishing...' : 'Publish Event' }}
+          </button>
         </div>
+      </form>
 
-        <app-event-form
-          [extractionResult]="extractionResult()"
-          [capturedImage]="capturedImage()"
-          (eventSaved)="onEventSaved($event)"
-          (error)="onFormError($event)"
-        />
-      </div>
-    }
-
-    <!-- Error Display -->
-    @if (error()) {
-      <div class="error-message">
-        <p>{{ error() }}</p>
-        <button class="dismiss-btn" (click)="clearError()">Dismiss</button>
-      </div>
-    }
+      <!-- Error Display -->
+      @if (error()) {
+        <div class="error-banner">
+          <p>{{ error() }}</p>
+          <button class="dismiss-btn" (click)="clearError()">Dismiss</button>
+        </div>
+      }
+    </div>
   `,
   styles: [`
-    /* Processing Overlay */
-    .processing-overlay {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100vw;
-      height: 100vh;
-      background: rgba(0, 0, 0, 0.9);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      z-index: 1000;
-    }
-
-    .processing-content {
-      text-align: center;
-      color: white;
-      padding: 40px;
-    }
-
-    .spinner {
-      width: 60px;
-      height: 60px;
-      border: 6px solid rgba(255, 255, 255, 0.3);
-      border-top: 6px solid white;
-      border-radius: 50%;
-      animation: spin 1s linear infinite;
-      margin: 0 auto 30px;
-    }
-
-    @keyframes spin {
-      0% { transform: rotate(0deg); }
-      100% { transform: rotate(360deg); }
-    }
-
-    .processing-content h2 {
-      margin: 0 0 10px 0;
-      font-size: 24px;
-      font-weight: 600;
-    }
-
-    .processing-content p {
-      margin: 0;
-      font-size: 16px;
-      opacity: 0.8;
-    }
-
-    /* Form Container */
-    .form-container {
+    .add-event-container {
+      max-width: 600px;
+      margin: 0 auto;
+      padding: 20px;
       min-height: 100vh;
-      background: #f8f9fa;
+      background: var(--background);
     }
 
+    /* Header */
     .header {
       display: flex;
       align-items: center;
       gap: 20px;
-      padding: 20px;
-      background: white;
-      border-bottom: 1px solid #e9ecef;
+      margin-bottom: 30px;
+      padding-bottom: 20px;
+      border-bottom: 2px solid var(--border);
     }
 
     .back-btn {
@@ -133,9 +245,15 @@ import { EventFormComponent } from './event-form.component';
       background: none;
       border: none;
       font-size: 16px;
-      color: #007bff;
+      color: var(--primary);
       cursor: pointer;
       padding: 8px;
+      border-radius: 6px;
+      transition: background-color 0.2s;
+    }
+
+    .back-btn:hover {
+      background: var(--background-lighter);
     }
 
     .back-arrow {
@@ -144,113 +262,461 @@ import { EventFormComponent } from './event-form.component';
 
     .header h1 {
       margin: 0;
-      color: #333;
+      color: var(--text);
       font-size: 24px;
+      font-weight: 600;
     }
 
-    /* Error Display */
+    /* Alternative Method */
+    .alternative-method {
+      background: var(--secondary);
+      padding: 20px;
+      border-radius: 8px;
+      text-align: center;
+      margin-bottom: 30px;
+    }
+
+    .alternative-method p {
+      margin: 0 0 15px 0;
+      color: var(--text-secondary);
+      font-size: 14px;
+    }
+
+    .camera-btn {
+      background: var(--primary);
+      color: var(--on-primary);
+      border: none;
+      padding: 12px 24px;
+      border-radius: 6px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .camera-btn:hover {
+      background: var(--primary-hover);
+      transform: translateY(-1px);
+    }
+
+    /* Form Sections */
+    .form-section {
+      margin-bottom: 30px;
+    }
+
+    .form-section.essential {
+      background: var(--background);
+      padding: 0;
+    }
+
+    .form-section.optional {
+      background: var(--background-lighter);
+      border-radius: 8px;
+      padding: 20px;
+    }
+
+    .form-section h2 {
+      margin: 0 0 20px 0;
+      color: var(--text);
+      font-size: 18px;
+      font-weight: 600;
+    }
+
+    /* Section Toggle */
+    .section-toggle {
+      width: 100%;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: none;
+      border: none;
+      padding: 0 0 20px 0;
+      font-size: 16px;
+      font-weight: 600;
+      color: var(--text);
+      cursor: pointer;
+    }
+
+    .toggle-icon {
+      font-size: 20px;
+      color: var(--primary);
+    }
+
+    .optional-fields {
+      animation: slideDown 0.3s ease-out;
+    }
+
+    @keyframes slideDown {
+      from { opacity: 0; transform: translateY(-10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Form Elements */
+    .form-group {
+      margin-bottom: 20px;
+    }
+
+    .form-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 15px;
+    }
+
+    .form-group label {
+      display: block;
+      margin-bottom: 8px;
+      font-weight: 600;
+      color: var(--text);
+      font-size: 14px;
+    }
+
+    .form-control {
+      width: 100%;
+      padding: 12px;
+      border: 2px solid var(--border);
+      border-radius: 6px;
+      font-size: 16px;
+      transition: border-color 0.2s;
+      background: var(--background);
+      color: var(--text);
+    }
+
+    .form-control.large {
+      padding: 16px;
+      font-size: 16px;
+      font-weight: 500;
+    }
+
+    .form-control:focus {
+      outline: none;
+      border-color: var(--primary);
+    }
+
+    .form-control::placeholder {
+      color: var(--text-secondary);
+    }
+
+    /* Location Input */
+    .location-input-container {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .custom-location {
+      margin-top: 5px;
+    }
+
+    .selected-venue-info {
+      padding: 12px;
+      background: var(--secondary);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      margin-top: 8px;
+    }
+
+    .selected-venue-info strong {
+      display: block;
+      color: var(--text);
+      margin-bottom: 4px;
+    }
+
+    .venue-details {
+      color: var(--text-secondary);
+      font-size: 14px;
+      margin-bottom: 8px;
+    }
+
+    .btn-clear-venue {
+      background: none;
+      border: none;
+      color: var(--primary);
+      cursor: pointer;
+      font-size: 14px;
+      padding: 0;
+      text-decoration: underline;
+    }
+
+    /* Form Actions */
+    .form-actions {
+      display: flex;
+      gap: 15px;
+      margin-top: 40px;
+      padding-top: 20px;
+      border-top: 2px solid var(--border);
+    }
+
+    .btn-primary, .btn-secondary {
+      flex: 1;
+      padding: 16px;
+      border: none;
+      border-radius: 6px;
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+      min-height: 50px;
+    }
+
+    .btn-primary {
+      background: var(--primary);
+      color: var(--on-primary);
+    }
+
+    .btn-primary:hover:not(:disabled) {
+      background: var(--primary-hover);
+      transform: translateY(-1px);
+    }
+
+    .btn-secondary {
+      background: var(--secondary);
+      color: var(--text);
+      border: 2px solid var(--border);
+    }
+
+    .btn-secondary:hover:not(:disabled) {
+      background: var(--background-lighter);
+    }
+
+    .btn-primary:disabled, .btn-secondary:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    /* Error Handling */
     .error-message {
+      margin-top: 5px;
+      color: var(--error);
+      font-size: 14px;
+      font-weight: 500;
+    }
+
+    .error-banner {
       position: fixed;
       top: 20px;
       left: 50%;
       transform: translateX(-50%);
-      background: #f8d7da;
-      color: #721c24;
+      background: var(--error-background);
+      color: var(--error);
       padding: 15px 20px;
       border-radius: 6px;
-      border: 1px solid #f5c6cb;
+      border: 1px solid var(--error);
       box-shadow: 0 4px 8px rgba(0,0,0,0.1);
       z-index: 2000;
       max-width: 90%;
+      display: flex;
+      align-items: center;
+      gap: 15px;
     }
 
     .dismiss-btn {
-      margin-left: 15px;
       background: none;
       border: none;
-      color: #721c24;
+      color: var(--error);
       text-decoration: underline;
       cursor: pointer;
+      font-size: 14px;
     }
 
     /* Mobile Optimizations */
     @media (max-width: 768px) {
-      .header {
+      .add-event-container {
         padding: 15px;
       }
-      
-      .processing-content {
-        padding: 20px;
+
+      .header {
+        margin-bottom: 20px;
       }
-      
-      .processing-content h2 {
+
+      .header h1 {
         font-size: 20px;
+      }
+
+      .form-row {
+        grid-template-columns: 1fr;
+        gap: 10px;
+      }
+
+      .form-actions {
+        flex-direction: column;
+        gap: 10px;
+      }
+
+      .alternative-method {
+        padding: 15px;
+        margin-bottom: 20px;
+      }
+    }
+
+    @media (max-width: 480px) {
+      .add-event-container {
+        padding: 12px;
+      }
+
+      .form-control.large {
+        padding: 14px;
       }
     }
   `]
 })
-export class AddEventComponent {
+export class AddEventComponent implements OnInit {
   // Services
-  private llmService = inject(LLMService);
+  private eventStore = inject(EventStore);
+  private fb = inject(FormBuilder);
   private router = inject(Router);
+  private venueLookupService = inject(VenueLookupService);
 
-  // State signals
-  readonly currentStep = signal<'camera' | 'processing' | 'form'>('camera');
-  readonly capturedImage = signal<string | null>(null);
-  readonly isProcessing = signal(false);
+  // State
+  readonly isSaving = signal(false);
   readonly error = signal<string | null>(null);
-  readonly extractionResult = signal<EventExtractionResult | null>(null);
+  readonly showOptionalSection = signal(false);
+  readonly selectedVenue = signal<Venue | null>(null);
 
-  // Event handlers for camera component
-  onPhotoTaken(dataUrl: string) {
-    console.log('Photo captured, processing with LLM...');
-    this.capturedImage.set(dataUrl);
-    this.processWithLLM(dataUrl);
+  // Form
+  eventForm: FormGroup;
+
+  // Venue typeahead functions
+  searchVenues = (query: string) => this.venueLookupService.searchVenues(query);
+  displayVenue = (venue: Venue) => this.venueLookupService.displayVenue(venue);
+  compareVenues = (a: Venue, b: Venue) => this.venueLookupService.compareVenues(a, b);
+
+  constructor() {
+    this.eventForm = this.fb.group({
+      title: ['', Validators.required],
+      description: [''],
+      date: ['', Validators.required],
+      time: ['', Validators.required],
+      venue: [null],
+      location: [''],
+      organizer: [''],
+      ticketInfo: [''],
+      contactInfo: [''],
+      website: ['']
+    });
   }
 
-  onCameraError(errorMessage: string) {
-    this.error.set(errorMessage);
+  ngOnInit() {
+    // Set smart defaults
+    const tomorrow = new Date();
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    
+    this.eventForm.patchValue({
+      date: tomorrow.toISOString().split('T')[0],
+      time: '19:00' // Default to 7 PM
+    });
   }
 
-  // LLM processing
-  async processWithLLM(imageDataUrl: string) {
-    this.isProcessing.set(true);
-    this.currentStep.set('processing');
+  // Methods
+  toggleOptionalSection() {
+    this.showOptionalSection.set(!this.showOptionalSection());
+  }
+
+  onVenueSelected(option: TypeaheadOption<Venue>) {
+    this.selectedVenue.set(option.value);
+    this.eventForm.patchValue({ 
+      venue: option.value,
+      location: ''
+    });
+  }
+
+  clearVenue() {
+    this.selectedVenue.set(null);
+    this.eventForm.patchValue({ 
+      venue: null,
+      location: ''
+    });
+  }
+
+  getLocationError(): string | null {
+    const hasVenue = this.selectedVenue() !== null;
+    const hasLocation = this.eventForm.get('location')?.value?.trim();
+    const locationTouched = this.eventForm.get('location')?.touched;
+    const venueTouched = this.eventForm.get('venue')?.touched;
+    
+    if ((locationTouched || venueTouched) && !hasVenue && !hasLocation) {
+      return 'Please select a venue or enter a custom location';
+    }
+    return null;
+  }
+
+  canPublish(): boolean {
+    const hasVenue = this.selectedVenue() !== null;
+    const hasLocation = this.eventForm.get('location')?.value?.trim();
+    return this.eventForm.valid && (hasVenue || hasLocation);
+  }
+
+  async saveDraft() {
+    await this.saveEventWithStatus('draft');
+  }
+
+  async saveEvent() {
+    await this.saveEventWithStatus('published');
+  }
+
+  private async saveEventWithStatus(status: 'draft' | 'published') {
+    if (!this.canPublish() && status === 'published') {
+      this.error.set('Please fill in all required fields');
+      return;
+    }
+
+    this.isSaving.set(true);
 
     try {
-      // Convert data URL to File object
-      const response = await fetch(imageDataUrl);
-      const blob = await response.blob();
-      const file = new File([blob], 'flyer.jpg', { type: 'image/jpeg' });
+      const formValue = this.eventForm.value;
 
-      // Process with LLM
-      const result = await this.llmService.extractEventFromImage(file);
-      this.extractionResult.set(result);
+      // Combine date and time into a single Date object
+      let eventDateTime: Date;
+      if (formValue.date && formValue.time) {
+        eventDateTime = new Date(`${formValue.date}T${formValue.time}`);
+      } else if (formValue.date) {
+        eventDateTime = new Date(formValue.date);
+      } else {
+        eventDateTime = new Date();
+      }
 
-      // Move to form step
-      this.currentStep.set('form');
+      // Determine location data based on venue selection
+      const selectedVenue = this.selectedVenue();
+      const locationData = selectedVenue ? {
+        location: selectedVenue.name,
+        venueId: selectedVenue.id
+      } : {
+        location: formValue.location,
+        venueId: undefined
+      };
+
+      const eventData = {
+        title: formValue.title,
+        description: formValue.description,
+        date: eventDateTime,
+        ...locationData,
+        organizer: formValue.organizer,
+        ticketInfo: formValue.ticketInfo,
+        contactInfo: formValue.contactInfo,
+        website: formValue.website,
+        status,
+        attendeeIds: []
+      };
+
+      const savedEvent = await this.eventStore.createEvent(eventData);
+      if (savedEvent) {
+        this.router.navigate(['/events']);
+      }
     } catch (error: any) {
-      console.error('LLM processing failed:', error);
-      this.error.set('Failed to process image');
-      this.currentStep.set('form'); // Allow manual entry
+      console.error('Save event failed:', error);
+      this.error.set(error.message || 'Failed to save event');
     } finally {
-      this.isProcessing.set(false);
+      this.isSaving.set(false);
     }
-  }
-
-  // Event handlers for form component
-  onEventSaved(event: Event) {
-    console.log('Event saved successfully:', event.id);
-    this.router.navigate(['/events']);
-  }
-
-  onFormError(errorMessage: string) {
-    this.error.set(errorMessage);
   }
 
   // Navigation
   goBack() {
     this.router.navigate(['/events']);
+  }
+
+  useCameraInstead() {
+    this.router.navigate(['/events/add/camera']);
   }
 
   clearError() {

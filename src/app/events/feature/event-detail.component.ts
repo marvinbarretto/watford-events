@@ -5,10 +5,11 @@ import { EventStore } from '../data-access/event.store';
 import { AuthStore } from '../../auth/data-access/auth.store';
 import { Event } from '../utils/event.model';
 import { toDate, formatTimestamp } from '../../shared/utils/timestamp.utils';
+import { ChipComponent } from '../../shared/ui/chip/chip.component';
 
 @Component({
   selector: 'app-event-detail',
-  imports: [RouterModule],
+  imports: [RouterModule, ChipComponent],
   template: `
     <div class="event-detail-container">
       <!-- Loading State -->
@@ -84,19 +85,21 @@ import { toDate, formatTimestamp } from '../../shared/utils/timestamp.utils';
           <div class="event-header">
             <div class="title-section">
               <h1 class="event-title">{{ event()!.title }}</h1>
-              <span class="status-badge" [class]="'status-' + event()!.status">
-                {{ getStatusLabel(event()!.status) }}
-              </span>
+              <app-chip
+                [text]="getStatusLabel(event()!.status)"
+                type="ui"
+                variant="status"
+                [status]="event()!.status"
+              />
             </div>
             
             @if (event()?.scannedAt) {
-              <div class="ai-badge">
-                <span class="ai-icon">🤖</span>
-                <span>AI-Generated</span>
-                @if (event()?.scannerConfidence) {
-                  <span class="confidence">{{ event()?.scannerConfidence }}%</span>
-                }
-              </div>
+              <app-chip
+                [text]="'AI-Generated' + (event()?.scannerConfidence ? ' (' + event()?.scannerConfidence + '%)' : '')"
+                type="ui"
+                variant="confidence"
+                icon="🤖"
+              />
             }
           </div>
 
@@ -448,51 +451,6 @@ import { toDate, formatTimestamp } from '../../shared/utils/timestamp.utils';
       line-height: 1.2;
     }
 
-    .status-badge {
-      display: inline-block;
-      padding: 6px 12px;
-      border-radius: 20px;
-      font-size: 14px;
-      font-weight: 600;
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
-    }
-
-    .status-badge.status-published {
-      background: #d4edda;
-      color: #155724;
-    }
-
-    .status-badge.status-draft {
-      background: #fff3cd;
-      color: #856404;
-    }
-
-    .status-badge.status-cancelled {
-      background: #f8d7da;
-      color: #721c24;
-    }
-
-    .ai-badge {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      padding: 8px 16px;
-      background: rgba(0, 123, 255, 0.1);
-      border: 1px solid rgba(0, 123, 255, 0.2);
-      border-radius: 20px;
-      font-size: 14px;
-      font-weight: 600;
-      color: #007bff;
-    }
-
-    .ai-icon {
-      font-size: 16px;
-    }
-
-    .confidence {
-      font-weight: 700;
-    }
 
     /* Event Details Grid */
     .event-details-grid {

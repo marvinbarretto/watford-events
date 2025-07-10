@@ -2,11 +2,14 @@ import { Component, input, output, computed } from '@angular/core';
 import { DatePipe } from '@angular/common';
 import { Event } from '../../utils/event.model';
 import { convertToDate, getRelativeTime } from '../../../shared/utils/date-utils';
+import { ChipComponent } from '../../../shared/ui/chip/chip.component';
+import { IconComponent } from '../../../shared/ui/icon/icon.component';
+import { HighlightPipe } from '../../../shared/pipes/highlight.pipe';
 
 @Component({
   selector: 'app-event-item',
   standalone: true,
-  imports: [DatePipe],
+  imports: [DatePipe, ChipComponent, IconComponent, HighlightPipe],
   styleUrl: './event-item.component.scss',
   template: `
     <div
@@ -23,24 +26,32 @@ import { convertToDate, getRelativeTime } from '../../../shared/utils/date-utils
 
         <div class="event-content">
           <div class="event-header">
-            <h3 class="event-title">{{ event().title }}</h3>
+            <h3 class="event-title" [innerHTML]="event().title | highlight : searchTerm()"></h3>
             @if (isFeatured()) {
-              <span class="featured-badge">Featured</span>
+              <app-chip
+                text="Featured"
+                type="ui"
+                variant="feature"
+                status="featured"
+              />
             }
-            <span class="status-badge" [class]="'status-' + event().status">
-              {{ statusLabel() }}
-            </span>
+            <app-chip
+              [text]="statusLabel()"
+              type="ui"
+              variant="status"
+              [status]="event().status"
+            />
           </div>
 
           <div class="event-meta">
             @if (event().location) {
               <span class="meta-item">
-                <span class="icon">📍</span>
+                <app-icon name="location_on" size="sm" animation="hover-fill" class="icon" />
                 {{ event().location }}
               </span>
             }
             <span class="meta-item">
-              <span class="icon">🕐</span>
+              <app-icon name="schedule" size="sm" animation="hover-fill" class="icon" />
               {{ eventDate() | date:'shortTime' }}
             </span>
             @if (relativeTime()) {
@@ -51,8 +62,7 @@ import { convertToDate, getRelativeTime } from '../../../shared/utils/date-utils
           </div>
 
           @if (isExpanded() && event().description) {
-            <div class="event-description">
-              {{ event().description }}
+            <div class="event-description" [innerHTML]="event().description | highlight : searchTerm()">
             </div>
           }
         </div>
@@ -63,7 +73,12 @@ import { convertToDate, getRelativeTime } from '../../../shared/utils/date-utils
           [attr.aria-expanded]="isExpanded()"
           [attr.aria-label]="isExpanded() ? 'Collapse' : 'Expand'"
         >
-          <span class="expand-icon">{{ isExpanded() ? '⌃' : '⌄' }}</span>
+          <app-icon 
+            [name]="isExpanded() ? 'keyboard_arrow_up' : 'keyboard_arrow_down'" 
+            size="sm" 
+            animation="hover-weight"
+            class="expand-icon"
+          />
         </button>
       </div>
     </div>
@@ -74,6 +89,7 @@ export class EventItemComponent {
   readonly event = input.required<Event>();
   readonly isFeatured = input<boolean>(false);
   readonly isExpanded = input<boolean>(false);
+  readonly searchTerm = input<string>('');
 
   // Outputs
   readonly clicked = output<Event>();

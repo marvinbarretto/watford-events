@@ -1,3 +1,23 @@
+::ng-deep .search-highlight {
+  background-color: var(--secondary);
+  color: var(--on-secondary);
+  padding: 0 2px;
+  border-radius: 2px;
+  font-weight: 500;
+  animation: highlightFade 0.3s ease-out;
+}
+
+@keyframes highlightFade {
+  from {
+    background-color: var(--secondaryHover);
+    color: var(--on-secondary);
+  }
+  to {
+    background-color: var(--secondary);
+    color: var(--on-secondary);
+  }
+}
+
 .event-item {
   background: var(--background-lighter);
   border: 1px solid var(--border);
@@ -82,38 +102,6 @@
   white-space: normal;
 }
 
-.featured-badge {
-  background: var(--warning);
-  color: var(--on-primary);
-  padding: 2px 8px;
-  border-radius: 12px;
-  font-size: 11px;
-  font-weight: 600;
-  text-transform: uppercase;
-}
-
-.status-badge {
-  padding: 2px 8px;
-  border-radius: 12px;
-  font-size: 11px;
-  font-weight: 600;
-  text-transform: uppercase;
-}
-
-.status-badge.status-published {
-  background: var(--success);
-  color: var(--on-primary);
-}
-
-.status-badge.status-draft {
-  background: var(--warning);
-  color: var(--on-primary);
-}
-
-.status-badge.status-cancelled {
-  background: var(--error);
-  color: var(--on-accent);
-}
 
 .event-meta {
   display: flex;
@@ -168,13 +156,8 @@
 }
 
 .expand-icon {
-  font-size: 16px;
   color: var(--text-secondary);
-  transition: transform 0.2s;
-}
-
-.expanded .expand-icon {
-  transform: rotate(180deg);
+  transition: color 0.2s;
 }
 
 /* Mobile optimization */

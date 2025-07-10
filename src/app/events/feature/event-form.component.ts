@@ -5,6 +5,7 @@ import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angula
 import { TypeaheadComponent, TypeaheadOption } from '../../shared/ui/typeahead/typeahead.component';
 import { VenueLookupService } from '../../shared/data-access/venue-lookup.service';
 import { Venue } from '../../venues/utils/venue.model';
+import { ChipComponent } from '../../shared/ui/chip/chip.component';
 
 import { EventStore } from '../data-access/event.store';
 import { Event } from '../utils/event.model';
@@ -13,7 +14,7 @@ import { parseEventDateTime, isLikelyDateTime } from '../utils/date-time-parser.
 
 @Component({
   selector: 'app-event-form',
-  imports: [ReactiveFormsModule, TypeaheadComponent],
+  imports: [ReactiveFormsModule, TypeaheadComponent, ChipComponent],
   template: `
     <div class="event-form-container">
       <!-- Extraction Result Summary -->
@@ -55,9 +56,12 @@ import { parseEventDateTime, isLikelyDateTime } from '../utils/date-time-parser.
             placeholder="Enter event title"
           />
           @if (getConfidence('title') > 0) {
-            <span class="confidence-badge" [class.low-confidence]="getConfidence('title') < 70">
-              {{ getConfidence('title') }}% confident
-            </span>
+            <app-chip
+              [text]="getConfidence('title') + '% confident'"
+              type="ui"
+              variant="confidence"
+              [lowConfidence]="getConfidence('title') < 70"
+            />
           }
         </div>
 
@@ -73,9 +77,12 @@ import { parseEventDateTime, isLikelyDateTime } from '../utils/date-time-parser.
             placeholder="Enter event description"
           ></textarea>
           @if (getConfidence('description') > 0) {
-            <span class="confidence-badge" [class.low-confidence]="getConfidence('description') < 70">
-              {{ getConfidence('description') }}% confident
-            </span>
+            <app-chip
+              [text]="getConfidence('description') + '% confident'"
+              type="ui"
+              variant="confidence"
+              [lowConfidence]="getConfidence('description') < 70"
+            />
           }
         </div>
 
@@ -90,9 +97,12 @@ import { parseEventDateTime, isLikelyDateTime } from '../utils/date-time-parser.
             [class.auto-filled]="isAutoFilled('date')"
           />
           @if (getConfidence('date') > 0) {
-            <span class="confidence-badge" [class.low-confidence]="getConfidence('date') < 70">
-              {{ getConfidence('date') }}% confident
-            </span>
+            <app-chip
+              [text]="getConfidence('date') + '% confident'"
+              type="ui"
+              variant="confidence"
+              [lowConfidence]="getConfidence('date') < 70"
+            />
           }
         </div>
 
@@ -107,9 +117,12 @@ import { parseEventDateTime, isLikelyDateTime } from '../utils/date-time-parser.
             [class.auto-filled]="isAutoFilled('time')"
           />
           @if (getConfidence('time') > 0) {
-            <span class="confidence-badge" [class.low-confidence]="getConfidence('time') < 70">
-              {{ getConfidence('time') }}% confident
-            </span>
+            <app-chip
+              [text]="getConfidence('time') + '% confident'"
+              type="ui"
+              variant="confidence"
+              [lowConfidence]="getConfidence('time') < 70"
+            />
           }
         </div>
 
@@ -141,9 +154,12 @@ import { parseEventDateTime, isLikelyDateTime } from '../utils/date-time-parser.
           </div>
           
           @if (getConfidence('location') > 0) {
-            <span class="confidence-badge" [class.low-confidence]="getConfidence('location') < 70">
-              {{ getConfidence('location') }}% confident
-            </span>
+            <app-chip
+              [text]="getConfidence('location') + '% confident'"
+              type="ui"
+              variant="confidence"
+              [lowConfidence]="getConfidence('location') < 70"
+            />
           }
           
           @if (selectedVenue()) {
@@ -169,9 +185,12 @@ import { parseEventDateTime, isLikelyDateTime } from '../utils/date-time-parser.
             placeholder="Event organizer"
           />
           @if (getConfidence('organizer') > 0) {
-            <span class="confidence-badge" [class.low-confidence]="getConfidence('organizer') < 70">
-              {{ getConfidence('organizer') }}% confident
-            </span>
+            <app-chip
+              [text]="getConfidence('organizer') + '% confident'"
+              type="ui"
+              variant="confidence"
+              [lowConfidence]="getConfidence('organizer') < 70"
+            />
           }
         </div>
 
@@ -187,9 +206,12 @@ import { parseEventDateTime, isLikelyDateTime } from '../utils/date-time-parser.
             placeholder="Ticket prices and purchase info"
           />
           @if (getConfidence('ticketInfo') > 0) {
-            <span class="confidence-badge" [class.low-confidence]="getConfidence('ticketInfo') < 70">
-              {{ getConfidence('ticketInfo') }}% confident
-            </span>
+            <app-chip
+              [text]="getConfidence('ticketInfo') + '% confident'"
+              type="ui"
+              variant="confidence"
+              [lowConfidence]="getConfidence('ticketInfo') < 70"
+            />
           }
         </div>
 
@@ -205,9 +227,12 @@ import { parseEventDateTime, isLikelyDateTime } from '../utils/date-time-parser.
             placeholder="Phone, email, or contact details"
           />
           @if (getConfidence('contactInfo') > 0) {
-            <span class="confidence-badge" [class.low-confidence]="getConfidence('contactInfo') < 70">
-              {{ getConfidence('contactInfo') }}% confident
-            </span>
+            <app-chip
+              [text]="getConfidence('contactInfo') + '% confident'"
+              type="ui"
+              variant="confidence"
+              [lowConfidence]="getConfidence('contactInfo') < 70"
+            />
           }
         </div>
 
@@ -223,9 +248,12 @@ import { parseEventDateTime, isLikelyDateTime } from '../utils/date-time-parser.
             placeholder="Website or social media links"
           />
           @if (getConfidence('website') > 0) {
-            <span class="confidence-badge" [class.low-confidence]="getConfidence('website') < 70">
-              {{ getConfidence('website') }}% confident
-            </span>
+            <app-chip
+              [text]="getConfidence('website') + '% confident'"
+              type="ui"
+              variant="confidence"
+              [lowConfidence]="getConfidence('website') < 70"
+            />
           }
         </div>
 
@@ -304,21 +332,6 @@ import { parseEventDateTime, isLikelyDateTime } from '../utils/date-time-parser.
       border-color: #007bff;
     }
 
-    .confidence-badge {
-      display: inline-block;
-      margin-top: 5px;
-      padding: 2px 8px;
-      background: #28a745;
-      color: white;
-      border-radius: 12px;
-      font-size: 12px;
-      font-weight: 600;
-    }
-
-    .confidence-badge.low-confidence {
-      background: #ffc107;
-      color: #212529;
-    }
 
     /* Location Input Container */
     .location-input-container {

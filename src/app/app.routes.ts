@@ -35,6 +35,11 @@ export const routes: Routes = [
     loadComponent: () => import('./events/feature/add-event.component').then(m => m.AddEventComponent)
   },
   {
+    path: 'events/add/camera',
+    data: { shell: 'main' },
+    loadComponent: () => import('./events/feature/camera-add-event.component').then(m => m.CameraAddEventComponent)
+  },
+  {
     path: 'login',
     data: { shell: 'fullscreen' },
     loadComponent: () => import('./auth/feature/login.component').then(m => m.LoginComponent)
