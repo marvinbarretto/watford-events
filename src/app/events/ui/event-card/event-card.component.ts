@@ -100,7 +100,7 @@ import { ChipComponent } from '../../../shared/ui/chip/chip.component';
   `,
   styles: [`
     .event-card {
-      background: white;
+      background: var(--background-lighter);
       border-radius: 12px;
       overflow: hidden;
       box-shadow: 0 4px 8px rgba(0,0,0,0.1);
@@ -152,12 +152,12 @@ import { ChipComponent } from '../../../shared/ui/chip/chip.component';
       align-items: center;
       gap: 4px;
       padding: 4px 8px;
-      background: rgba(255, 193, 7, 0.95);
-      color: #333;
+      background: var(--warning);
+      color: var(--background-lighter);
       border-radius: 12px;
       font-size: 12px;
       font-weight: 600;
-      border: 1px solid rgba(255, 193, 7, 0.7);
+      border: 1px solid var(--warning-hover);
     }
 
     .mock-icon {
@@ -170,7 +170,7 @@ import { ChipComponent } from '../../../shared/ui/chip/chip.component';
       display: flex;
       align-items: center;
       justify-content: center;
-      background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+      background: linear-gradient(135deg, var(--background-lighter), var(--background-darker));
     }
 
     .placeholder-icon {
@@ -193,7 +193,7 @@ import { ChipComponent } from '../../../shared/ui/chip/chip.component';
       margin: 0;
       font-size: 18px;
       font-weight: 600;
-      color: #333;
+      color: var(--text);
       line-height: 1.3;
       flex: 1;
       margin-right: 10px;
@@ -209,7 +209,7 @@ import { ChipComponent } from '../../../shared/ui/chip/chip.component';
       gap: 8px;
       margin-bottom: 5px;
       font-size: 14px;
-      color: #666;
+      color: var(--text-secondary);
     }
 
     .date-icon, .location-icon {
@@ -218,7 +218,7 @@ import { ChipComponent } from '../../../shared/ui/chip/chip.component';
 
     .event-description {
       margin: 0 0 15px 0;
-      color: #666;
+      color: var(--text-secondary);
       font-size: 14px;
       line-height: 1.4;
       display: -webkit-box;
@@ -246,23 +246,23 @@ import { ChipComponent } from '../../../shared/ui/chip/chip.component';
     }
 
     .edit-btn {
-      background: #e7f3ff;
-      color: #007bff;
+      background: var(--secondary);
+      color: var(--primary);
     }
 
     .publish-btn {
-      background: #d4edda;
-      color: #155724;
+      background: var(--success);
+      color: var(--background-lighter);
     }
 
     .share-btn {
-      background: #cce5ff;
-      color: #0066cc;
+      background: var(--info);
+      color: var(--background-lighter);
     }
 
     .delete-btn {
-      background: #f8d7da;
-      color: #721c24;
+      background: var(--error);
+      color: var(--background-lighter);
     }
 
     .action-btn:hover {

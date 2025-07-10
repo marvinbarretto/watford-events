@@ -1,10 +1,12 @@
-import { Component, inject, OnInit } from '@angular/core';
+import { Component, inject, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
 import { AdminStore } from '../../data-access/admin.store';
 import { VenueService } from '@app/venues/data-access/venue.service';
 import { Venue } from '@app/venues/utils/venue.model';
+import { VenueFormComponent } from '@app/venues/feature/venue-form.component';
+import { OverlayService } from '@app/shared/data-access/overlay.service';
 
 @Component({
   selector: 'app-admin-venue-management',
@@ -15,6 +17,7 @@ import { Venue } from '@app/venues/utils/venue.model';
 export class AdminVenueManagement implements OnInit {
   private readonly adminStore = inject(AdminStore);
   private readonly venueService = inject(VenueService);
+  private readonly overlayService = inject(OverlayService);
 
   // Expose store signals to template
   readonly venues = this.adminStore.venues;
@@ -27,6 +30,7 @@ export class AdminVenueManagement implements OnInit {
   sortBy: 'name' | 'address' | 'status' | 'createdAt' = 'name';
   sortOrder: 'asc' | 'desc' = 'asc';
   showOnlyAccessible = false;
+
 
   // Available categories for filtering
   readonly categories: Array<{ value: Venue['category'] | 'all', label: string }> = [
@@ -197,8 +201,31 @@ export class AdminVenueManagement implements OnInit {
     return `${geo.lat.toFixed(6)}, ${geo.lng.toFixed(6)}`;
   }
 
-  createNewVenue() {
-    // TODO: Implement venue creation modal or navigate to venue form
-    console.log('Create new venue - implement navigation to venue form');
+  async createNewVenue() {
+    const overlayResult = this.overlayService.open(VenueFormComponent, {}, { venue: null });
+    
+    try {
+      const result = await overlayResult.result;
+      if (result) {
+        // Reload venues to ensure consistency
+        await this.loadVenues();
+      }
+    } catch (error) {
+      console.error('Error creating venue:', error);
+    }
+  }
+
+  async editVenue(venue: Venue) {
+    const overlayResult = this.overlayService.open(VenueFormComponent, {}, { venue });
+    
+    try {
+      const result = await overlayResult.result;
+      if (result) {
+        // Reload venues to ensure consistency
+        await this.loadVenues();
+      }
+    } catch (error) {
+      console.error('Error editing venue:', error);
+    }
   }
 }

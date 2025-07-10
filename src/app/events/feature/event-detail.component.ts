@@ -277,6 +277,22 @@ import { ChipComponent } from '../../shared/ui/chip/chip.component';
                 <span class="meta-value event-id">{{ event()!.id }}</span>
               </div>
             </div>
+
+            <!-- Debug Section -->
+            <div class="debug-section">
+              <h3 class="section-title">🐛 Debug Information</h3>
+              
+              <button class="toggle-btn" (click)="toggleDebugData()">
+                <span>{{ showDebugData() ? '▼' : '▶' }}</span>
+                <span>Raw Event Object</span>
+              </button>
+              
+              @if (showDebugData()) {
+                <div class="debug-content">
+                  <pre>{{ getDebugEventData() }}</pre>
+                </div>
+              }
+            </div>
           </div>
         </div>
       }
@@ -303,8 +319,8 @@ import { ChipComponent } from '../../shared/ui/chip/chip.component';
     .spinner {
       width: 40px;
       height: 40px;
-      border: 4px solid #f3f3f3;
-      border-top: 4px solid #007bff;
+      border: 4px solid var(--border);
+      border-top: 4px solid var(--primary);
       border-radius: 50%;
       animation: spin 1s linear infinite;
       margin-bottom: 20px;
@@ -321,14 +337,14 @@ import { ChipComponent } from '../../shared/ui/chip/chip.component';
     }
 
     .error-state h2 {
-      color: #dc3545;
+      color: var(--error);
       margin-bottom: 10px;
     }
 
     .back-btn {
       padding: 10px 20px;
-      background: #007bff;
-      color: white;
+      background: var(--primary);
+      color: var(--on-primary);
       border: none;
       border-radius: 6px;
       cursor: pointer;
@@ -336,7 +352,7 @@ import { ChipComponent } from '../../shared/ui/chip/chip.component';
     }
 
     .back-btn:hover {
-      background: #0056b3;
+      background: var(--primary-hover);
     }
 
     /* Hero Section */
@@ -363,7 +379,7 @@ import { ChipComponent } from '../../shared/ui/chip/chip.component';
     .hero-placeholder {
       width: 100%;
       height: 100%;
-      background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+      background: linear-gradient(135deg, var(--background-lighter), var(--background-darker));
       display: flex;
       align-items: center;
       justify-content: center;
@@ -413,21 +429,24 @@ import { ChipComponent } from '../../shared/ui/chip/chip.component';
     }
 
     .edit-btn {
-      background: rgba(0, 123, 255, 0.9);
-      color: white;
+      background: var(--primary);
+      color: var(--on-primary);
+      opacity: 0.9;
     }
 
     .edit-btn:hover {
-      background: rgba(0, 123, 255, 1);
+      opacity: 1;
     }
 
     .share-btn {
-      background: rgba(40, 167, 69, 0.9);
-      color: white;
+      background: var(--success);
+      color: var(--on-primary);
+      opacity: 0.9;
     }
 
     .share-btn:hover {
-      background: rgba(40, 167, 69, 1);
+      background: var(--success-hover);
+      opacity: 1;
     }
 
     /* Event Header */
@@ -447,7 +466,7 @@ import { ChipComponent } from '../../shared/ui/chip/chip.component';
       font-size: 2.5rem;
       font-weight: 700;
       margin: 0 0 10px 0;
-      color: #333;
+      color: var(--text);
       line-height: 1.2;
     }
 
@@ -460,19 +479,20 @@ import { ChipComponent } from '../../shared/ui/chip/chip.component';
       padding: 0 20px;
     }
 
-    .info-section, .ai-section, .social-section, .meta-section {
-      background: white;
+    .info-section, .ai-section, .social-section, .meta-section, .debug-section {
+      background: var(--background-lighter);
       padding: 30px;
       border-radius: 16px;
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+      box-shadow: var(--shadow);
+      border: 1px solid var(--border);
     }
 
     .section-title {
       font-size: 1.25rem;
       font-weight: 600;
       margin: 0 0 20px 0;
-      color: #333;
-      border-bottom: 2px solid #f1f3f4;
+      color: var(--text);
+      border-bottom: 2px solid var(--border);
       padding-bottom: 10px;
     }
 
@@ -503,13 +523,13 @@ import { ChipComponent } from '../../shared/ui/chip/chip.component';
       display: block;
       font-size: 14px;
       font-weight: 600;
-      color: #666;
+      color: var(--text-secondary);
       margin-bottom: 4px;
     }
 
     .info-value {
       font-size: 16px;
-      color: #333;
+      color: var(--text);
       line-height: 1.5;
     }
 
@@ -519,7 +539,7 @@ import { ChipComponent } from '../../shared/ui/chip/chip.component';
     }
 
     .website-link {
-      color: #007bff;
+      color: var(--primary);
       text-decoration: none;
     }
 
@@ -541,26 +561,26 @@ import { ChipComponent } from '../../shared/ui/chip/chip.component';
 
     .ai-stat-label {
       font-weight: 600;
-      color: #666;
+      color: var(--text-secondary);
     }
 
     .ai-stat-value {
       font-weight: 700;
-      color: #333;
+      color: var(--text);
     }
 
     .confidence-bar {
       position: relative;
       width: 120px;
       height: 20px;
-      background: #f1f3f4;
+      background: var(--background-darker);
       border-radius: 10px;
       overflow: hidden;
     }
 
     .confidence-fill {
       height: 100%;
-      background: linear-gradient(90deg, #dc3545 0%, #ffc107 50%, #28a745 100%);
+      background: linear-gradient(90deg, var(--error) 0%, var(--warning) 50%, var(--success) 100%);
       transition: width 0.3s ease;
     }
 
@@ -588,24 +608,25 @@ import { ChipComponent } from '../../shared/ui/chip/chip.component';
       border: none;
       font-size: 14px;
       font-weight: 600;
-      color: #007bff;
+      color: var(--primary);
       cursor: pointer;
     }
 
-    .raw-text-content {
+    .raw-text-content, .debug-content {
       margin-top: 10px;
       padding: 15px;
-      background: #f8f9fa;
+      background: var(--background-lightest);
       border-radius: 8px;
-      border: 1px solid #e9ecef;
+      border: 1px solid var(--border);
     }
 
-    .raw-text-content pre {
+    .raw-text-content pre, .debug-content pre {
       margin: 0;
       white-space: pre-wrap;
       word-wrap: break-word;
       font-size: 12px;
-      color: #666;
+      color: var(--text-muted);
+      font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
     }
 
     /* Social Section */
@@ -619,21 +640,22 @@ import { ChipComponent } from '../../shared/ui/chip/chip.component';
     .social-stat {
       text-align: center;
       padding: 20px;
-      background: #f8f9fa;
+      background: var(--background-lightest);
       border-radius: 12px;
+      border: 1px solid var(--border);
     }
 
     .social-stat-number {
       display: block;
       font-size: 2rem;
       font-weight: 700;
-      color: #007bff;
+      color: var(--primary);
       margin-bottom: 5px;
     }
 
     .social-stat-label {
       font-size: 14px;
-      color: #666;
+      color: var(--text-secondary);
     }
 
     .social-actions {
@@ -648,8 +670,8 @@ import { ChipComponent } from '../../shared/ui/chip/chip.component';
       justify-content: center;
       gap: 8px;
       padding: 12px 24px;
-      background: #28a745;
-      color: white;
+      background: var(--success);
+      color: var(--on-primary);
       border: none;
       border-radius: 8px;
       font-size: 16px;
@@ -659,7 +681,7 @@ import { ChipComponent } from '../../shared/ui/chip/chip.component';
     }
 
     .rsvp-btn:hover {
-      background: #1e7e34;
+      background: var(--success-hover);
       transform: translateY(-2px);
     }
 
@@ -670,24 +692,25 @@ import { ChipComponent } from '../../shared/ui/chip/chip.component';
       align-items: center;
       margin-bottom: 12px;
       padding: 8px 0;
-      border-bottom: 1px solid #f1f3f4;
+      border-bottom: 1px solid var(--border);
     }
 
     .meta-label {
       font-weight: 600;
-      color: #666;
+      color: var(--text-secondary);
     }
 
     .meta-value {
-      color: #333;
+      color: var(--text);
     }
 
     .event-id {
       font-family: monospace;
       font-size: 14px;
-      background: #f8f9fa;
+      background: var(--background-lightest);
       padding: 2px 6px;
       border-radius: 4px;
+      border: 1px solid var(--border);
     }
 
     /* Mobile Responsive */
@@ -754,6 +777,7 @@ export class EventDetailComponent implements OnInit {
   readonly loading = signal(true);
   readonly error = signal<string | null>(null);
   readonly showRawText = signal(false);
+  readonly showDebugData = signal(false);
 
   // Auth
   readonly user = this.authStore.user;
@@ -889,6 +913,17 @@ export class EventDetailComponent implements OnInit {
 
   toggleRawText() {
     this.showRawText.set(!this.showRawText());
+  }
+
+  toggleDebugData() {
+    this.showDebugData.set(!this.showDebugData());
+  }
+
+  getDebugEventData(): string {
+    const currentEvent = this.event();
+    if (!currentEvent) return 'No event data available';
+    
+    return JSON.stringify(currentEvent, null, 2);
   }
 
   async toggleRsvp() {

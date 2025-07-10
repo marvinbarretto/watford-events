@@ -108,6 +108,13 @@
               </div>
 
               <div class="venue-actions">
+                <div class="edit-actions">
+                  <button class="action-btn primary" 
+                          (click)="editVenue(venue)"
+                          (click)="$event.stopPropagation()">
+                    Edit
+                  </button>
+                </div>
                 <div class="status-actions">
                   <button class="action-btn success" 
                           (click)="updateVenueStatus(venue.id, 'published')"
@@ -284,4 +291,5 @@
       }
     </div>
   }
+
 </div>

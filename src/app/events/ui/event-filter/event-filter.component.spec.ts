@@ -61,7 +61,7 @@ describe('EventFilterComponent', () => {
 
     it('should display individual counts for each filter option', () => {
       const filterButtons = fixture.debugElement.queryAll(By.css('.filter-option'));
-      const counts = filterButtons.map(button => 
+      const counts = filterButtons.map(button =>
         button.query(By.css('.option-count'))?.nativeElement?.textContent?.trim()
       );
 
@@ -248,7 +248,7 @@ describe('EventFilterComponent', () => {
   describe('Edge Cases and Error Handling', () => {
     it('should handle undefined eventCounts gracefully', () => {
       fixture.componentRef.setInput('eventCounts', undefined);
-      
+
       expect(() => {
         fixture.detectChanges();
       }).not.toThrow();
@@ -282,7 +282,7 @@ describe('EventFilterComponent', () => {
       // This tests the TypeScript typing more than runtime behavior
       // but ensures the component doesn't break with unexpected values
       fixture.componentRef.setInput('activeFilter', 'invalid-filter' as FilterOption);
-      
+
       expect(() => {
         fixture.detectChanges();
       }).not.toThrow();

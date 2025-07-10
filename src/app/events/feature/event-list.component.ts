@@ -199,7 +199,7 @@ import { EventCardComponent } from '../ui/event-card/event-card.component';
 
     .header h1 {
       margin: 0;
-      color: #333;
+      color: var(--text);
     }
 
     .add-event-btn {
@@ -207,8 +207,8 @@ import { EventCardComponent } from '../ui/event-card/event-card.component';
       align-items: center;
       gap: 8px;
       padding: 12px 24px;
-      background: #007bff;
-      color: white;
+      background: var(--primary);
+      color: var(--on-primary);
       border: none;
       border-radius: 8px;
       font-size: 16px;
@@ -218,7 +218,7 @@ import { EventCardComponent } from '../ui/event-card/event-card.component';
     }
 
     .add-event-btn:hover {
-      background: #0056b3;
+      background: var(--primary-hover);
       transform: translateY(-2px);
     }
 
@@ -227,8 +227,8 @@ import { EventCardComponent } from '../ui/event-card/event-card.component';
       align-items: center;
       gap: 8px;
       padding: 12px 24px;
-      background: #28a745;
-      color: white;
+      background: var(--success);
+      color: var(--on-primary);
       border: none;
       border-radius: 8px;
       font-size: 16px;
@@ -238,7 +238,7 @@ import { EventCardComponent } from '../ui/event-card/event-card.component';
     }
 
     .login-btn:hover {
-      background: #1e7e34;
+      background: var(--success-hover);
       transform: translateY(-2px);
     }
 
@@ -250,9 +250,9 @@ import { EventCardComponent } from '../ui/event-card/event-card.component';
     .user-info {
       margin-bottom: 20px;
       padding: 15px;
-      background: #f8f9fa;
+      background: var(--background-lighter);
       border-radius: 8px;
-      color: #495057;
+      color: var(--text-secondary);
     }
 
     /* Loading and Error States */
@@ -264,8 +264,8 @@ import { EventCardComponent } from '../ui/event-card/event-card.component';
     .spinner {
       width: 40px;
       height: 40px;
-      border: 4px solid #f3f3f3;
-      border-top: 4px solid #007bff;
+      border: 4px solid var(--border);
+      border-top: 4px solid var(--primary);
       border-radius: 50%;
       animation: spin 1s linear infinite;
       margin: 0 auto 20px;
@@ -278,8 +278,8 @@ import { EventCardComponent } from '../ui/event-card/event-card.component';
 
     .retry-btn {
       padding: 10px 20px;
-      background: #007bff;
-      color: white;
+      background: var(--primary);
+      color: var(--on-primary);
       border: none;
       border-radius: 6px;
       cursor: pointer;
@@ -297,12 +297,12 @@ import { EventCardComponent } from '../ui/event-card/event-card.component';
     }
 
     .empty-state h2 {
-      color: #333;
+      color: var(--text);
       margin-bottom: 10px;
     }
 
     .empty-state p {
-      color: #666;
+      color: var(--text-secondary);
       margin-bottom: 30px;
     }
 
@@ -311,8 +311,8 @@ import { EventCardComponent } from '../ui/event-card/event-card.component';
       align-items: center;
       gap: 10px;
       padding: 15px 30px;
-      background: #28a745;
-      color: white;
+      background: var(--success);
+      color: var(--on-primary);
       border: none;
       border-radius: 8px;
       font-size: 16px;
@@ -322,7 +322,7 @@ import { EventCardComponent } from '../ui/event-card/event-card.component';
     }
 
     .create-first-btn:hover {
-      background: #1e7e34;
+      background: var(--success-hover);
       transform: translateY(-2px);
     }
 
@@ -343,7 +343,7 @@ import { EventCardComponent } from '../ui/event-card/event-card.component';
       flex-direction: column;
       align-items: center;
       padding: 20px;
-      background: white;
+      background: var(--background-lighter);
       border-radius: 8px;
       box-shadow: 0 2px 4px rgba(0,0,0,0.1);
     }
@@ -351,13 +351,13 @@ import { EventCardComponent } from '../ui/event-card/event-card.component';
     .stat-number {
       font-size: 32px;
       font-weight: bold;
-      color: #007bff;
+      color: var(--primary);
       margin-bottom: 5px;
     }
 
     .stat-label {
       font-size: 14px;
-      color: #666;
+      color: var(--text-secondary);
     }
 
     /* Filter Tabs */
@@ -371,23 +371,24 @@ import { EventCardComponent } from '../ui/event-card/event-card.component';
 
     .filter-tab {
       padding: 8px 16px;
-      background: white;
-      border: 2px solid #e9ecef;
+      background: var(--background-lighter);
+      border: 2px solid var(--border);
       border-radius: 20px;
       font-size: 14px;
       cursor: pointer;
       transition: all 0.2s;
       white-space: nowrap;
+      color: var(--text);
     }
 
     .filter-tab:hover {
-      border-color: #007bff;
+      border-color: var(--primary);
     }
 
     .filter-tab.active {
-      background: #007bff;
-      color: white;
-      border-color: #007bff;
+      background: var(--primary);
+      color: var(--on-primary);
+      border-color: var(--primary);
     }
 
     /* Mock Filter Row */
@@ -397,13 +398,13 @@ import { EventCardComponent } from '../ui/event-card/event-card.component';
       gap: 15px;
       margin-bottom: 30px;
       padding: 15px;
-      background: #f8f9fa;
+      background: var(--background-lighter);
       border-radius: 8px;
     }
 
     .filter-label {
       font-weight: 600;
-      color: #333;
+      color: var(--text);
       font-size: 14px;
     }
 
@@ -414,23 +415,24 @@ import { EventCardComponent } from '../ui/event-card/event-card.component';
 
     .mock-filter-tab {
       padding: 6px 12px;
-      background: white;
-      border: 1px solid #dee2e6;
+      background: var(--background);
+      border: 1px solid var(--border);
       border-radius: 16px;
       font-size: 13px;
       cursor: pointer;
       transition: all 0.2s;
       white-space: nowrap;
+      color: var(--text);
     }
 
     .mock-filter-tab:hover {
-      border-color: #007bff;
+      border-color: var(--primary);
     }
 
     .mock-filter-tab.active {
-      background: #007bff;
-      color: white;
-      border-color: #007bff;
+      background: var(--primary);
+      color: var(--on-primary);
+      border-color: var(--primary);
     }
 
     /* Events Grid */

@@ -275,6 +275,7 @@ export class VenueFormComponent implements OnInit {
   @Input() venue: Venue | null = null;
   @Output() saved = new EventEmitter<Venue>();
   @Output() cancelled = new EventEmitter<void>();
+  @Output() result = new EventEmitter<Venue | null>();
 
   private readonly fb = inject(FormBuilder);
   private readonly router = inject(Router);
@@ -410,6 +411,7 @@ export class VenueFormComponent implements OnInit {
         
         const updatedVenue = { ...this.venue, ...venueData, updatedAt: new Date() };
         this.saved.emit(updatedVenue);
+        this.result.emit(updatedVenue);
       } else {
         // Create new venue
         const newVenue = await this.venueService.createVenue({
@@ -425,6 +427,7 @@ export class VenueFormComponent implements OnInit {
         this.venueStore.addVenue(newVenue);
         
         this.saved.emit(newVenue);
+        this.result.emit(newVenue);
       }
 
       // Reset form if creating new venue
@@ -442,5 +445,6 @@ export class VenueFormComponent implements OnInit {
 
   cancel() {
     this.cancelled.emit();
+    this.result.emit(null);
   }
 }

@@ -20,6 +20,21 @@ export const routes: Routes = [
     loadComponent: () => import('./events/feature/event-list.component').then(m => m.EventListComponent)
   },
   {
+    path: 'venues',
+    data: { shell: 'main' },
+    loadComponent: () => import('./venues/feature/venue-list.component').then(m => m.VenueListComponent)
+  },
+  {
+    path: 'events/add/camera',
+    data: { shell: 'main' },
+    loadComponent: () => import('./events/feature/camera-add-event.component').then(m => m.CameraAddEventComponent)
+  },
+  {
+    path: 'events/add',
+    data: { shell: 'main' },
+    loadComponent: () => import('./events/feature/add-event.component').then(m => m.AddEventComponent)
+  },
+  {
     path: 'events/:id',
     data: { shell: 'main' },
     loadComponent: () => import('./events/feature/event-detail.component').then(m => m.EventDetailComponent)
@@ -28,16 +43,6 @@ export const routes: Routes = [
     path: 'flyer-parser',
     data: { shell: 'flyer-parser' },
     loadComponent: () => import('./events/feature/flyer-parser.component').then(m => m.FlyerParserComponent)
-  },
-  {
-    path: 'events/add',
-    data: { shell: 'main' },
-    loadComponent: () => import('./events/feature/add-event.component').then(m => m.AddEventComponent)
-  },
-  {
-    path: 'events/add/camera',
-    data: { shell: 'main' },
-    loadComponent: () => import('./events/feature/camera-add-event.component').then(m => m.CameraAddEventComponent)
   },
   {
     path: 'login',

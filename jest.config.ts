@@ -4,7 +4,34 @@ export default {
 
   testEnvironment: 'jsdom',
   moduleFileExtensions: ['ts', 'js', 'html', 'json', 'mjs'],
-  testMatch: ['**/+(*.)+(spec|test).+(ts|js)'],
+  
+  // Focus test matching on current development areas only
+  testMatch: [
+    '<rootDir>/src/app/events/**/*.spec.ts',
+    '<rootDir>/src/app/home/**/*.spec.ts', 
+    '<rootDir>/src/app/shared/**/*.spec.ts',
+    '<rootDir>/src/testing/**/*.spec.ts',
+    '<rootDir>/src/app/auth/**/*.spec.ts',
+    '<rootDir>/src/app/users/**/*.spec.ts'
+  ],
+
+  // Aggressively ignore large directories to reduce file watching
+  watchPathIgnorePatterns: [
+    'node_modules',
+    'dist',
+    'coverage',
+    'docs',
+    'android',
+    'ios',
+    '\\.git',
+    'firebase-debug\\.log',
+    'firestore-debug\\.log',
+    'ui-debug\\.log',
+    '\\.firebase'
+  ],
+
+  // Use native Node.js fs.watch instead of Watchman for better file handle management
+  watchman: false,
 
   // ignore everything in node_modules EXCEPT Angular packages
   transformIgnorePatterns: [

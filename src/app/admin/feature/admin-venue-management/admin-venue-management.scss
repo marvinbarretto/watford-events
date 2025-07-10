@@ -267,10 +267,18 @@
         align-items: center;
         padding-top: 15px;
         border-top: 1px solid #e0e0e0;
+        gap: 10px;
+
+        .edit-actions {
+          display: flex;
+          gap: 8px;
+        }
 
         .status-actions {
           display: flex;
           gap: 8px;
+          flex: 1;
+          justify-content: center;
         }
 
         .action-btn {
@@ -311,6 +319,15 @@
 
             &:hover:not(:disabled) {
               background: #5a6268;
+            }
+          }
+
+          &.primary {
+            background: #007bff;
+            color: white;
+
+            &:hover:not(:disabled) {
+              background: #0056b3;
             }
           }
 

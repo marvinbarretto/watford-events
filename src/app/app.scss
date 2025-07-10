@@ -26,3 +26,17 @@
     padding: 1rem 0.5rem;
   }
 }
+
+// Overlay service styles
+.overlay-backdrop {
+  background: var(--color-overlay);
+  backdrop-filter: blur(2px);
+}
+
+.overlay-panel {
+  background: var(--color-background-lighter);
+  border-radius: 8px;
+  box-shadow: var(--color-shadow);
+  max-height: 90vh;
+  overflow-y: auto;
+}
