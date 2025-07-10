@@ -4,6 +4,7 @@ import { RouterModule } from '@angular/router';
 import { ThemeStore } from '@shared/data-access/theme.store';
 import { AuthStore } from '@auth/data-access/auth.store';
 import { Roles } from '@auth/utils/roles.enum';
+import packageJson from '../../../../../package.json';
 
 @Component({
   selector: 'app-header',
@@ -17,6 +18,7 @@ export class HeaderComponent {
   protected readonly authStore = inject(AuthStore);
   
   showExamplesDropdown = false;
+  readonly version = packageJson.version;
 
   get isAdmin(): boolean {
     return this.authStore.user()?.role === Roles.Admin;

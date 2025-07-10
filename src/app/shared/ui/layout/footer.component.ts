@@ -1,6 +1,7 @@
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
+import packageJson from '../../../../../package.json';
 
 @Component({
   selector: 'app-footer',
@@ -11,4 +12,5 @@ import { RouterModule } from '@angular/router';
 })
 export class FooterComponent {
   readonly currentYear = new Date().getFullYear();
+  readonly version = packageJson.version;
 }
