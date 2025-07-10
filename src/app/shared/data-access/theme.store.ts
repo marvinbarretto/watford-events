@@ -62,11 +62,11 @@ export class ThemeStore {
 
     if (this.isDark()) {
       // Switch to a light theme (default to first light theme)
-      const newTheme = lightThemes[0]?.[0] as ThemeType || 'fresh';
+      const newTheme = lightThemes[0]?.[0] as ThemeType || 'aurora';
       this.setTheme(newTheme);
     } else {
       // Switch to a dark theme (default to first dark theme)
-      const newTheme = darkThemes[0]?.[0] as ThemeType || 'midnight';
+      const newTheme = darkThemes[0]?.[0] as ThemeType || 'nebula';
       this.setTheme(newTheme);
     }
   }
@@ -96,7 +96,7 @@ export class ThemeStore {
 
     // ✅ NEW: Add all theme colors directly (flat structure)
     Object.entries(theme.colors).forEach(([key, value]) => {
-      variables[`--color-${this._kebabCase(key)}`] = value;
+      variables[`--${this._kebabCase(key)}`] = value;
     });
 
     return variables;
@@ -108,11 +108,17 @@ export class ThemeStore {
     // ✅ UPDATED: Handle new theme names and legacy names
     const themeMap: Record<string, ThemeType> = {
       // Current themes
-      'fresh': 'fresh',
-      'sunshine': 'sunshine',
-      'midnight': 'midnight',
-      'coral': 'coral',
-      'forest': 'fresh',
+      'aurora': 'aurora',
+      'sakura': 'sakura',
+      'nebula': 'nebula',
+      'sunset': 'sunset',
+      'ocean': 'ocean',
+      // Legacy mappings
+      'fresh': 'aurora',
+      'sunshine': 'sunset',
+      'midnight': 'nebula',
+      'coral': 'sakura',
+      'forest': 'ocean',
     };
 
     const normalized = themeInput.toLowerCase();
@@ -137,11 +143,11 @@ export class ThemeStore {
 
         if (systemPrefersDark) {
           const darkThemes = this.getDarkThemes();
-          const systemTheme = darkThemes[0]?.type || 'midnight';
+          const systemTheme = darkThemes[0]?.type || 'nebula';
           this._themeType.set(systemTheme);
         } else {
           const lightThemes = this.getLightThemes();
-          const systemTheme = lightThemes[0]?.type || 'fresh';
+          const systemTheme = lightThemes[0]?.type || 'aurora';
           this._themeType.set(systemTheme);
         }
       });

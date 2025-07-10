@@ -10,10 +10,10 @@
   align-items: center;
   margin-bottom: 2rem;
   padding-bottom: 1rem;
-  border-bottom: 2px solid var(--ion-color-light);
+  border-bottom: 2px solid var(--background-lighter);
   
   h1 {
-    color: var(--ion-color-primary);
+    color: var(--primary);
     margin: 0;
     font-size: 2.5rem;
   }
@@ -36,20 +36,20 @@
   }
   
   .back-button {
-    background: var(--ion-color-medium);
+    background: var(--text-secondary);
     color: white;
     
     &:hover {
-      background: var(--ion-color-medium-shade);
+      background: var(--text-muted);
     }
   }
   
   .add-button {
-    background: var(--ion-color-success);
+    background: var(--success);
     color: white;
     
     &:hover {
-      background: var(--ion-color-success-shade);
+      background: var(--success-hover);
     }
   }
 }
@@ -59,7 +59,7 @@
   gap: 2rem;
   margin-bottom: 2rem;
   padding: 1.5rem;
-  background: var(--ion-color-light);
+  background: var(--background-lighter);
   border-radius: 12px;
   
   .filters, .sorting {
@@ -69,21 +69,21 @@
     
     label {
       font-weight: 600;
-      color: var(--ion-color-dark);
+      color: var(--text);
       white-space: nowrap;
     }
     
     select {
       padding: 0.5rem 1rem;
-      border: 2px solid var(--ion-color-medium);
+      border: 2px solid var(--text-secondary);
       border-radius: 6px;
       background: white;
-      color: var(--ion-color-dark);
+      color: var(--text);
       font-size: 1rem;
       
       &:focus {
         outline: none;
-        border-color: var(--ion-color-primary);
+        border-color: var(--primary);
       }
     }
   }
@@ -93,7 +93,7 @@
   text-align: center;
   padding: 4rem;
   font-size: 1.5rem;
-  color: var(--ion-color-medium);
+  color: var(--text-secondary);
 }
 
 .events-container {
@@ -116,11 +116,11 @@
 .empty-state {
   text-align: center;
   padding: 4rem;
-  color: var(--ion-color-medium);
+  color: var(--text-secondary);
   
   h3 {
     margin-bottom: 1rem;
-    color: var(--ion-color-dark);
+    color: var(--text);
   }
 }
 
@@ -139,8 +139,8 @@
   }
   
   &.selected {
-    border-color: var(--ion-color-primary);
-    background: var(--ion-color-primary-tint);
+    border-color: var(--primary);
+    background: var(--background-lightest);
   }
 }
 
@@ -152,7 +152,7 @@
   
   h3 {
     margin: 0;
-    color: var(--ion-color-dark);
+    color: var(--text);
     font-size: 1.25rem;
   }
 }
@@ -165,23 +165,23 @@
   text-transform: uppercase;
   
   &.success {
-    background: var(--ion-color-success-tint);
-    color: var(--ion-color-success-shade);
+    background: var(--background-lightest);
+    color: var(--success-hover);
   }
   
   &.warning {
-    background: var(--ion-color-warning-tint);
-    color: var(--ion-color-warning-shade);
+    background: var(--background-lightest);
+    color: var(--warning-hover);
   }
   
   &.danger {
-    background: var(--ion-color-danger-tint);
-    color: var(--ion-color-danger-shade);
+    background: var(--background-lightest);
+    color: var(--error-hover);
   }
   
   &.medium {
-    background: var(--ion-color-medium-tint);
-    color: var(--ion-color-medium-shade);
+    background: var(--background-lightest);
+    color: var(--text-muted);
   }
 }
 
@@ -190,10 +190,10 @@
   
   .detail-item {
     margin-bottom: 0.5rem;
-    color: var(--ion-color-dark);
+    color: var(--text);
     
     strong {
-      color: var(--ion-color-primary);
+      color: var(--primary);
     }
   }
 }
@@ -230,38 +230,38 @@
   }
   
   &.success {
-    background: var(--ion-color-success);
+    background: var(--success);
     color: white;
     
     &:hover:not(:disabled) {
-      background: var(--ion-color-success-shade);
+      background: var(--success-hover);
     }
   }
   
   &.warning {
-    background: var(--ion-color-warning);
+    background: var(--warning);
     color: white;
     
     &:hover:not(:disabled) {
-      background: var(--ion-color-warning-shade);
+      background: var(--warning-hover);
     }
   }
   
   &.danger {
-    background: var(--ion-color-danger);
+    background: var(--error);
     color: white;
     
     &:hover:not(:disabled) {
-      background: var(--ion-color-danger-shade);
+      background: var(--error-hover);
     }
     
     &.outline {
       background: transparent;
-      color: var(--ion-color-danger);
-      border: 2px solid var(--ion-color-danger);
+      color: var(--error);
+      border: 2px solid var(--error);
       
       &:hover {
-        background: var(--ion-color-danger);
+        background: var(--error);
         color: white;
       }
     }
@@ -282,11 +282,11 @@
     justify-content: space-between;
     align-items: center;
     padding: 1.5rem;
-    border-bottom: 1px solid var(--ion-color-light);
+    border-bottom: 1px solid var(--background-lighter);
     
     h2 {
       margin: 0;
-      color: var(--ion-color-primary);
+      color: var(--primary);
     }
     
     .close-btn {
@@ -294,14 +294,14 @@
       border: none;
       font-size: 1.5rem;
       cursor: pointer;
-      color: var(--ion-color-medium);
+      color: var(--text-secondary);
       padding: 0.5rem;
       border-radius: 50%;
       transition: all 0.2s ease;
       
       &:hover {
-        background: var(--ion-color-light);
-        color: var(--ion-color-dark);
+        background: var(--background-lighter);
+        color: var(--text);
       }
     }
   }
@@ -319,18 +319,18 @@
       label {
         display: block;
         font-weight: 600;
-        color: var(--ion-color-primary);
+        color: var(--primary);
         margin-bottom: 0.5rem;
       }
       
       p {
         margin: 0;
-        color: var(--ion-color-dark);
+        color: var(--text);
         line-height: 1.5;
       }
       
       a {
-        color: var(--ion-color-primary);
+        color: var(--primary);
         text-decoration: none;
         
         &:hover {

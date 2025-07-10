@@ -10,13 +10,13 @@
   
   h1 {
     font-size: 2.5rem;
-    color: var(--ion-color-primary);
+    color: var(--primary);
     margin-bottom: 0.5rem;
   }
   
   p {
     font-size: 1.1rem;
-    color: var(--ion-color-medium);
+    color: var(--text-secondary);
     margin: 0;
   }
 }
@@ -25,7 +25,7 @@
   text-align: center;
   padding: 2rem;
   font-size: 1.2rem;
-  color: var(--ion-color-medium);
+  color: var(--text-secondary);
 }
 
 .dashboard-stats {
@@ -36,7 +36,7 @@
 }
 
 .stat-card {
-  background: var(--ion-color-light);
+  background: var(--background-lighter);
   border-radius: 12px;
   padding: 1.5rem;
   text-align: center;
@@ -49,7 +49,7 @@
   
   h3 {
     margin: 0 0 1rem 0;
-    color: var(--ion-color-dark);
+    color: var(--text);
     font-size: 1rem;
     font-weight: 600;
     text-transform: uppercase;
@@ -59,21 +59,21 @@
   .stat-number {
     font-size: 3rem;
     font-weight: bold;
-    color: var(--ion-color-primary);
+    color: var(--primary);
     
     &.pending {
-      color: var(--ion-color-warning);
+      color: var(--warning);
     }
     
     &.approved {
-      color: var(--ion-color-success);
+      color: var(--success);
     }
   }
 }
 
 .dashboard-actions {
   h2 {
-    color: var(--ion-color-dark);
+    color: var(--text);
     margin-bottom: 1.5rem;
     text-align: center;
   }
@@ -95,21 +95,21 @@
     transition: all 0.2s ease;
     
     &.primary {
-      background: var(--ion-color-primary);
+      background: var(--primary);
       color: white;
       
       &:hover {
-        background: var(--ion-color-primary-shade);
+        background: var(--primary-hover);
         transform: translateY(-1px);
       }
     }
     
     &.secondary {
-      background: var(--ion-color-secondary);
+      background: var(--secondary);
       color: white;
       
       &:hover {
-        background: var(--ion-color-secondary-shade);
+        background: var(--secondary-hover);
         transform: translateY(-1px);
       }
     }
