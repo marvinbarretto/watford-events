@@ -7,7 +7,7 @@ export const routes: Routes = [
   {
     path: '',
     data: { shell: 'main' },
-    loadComponent: () => import('./shared/feature/home/home.component').then(m => m.HomeComponent)
+    loadComponent: () => import('./home/feature/home/home.component').then(m => m.HomeComponent)
   },
   {
     path: 'test',
