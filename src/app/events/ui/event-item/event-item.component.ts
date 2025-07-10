@@ -1,0 +1,108 @@
+import { Component, input, output, computed } from '@angular/core';
+import { DatePipe } from '@angular/common';
+import { Event } from '../../utils/event.model';
+import { convertToDate, getRelativeTime } from '../../../shared/utils/date-utils';
+
+@Component({
+  selector: 'app-event-item',
+  standalone: true,
+  imports: [DatePipe],
+  styleUrl: './event-item.component.scss',
+  template: `
+    <div
+      class="event-item"
+      [class.featured]="isFeatured()"
+      [class.expanded]="isExpanded()"
+      (click)="handleClick()"
+    >
+      <div class="event-item-main">
+        <div class="event-date-box">
+          <div class="month">{{ eventDate() | date:'MMM' }}</div>
+          <div class="day">{{ eventDate() | date:'d' }}</div>
+        </div>
+
+        <div class="event-content">
+          <div class="event-header">
+            <h3 class="event-title">{{ event().title }}</h3>
+            @if (isFeatured()) {
+              <span class="featured-badge">Featured</span>
+            }
+            <span class="status-badge" [class]="'status-' + event().status">
+              {{ statusLabel() }}
+            </span>
+          </div>
+
+          <div class="event-meta">
+            @if (event().location) {
+              <span class="meta-item">
+                <span class="icon">📍</span>
+                {{ event().location }}
+              </span>
+            }
+            <span class="meta-item">
+              <span class="icon">🕐</span>
+              {{ eventDate() | date:'shortTime' }}
+            </span>
+            @if (relativeTime()) {
+              <span class="meta-item highlight">
+                {{ relativeTime() }}
+              </span>
+            }
+          </div>
+
+          @if (isExpanded() && event().description) {
+            <div class="event-description">
+              {{ event().description }}
+            </div>
+          }
+        </div>
+
+        <button
+          class="expand-btn"
+          (click)="toggleExpand($event)"
+          [attr.aria-expanded]="isExpanded()"
+          [attr.aria-label]="isExpanded() ? 'Collapse' : 'Expand'"
+        >
+          <span class="expand-icon">{{ isExpanded() ? '⌃' : '⌄' }}</span>
+        </button>
+      </div>
+    </div>
+  `
+})
+export class EventItemComponent {
+  // Inputs
+  readonly event = input.required<Event>();
+  readonly isFeatured = input<boolean>(false);
+  readonly isExpanded = input<boolean>(false);
+
+  // Outputs
+  readonly clicked = output<Event>();
+  readonly expandToggled = output<void>();
+
+  constructor() {
+    // Removed debug logging - date conversion is working correctly
+  }
+
+  // Computed values
+  readonly eventDate = computed(() => convertToDate(this.event().date));
+
+  readonly statusLabel = computed(() => {
+    switch (this.event().status) {
+      case 'published': return 'Live';
+      case 'draft': return 'Draft';
+      case 'cancelled': return 'Cancelled';
+      default: return this.event().status;
+    }
+  });
+
+  readonly relativeTime = computed(() => getRelativeTime(this.eventDate()));
+
+  handleClick() {
+    this.clicked.emit(this.event());
+  }
+
+  toggleExpand(event: MouseEvent) {
+    event.stopPropagation();
+    this.expandToggled.emit();
+  }
+}
