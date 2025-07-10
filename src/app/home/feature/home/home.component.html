@@ -1,0 +1,111 @@
+<div class="home-container">
+  <header class="page-header">
+    <h1 class="page-title">Watford Events</h1>
+    <div class="header-stats">
+      @if (eventCounts().today > 0) {
+        <span class="stat-badge highlight">{{ eventCounts().today }} today</span>
+      }
+      @if (eventCounts().thisWeek > 0) {
+        <span class="stat-badge">{{ eventCounts().thisWeek }} this week</span>
+      }
+    </div>
+  </header>
+
+  <app-event-filter
+    [activeFilter]="currentFilter()"
+    [eventCounts]="eventCounts()"
+    [searchTerm]="searchTerm()"
+    (filterChanged)="onFilterChanged($event)"
+    (searchChanged)="onSearchChanged($event)"
+  />
+
+  <!-- Loading State -->
+  @if (loading()) {
+    <div class="loading-state">
+      <div class="spinner"></div>
+      <p>Loading events...</p>
+    </div>
+  }
+
+  <!-- Error State -->
+  @if (error() && !loading()) {
+    <div class="error-state">
+      <p>{{ error() }}</p>
+      <button class="retry-btn" (click)="eventStore.reload()">Try Again</button>
+    </div>
+  }
+
+  <!-- Events List -->
+  @if (!loading() && !error()) {
+    <!-- Featured Events -->
+    @if (featuredEvents().length > 0 && currentFilter() === 'upcoming') {
+      <section class="featured-section">
+        <h2 class="section-title">Featured Events</h2>
+        <div class="events-list">
+          @for (event of featuredEvents(); track event.id) {
+            <app-event-item
+              [event]="event"
+              [isFeatured]="true"
+              [isExpanded]="isEventExpanded(event.id)"
+              (clicked)="onEventClicked($event)"
+              (expandToggled)="toggleEventExpanded(event.id)"
+            />
+          }
+        </div>
+      </section>
+    }
+
+    <!-- Regular Events -->
+    @if (filteredEvents().length > 0) {
+      <section class="events-section">
+        @if (featuredEvents().length > 0 && currentFilter() === 'upcoming') {
+          <h2 class="section-title">Other Events</h2>
+        }
+        <div class="events-list">
+          @for (event of filteredEvents(); track event.id) {
+            @if (!isEventFeatured(event) || currentFilter() !== 'upcoming') {
+              <app-event-item
+                [event]="event"
+                [isFeatured]="false"
+                [isExpanded]="isEventExpanded(event.id)"
+                (clicked)="onEventClicked($event)"
+                (expandToggled)="toggleEventExpanded(event.id)"
+              />
+            }
+          }
+        </div>
+      </section>
+    }
+
+    <!-- Empty State -->
+    @if (filteredEvents().length === 0) {
+      <div class="empty-state">
+        <div class="empty-icon">📅</div>
+        <h2>No events found</h2>
+        @if (searchTerm()) {
+          <p>No events match your search "{{ searchTerm() }}"</p>
+          <button class="clear-btn" (click)="onSearchChanged('')">Clear search</button>
+        } @else {
+          @switch (currentFilter()) {
+            @case ('today') {
+              <p>No events scheduled for today</p>
+            }
+            @case ('this-week') {
+              <p>No events scheduled for this week</p>
+            }
+            @case ('this-month') {
+              <p>No events scheduled for this month</p>
+            }
+            @case ('upcoming') {
+              <p>No upcoming events at the moment</p>
+            }
+            @default {
+              <p>No events available</p>
+            }
+          }
+          <button class="view-all-btn" (click)="onFilterChanged('all')">View all events</button>
+        }
+      </div>
+    }
+  }
+</div>
