@@ -1,12 +1,10 @@
 import { Component, inject, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { RouterModule } from '@angular/router';
+import { RouterModule, Router } from '@angular/router';
 import { AdminStore } from '../../data-access/admin.store';
 import { VenueService } from '@app/venues/data-access/venue.service';
 import { Venue } from '@app/venues/utils/venue.model';
-import { VenueFormComponent } from '@app/venues/feature/venue-form.component';
-import { OverlayService } from '@app/shared/data-access/overlay.service';
 
 @Component({
   selector: 'app-admin-venue-management',
@@ -17,7 +15,7 @@ import { OverlayService } from '@app/shared/data-access/overlay.service';
 export class AdminVenueManagement implements OnInit {
   private readonly adminStore = inject(AdminStore);
   private readonly venueService = inject(VenueService);
-  private readonly overlayService = inject(OverlayService);
+  private readonly router = inject(Router);
 
   // Expose store signals to template
   readonly venues = this.adminStore.venues;
@@ -202,30 +200,10 @@ export class AdminVenueManagement implements OnInit {
   }
 
   async createNewVenue() {
-    const overlayResult = this.overlayService.open(VenueFormComponent, {}, { venue: null });
-    
-    try {
-      const result = await overlayResult.result;
-      if (result) {
-        // Reload venues to ensure consistency
-        await this.loadVenues();
-      }
-    } catch (error) {
-      console.error('Error creating venue:', error);
-    }
+    await this.router.navigate(['/admin/venues/new']);
   }
 
   async editVenue(venue: Venue) {
-    const overlayResult = this.overlayService.open(VenueFormComponent, {}, { venue });
-    
-    try {
-      const result = await overlayResult.result;
-      if (result) {
-        // Reload venues to ensure consistency
-        await this.loadVenues();
-      }
-    } catch (error) {
-      console.error('Error editing venue:', error);
-    }
+    await this.router.navigate(['/admin/venues', venue.id, 'edit']);
   }
 }

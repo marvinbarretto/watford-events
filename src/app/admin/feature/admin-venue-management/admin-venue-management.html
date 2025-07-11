@@ -3,7 +3,7 @@
     <h1>Venue Management</h1>
     <div class="header-actions">
       <a routerLink="/admin" class="back-button">← Back to Dashboard</a>
-      <button class="add-button" (click)="createNewVenue()">+ Add New Venue</button>
+      <a routerLink="/admin/venues/new" class="add-button">+ Add New Venue</a>
     </div>
   </div>
 
@@ -60,7 +60,7 @@
           <div class="empty-state">
             <h3>No venues found</h3>
             <p>No venues match your current filters.</p>
-            <button class="add-button" (click)="createNewVenue()">Create First Venue</button>
+            <a routerLink="/admin/venues/new" class="add-button">Create First Venue</a>
           </div>
         } @else {
           @for (venue of filteredAndSortedVenues; track venue.id) {
@@ -109,11 +109,11 @@
 
               <div class="venue-actions">
                 <div class="edit-actions">
-                  <button class="action-btn primary" 
-                          (click)="editVenue(venue)"
-                          (click)="$event.stopPropagation()">
+                  <a [routerLink]="['/admin/venues', venue.id, 'edit']" 
+                     class="action-btn primary" 
+                     (click)="$event.stopPropagation()">
                     Edit
-                  </button>
+                  </a>
                 </div>
                 <div class="status-actions">
                   <button class="action-btn success" 
