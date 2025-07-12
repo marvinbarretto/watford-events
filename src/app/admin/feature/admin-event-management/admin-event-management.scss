@@ -36,17 +36,17 @@
   }
   
   .back-button {
-    background: var(--text-secondary);
-    color: white;
+    background: var(--secondary);
+    color: var(--on-secondary);
     
     &:hover {
-      background: var(--text-muted);
+      background: var(--secondary-hover);
     }
   }
   
   .add-button {
     background: var(--success);
-    color: white;
+    color: var(--on-primary);
     
     &:hover {
       background: var(--success-hover);
@@ -75,9 +75,9 @@
     
     select {
       padding: 0.5rem 1rem;
-      border: 2px solid var(--text-secondary);
+      border: 2px solid var(--border);
       border-radius: 6px;
-      background: white;
+      background: var(--background-lighter);
       color: var(--text);
       font-size: 1rem;
       
@@ -125,17 +125,17 @@
 }
 
 .event-card {
-  background: white;
+  background: var(--background-lighter);
   border-radius: 12px;
   padding: 1.5rem;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  box-shadow: var(--shadow);
   cursor: pointer;
   transition: all 0.2s ease;
   border: 2px solid transparent;
   
   &:hover {
     transform: translateY(-2px);
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+    box-shadow: var(--shadow);
   }
   
   &.selected {
@@ -231,7 +231,7 @@
   
   &.success {
     background: var(--success);
-    color: white;
+    color: var(--on-primary);
     
     &:hover:not(:disabled) {
       background: var(--success-hover);
@@ -240,7 +240,7 @@
   
   &.warning {
     background: var(--warning);
-    color: white;
+    color: var(--on-primary);
     
     &:hover:not(:disabled) {
       background: var(--warning-hover);
@@ -249,7 +249,7 @@
   
   &.danger {
     background: var(--error);
-    color: white;
+    color: var(--on-primary);
     
     &:hover:not(:disabled) {
       background: var(--error-hover);
@@ -262,16 +262,16 @@
       
       &:hover {
         background: var(--error);
-        color: white;
+        color: var(--on-primary);
       }
     }
   }
 }
 
 .event-details-panel {
-  background: white;
+  background: var(--background-lighter);
   border-radius: 12px;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  box-shadow: var(--shadow);
   position: sticky;
   top: 2rem;
   max-height: 80vh;
