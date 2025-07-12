@@ -27,7 +27,6 @@
       <div class="auth-info">
         <p><strong>Authenticated:</strong> {{ authStore.isAuthenticated() }}</p>
         <p><strong>User UID:</strong> {{ authStore.uid() || 'Not logged in' }}</p>
-        <p><strong>Anonymous:</strong> {{ authStore.isAnonymous() }}</p>
       </div>
       <div class="button-group">
         <button (click)="loginWithGoogle()">Login with Google</button>

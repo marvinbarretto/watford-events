@@ -15,7 +15,6 @@ export const createMockFirebaseUser = (overrides: Partial<User> = {}): User => {
     email: 'test@example.com',
     displayName: 'Test User',
     emailVerified: true,
-    isAnonymous: false,
     providerData: [],
     refreshToken: 'mock-refresh-token',
     tenantId: null,

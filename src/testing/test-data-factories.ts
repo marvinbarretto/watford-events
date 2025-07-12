@@ -19,7 +19,6 @@ export const createMockUser = (overrides: Partial<User> = {}): User => {
     email: generateEmail('user'),
     displayName: 'Test User',
     emailVerified: true,
-    isAnonymous: false,
     photoURL: null,
     joinedAt: generateTimestamp().toISOString(),
     role: Roles.Authenticated,
@@ -60,14 +59,6 @@ export const createMockActiveUser = (overrides: Partial<User> = {}): User =>
     ...overrides
   });
 
-export const createMockAnonymousUser = (overrides: Partial<User> = {}): User => 
-  createMockUser({
-    isAnonymous: true,
-    email: null,
-    displayName: 'Anonymous User',
-    emailVerified: false,
-    ...overrides
-  });
 
 // Auth model factories
 export const createMockAuthResponse = (overrides: Partial<AuthResponse> = {}): AuthResponse => ({

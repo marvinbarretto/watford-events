@@ -22,7 +22,6 @@ import { signal, computed, inject, Injectable } from '@angular/core';
 import { getAuth, updateProfile, User as FirebaseUser } from 'firebase/auth';
 import { AuthService } from './auth.service';
 import { SsrPlatformService } from '@shared/utils/ssr/ssr-platform.service';
-import { generateAnonymousName } from '@shared/utils/anonymous-names';
 import type { User } from '@users/utils/user.model';
 import { OverlayService } from '@shared/data-access/overlay.service';
 import { Roles } from '../utils/roles.enum';
@@ -47,7 +46,6 @@ export class AuthStore {
 
   // ✅ ONLY auth-derived computeds
   readonly isAuthenticated = computed(() => !!this.token());
-  readonly isAnonymous = computed(() => this.user()?.isAnonymous ?? true);
   readonly uid = computed(() => this.user()?.uid ?? null);
 
   constructor() {
@@ -72,23 +70,13 @@ export class AuthStore {
       const token = await firebaseUser.getIdToken();
       let displayName = firebaseUser.displayName;
 
-      // ✅ Only update Firebase Auth profile for anonymous users
-      if (firebaseUser.isAnonymous && !displayName) {
-        displayName = generateAnonymousName(firebaseUser.uid);
-        try {
-          await updateProfile(firebaseUser, { displayName });
-        } catch (error) {
-          console.warn('[AuthStore] ⚠️ Failed to save anonymous display name:', error);
-        }
-      }
 
       // ✅ Create basic user object with Firebase Auth data only
       const appUser: User = {
         uid: firebaseUser.uid,
         email: firebaseUser.email ?? null,
         photoURL: firebaseUser.photoURL ?? null,
-        displayName: displayName ?? generateAnonymousName(firebaseUser.uid),
-        isAnonymous: firebaseUser.isAnonymous,
+        displayName: displayName ?? firebaseUser.email?.split('@')[0] ?? 'User',
         emailVerified: firebaseUser.emailVerified,
         role: this.getDefaultRole(firebaseUser),
         checkedInPubIds: [],
@@ -149,9 +137,6 @@ export class AuthStore {
   private getDefaultRole(firebaseUser: FirebaseUser): Roles {
     // For now, assign authenticated role to all users
     // In the future, you might want to check email domains or other criteria
-    if (firebaseUser.isAnonymous) {
-      return Roles.Public;
-    }
     
     // TODO: Add admin email check or other admin assignment logic
     // if (firebaseUser.email === 'admin@watford-events.com') {

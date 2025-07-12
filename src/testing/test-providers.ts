@@ -68,10 +68,10 @@ export const createAuthenticatedUserProviders = (userOverrides = {}): Provider[]
   ];
 };
 
-// ==================== ANONYMOUS USER PROVIDERS ====================
-// Providers with no authenticated user
+// ==================== UNAUTHENTICATED PROVIDERS ====================
+// Providers with no authenticated user (logged out state)
 
-export const anonymousUserProviders: Provider[] = [
+export const unauthenticatedProviders: Provider[] = [
   ...firebaseTestProviders
 ];
 
@@ -153,8 +153,8 @@ export const TestProviderPresets = {
   // Firebase with authenticated user
   authenticated: createAuthenticatedUserProviders(),
   
-  // Firebase with anonymous user
-  anonymous: anonymousUserProviders,
+  // Firebase with no authenticated user (logged out)
+  unauthenticated: unauthenticatedProviders,
   
   // For services extending FirestoreService
   firestoreService: firestoreServiceProviders,

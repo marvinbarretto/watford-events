@@ -54,7 +54,6 @@ export class UserStore {
   readonly displayName = computed(() => {
     const user = this.user();
     if (!user) return null;
-    if (user.isAnonymous) return user.displayName || 'Anonymous User';
     return user.displayName || user.email?.split('@')[0] || 'User';
   });
 
@@ -228,7 +227,6 @@ export class UserStore {
             email: authUser.email,
             photoURL: authUser.photoURL,
             displayName: authUser.displayName,
-            isAnonymous: authUser.isAnonymous,
             emailVerified: authUser.emailVerified,
             checkedInPubIds: [],
             streaks: {},

@@ -879,7 +879,6 @@ export const createAuthStoreMock = () => {
     
     // Computed properties
     isAuthenticated: computed(() => !!tokenSignal()),
-    isAnonymous: computed(() => userSignal()?.isAnonymous ?? true),
     uid: computed(() => userSignal()?.uid ?? null),
     
     // Methods
