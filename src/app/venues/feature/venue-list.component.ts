@@ -28,16 +28,16 @@ type SortBy = 'name' | 'category' | 'status' | 'createdAt';
         <!-- View Controls -->
         <div class="view-controls">
           <div class="view-mode-toggle">
-            <button 
-              class="view-btn" 
+            <button
+              class="view-btn"
               [class.active]="viewMode() === 'slim'"
               (click)="setViewMode('slim')"
               type="button">
               <span>📋</span>
               <span>List</span>
             </button>
-            <button 
-              class="view-btn" 
+            <button
+              class="view-btn"
               [class.active]="viewMode() === 'grid'"
               (click)="setViewMode('grid')"
               type="button">
@@ -51,9 +51,9 @@ type SortBy = 'name' | 'category' | 'status' | 'createdAt';
       <!-- Filters & Search -->
       <div class="filters-section">
         <div class="search-bar">
-          <input 
-            type="text" 
-            placeholder="Search venues..." 
+          <input
+            type="text"
+            placeholder="Search venues..."
             [(ngModel)]="searchTerm"
             class="search-input"
           />
@@ -159,14 +159,14 @@ type SortBy = 'name' | 'category' | 'status' | 'createdAt';
 
     .header-content h1 {
       margin: 0 0 0.5rem 0;
-      color: var(--color-text);
+      color: var(--text);
       font-size: 2.5rem;
       font-weight: 700;
     }
 
     .header-subtitle {
       margin: 0;
-      color: var(--color-text-secondary);
+      color: var(--text-secondary);
       font-size: 1.1rem;
     }
 
@@ -178,7 +178,7 @@ type SortBy = 'name' | 'category' | 'status' | 'createdAt';
 
     .view-mode-toggle {
       display: flex;
-      background: var(--color-background-darker);
+      background: var(--background-darker);
       border-radius: 8px;
       padding: 4px;
       gap: 2px;
@@ -192,7 +192,7 @@ type SortBy = 'name' | 'category' | 'status' | 'createdAt';
       border: none;
       border-radius: 6px;
       background: transparent;
-      color: var(--color-text-secondary);
+      color: var(--text-secondary);
       cursor: pointer;
       transition: all 0.2s;
       font-size: 14px;
@@ -200,21 +200,21 @@ type SortBy = 'name' | 'category' | 'status' | 'createdAt';
     }
 
     .view-btn.active {
-      background: var(--color-primary);
-      color: var(--color-on-primary);
+      background: var(--primary);
+      color: var(--on-primary);
     }
 
     .view-btn:hover:not(.active) {
-      background: var(--color-background-lighter);
-      color: var(--color-text);
+      background: var(--background-lighter);
+      color: var(--text);
     }
 
     .filters-section {
-      background: var(--color-background-lighter);
+      background: var(--background-lighter);
       border-radius: 12px;
       padding: 1.5rem;
       margin-bottom: 2rem;
-      border: 1px solid var(--color-border);
+      border: 1px solid var(--border);
     }
 
     .search-bar {
@@ -224,17 +224,17 @@ type SortBy = 'name' | 'category' | 'status' | 'createdAt';
     .search-input {
       width: 100%;
       padding: 12px 16px;
-      border: 1px solid var(--color-border);
+      border: 1px solid var(--border);
       border-radius: 8px;
       font-size: 16px;
-      background: var(--color-background-lighter);
-      color: var(--color-text);
+      background: var(--background-lighter);
+      color: var(--text);
       transition: border-color 0.2s;
     }
 
     .search-input:focus {
       outline: none;
-      border-color: var(--color-primary);
+      border-color: var(--primary);
     }
 
     .filters {
@@ -258,15 +258,15 @@ type SortBy = 'name' | 'category' | 'status' | 'createdAt';
     .filter-group label {
       font-size: 14px;
       font-weight: 500;
-      color: var(--color-text);
+      color: var(--text);
     }
 
     .filter-select {
       padding: 8px 12px;
-      border: 1px solid var(--color-border);
+      border: 1px solid var(--border);
       border-radius: 6px;
-      background: var(--color-background-lighter);
-      color: var(--color-text);
+      background: var(--background-lighter);
+      color: var(--text);
       font-size: 14px;
     }
 
@@ -281,14 +281,14 @@ type SortBy = 'name' | 'category' | 'status' | 'createdAt';
     .loading-state {
       text-align: center;
       padding: 4rem 2rem;
-      color: var(--color-text-secondary);
+      color: var(--text-secondary);
     }
 
     .loading-spinner {
       width: 40px;
       height: 40px;
-      border: 4px solid var(--color-border);
-      border-top: 4px solid var(--color-primary);
+      border: 4px solid var(--border);
+      border-top: 4px solid var(--primary);
       border-radius: 50%;
       animation: spin 1s linear infinite;
       margin: 0 auto 1rem;
@@ -302,7 +302,7 @@ type SortBy = 'name' | 'category' | 'status' | 'createdAt';
     .empty-state {
       text-align: center;
       padding: 4rem 2rem;
-      color: var(--color-text-secondary);
+      color: var(--text-secondary);
     }
 
     .empty-icon {
@@ -313,7 +313,7 @@ type SortBy = 'name' | 'category' | 'status' | 'createdAt';
 
     .empty-state h3 {
       margin: 0 0 1rem 0;
-      color: var(--color-text);
+      color: var(--text);
     }
 
     .empty-state p {
@@ -322,8 +322,8 @@ type SortBy = 'name' | 'category' | 'status' | 'createdAt';
 
     .clear-filters-btn {
       padding: 12px 24px;
-      background: var(--color-primary);
-      color: var(--color-on-primary);
+      background: var(--primary);
+      color: var(--on-primary);
       border: none;
       border-radius: 8px;
       cursor: pointer;
@@ -332,7 +332,7 @@ type SortBy = 'name' | 'category' | 'status' | 'createdAt';
     }
 
     .clear-filters-btn:hover {
-      background: var(--color-primary-hover);
+      background: var(--primary-hover);
     }
 
     .results-info {
@@ -341,7 +341,7 @@ type SortBy = 'name' | 'category' | 'status' | 'createdAt';
     }
 
     .results-count {
-      color: var(--color-text-secondary);
+      color: var(--text-secondary);
       font-size: 14px;
       font-weight: 500;
     }
@@ -393,7 +393,7 @@ export class VenueListComponent implements OnInit {
   // Component state
   readonly loading = signal(false);
   readonly viewMode = signal<ViewMode>('grid');
-  
+
   // Filter state
   searchTerm = '';
   selectedCategory: Venue['category'] | 'all' = 'all';
@@ -423,7 +423,7 @@ export class VenueListComponent implements OnInit {
     // Search filter
     if (this.searchTerm) {
       const term = this.searchTerm.toLowerCase();
-      filtered = filtered.filter(venue => 
+      filtered = filtered.filter(venue =>
         venue.name.toLowerCase().includes(term) ||
         venue.address.toLowerCase().includes(term) ||
         (venue.notesForVisitors && venue.notesForVisitors.toLowerCase().includes(term))
@@ -466,7 +466,7 @@ export class VenueListComponent implements OnInit {
 
   private async loadVenues() {
     this.loading.set(true);
-    
+
     try {
       const venues = await this.venueService.getPublishedVenues();
       this.venues.set(venues);

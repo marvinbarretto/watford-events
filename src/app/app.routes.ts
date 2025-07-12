@@ -55,6 +55,16 @@ export const routes: Routes = [
     loadComponent: () => import('./auth/feature/login.component').then(m => m.LoginComponent)
   },
   {
+    path: 'register',
+    data: { shell: 'fullscreen' },
+    loadComponent: () => import('./auth/feature/register.component').then(m => m.RegisterComponent)
+  },
+  {
+    path: 'forgot-password',
+    data: { shell: 'fullscreen' },
+    loadComponent: () => import('./auth/feature/forgot-password.component').then(m => m.ForgotPasswordComponent)
+  },
+  {
     path: 'settings',
     data: { shell: 'main' },
     canActivate: [authGuard],

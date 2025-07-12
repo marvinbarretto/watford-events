@@ -20,10 +20,10 @@ import { ChipComponent, ChipStatus } from '../../../shared/ui/chip/chip.componen
       <div class="venue-content">
         <div class="venue-header">
           <h3 class="venue-name">{{ venue().name }}</h3>
-          <app-chip 
-            [text]="statusLabel()" 
-            type="ui" 
-            variant="status" 
+          <app-chip
+            [text]="statusLabel()"
+            type="ui"
+            variant="status"
             [status]="chipStatus()"
           />
         </div>
@@ -74,26 +74,26 @@ import { ChipComponent, ChipStatus } from '../../../shared/ui/chip/chip.componen
       display: flex;
       align-items: center;
       gap: 1rem;
-      background: var(--color-background-lighter);
+      background: var(--background-lighter);
       border-radius: 8px;
       padding: 1rem;
       box-shadow: 0 2px 4px rgba(0,0,0,0.1);
       cursor: pointer;
       transition: all 0.2s;
-      border: 1px solid var(--color-border);
+      border: 1px solid var(--border);
     }
 
     .venue-card-slim:hover {
       transform: translateY(-2px);
       box-shadow: 0 4px 8px rgba(0,0,0,0.15);
-      border-color: var(--color-primary);
+      border-color: var(--primary);
     }
 
     .venue-icon {
       position: relative;
       width: 48px;
       height: 48px;
-      background: var(--color-background-darker);
+      background: var(--background-darker);
       border-radius: 8px;
       display: flex;
       align-items: center;
@@ -111,13 +111,13 @@ import { ChipComponent, ChipStatus } from '../../../shared/ui/chip/chip.componen
       right: -4px;
       width: 18px;
       height: 18px;
-      background: var(--color-success);
+      background: var(--success);
       border-radius: 50%;
       display: flex;
       align-items: center;
       justify-content: center;
       font-size: 10px;
-      color: var(--color-on-primary);
+      color: var(--on-primary);
     }
 
     .venue-content {
@@ -137,7 +137,7 @@ import { ChipComponent, ChipStatus } from '../../../shared/ui/chip/chip.componen
       margin: 0;
       font-size: 16px;
       font-weight: 600;
-      color: var(--color-text);
+      color: var(--text);
       line-height: 1.3;
       flex: 1;
     }
@@ -151,7 +151,7 @@ import { ChipComponent, ChipStatus } from '../../../shared/ui/chip/chip.componen
       align-items: center;
       gap: 6px;
       font-size: 13px;
-      color: var(--color-text-secondary);
+      color: var(--text-secondary);
       margin-bottom: 2px;
     }
 
@@ -161,7 +161,7 @@ import { ChipComponent, ChipStatus } from '../../../shared/ui/chip/chip.componen
 
     .accessibility-features, .transport-info {
       font-size: 12px;
-      color: var(--color-text-muted);
+      color: var(--text-muted);
       line-height: 1.3;
       margin-bottom: 2px;
     }
@@ -194,13 +194,13 @@ import { ChipComponent, ChipStatus } from '../../../shared/ui/chip/chip.componen
     }
 
     .view-btn {
-      background: var(--color-secondary);
-      color: var(--color-on-secondary);
+      background: var(--secondary);
+      color: var(--on-secondary);
     }
 
     .directions-btn {
-      background: var(--color-accent);
-      color: var(--color-on-accent);
+      background: var(--accent);
+      color: var(--on-accent);
     }
 
     .action-btn:hover {
@@ -299,12 +299,12 @@ export class VenueCardSlimComponent {
   readonly accessibilityFeatures = computed(() => {
     const venue = this.venue();
     const features: string[] = [];
-    
+
     if (venue.accessibleEntrance) features.push('Accessible Entrance');
     if (venue.stepFreeAccess) features.push('Step-free Access');
     if (venue.elevatorAvailable) features.push('Elevator');
     if (venue.toilets?.accessibleToilet) features.push('Accessible Toilets');
-    
+
     return features;
   });
 
@@ -321,7 +321,7 @@ export class VenueCardSlimComponent {
     if (transport.buses) items.push(`🚌 ${transport.buses}`);
     if (transport.trains) items.push(`🚂 ${transport.trains}`);
     if (transport.parking) items.push(`🚗 ${transport.parking}`);
-    
+
     return items.join(' • ');
   });
 

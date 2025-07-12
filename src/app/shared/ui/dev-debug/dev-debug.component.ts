@@ -4,6 +4,8 @@ import { EventStore } from '../../../events/data-access/event.store';
 import { EventService } from '../../../events/data-access/event.service';
 import { DebugService } from '../../utils/debug.service';
 import { AuthStore } from '../../../auth/data-access/auth.store';
+import { CleanupService } from '../../utils/cleanup.service';
+import { UserService } from '../../../users/data-access/user.service';
 import { environment } from '../../../../environments/environment';
 import { Event } from '../../../events/utils/event.model';
 import { createMockEvent, createMockEvents, createMixedEvents } from '../../../../testing/test-data-factories';
@@ -182,6 +184,34 @@ import { createMockEvent, createMockEvents, createMixedEvents } from '../../../.
               </button>
             </div>
           </section>
+
+          <!-- User Management Actions -->
+          <section class="debug-section">
+            <h3>👥 User Management</h3>
+            <div class="action-buttons">
+              <button 
+                class="btn btn--danger"
+                (click)="clearAnonymousUsers()"
+                [disabled]="cleaningUsers()">
+                @if (cleaningUsers()) {
+                  <span class="spinner"></span> Cleaning...
+                } @else {
+                  🗑️ Clear Anonymous Users
+                }
+              </button>
+              
+              <button 
+                class="btn btn--warning"
+                (click)="clearAllTestUsers()"
+                [disabled]="cleaningUsers()">
+                @if (cleaningUsers()) {
+                  <span class="spinner"></span> Cleaning...
+                } @else {
+                  ⚠️ Clear All Test Users
+                }
+              </button>
+            </div>
+          </section>
         </div>
       }
     </div>
@@ -354,6 +384,15 @@ import { createMockEvent, createMockEvents, createMixedEvents } from '../../../.
       background: #047857;
     }
 
+    .btn--warning {
+      background: #d97706;
+      color: white;
+    }
+
+    .btn--warning:hover:not(:disabled) {
+      background: #b45309;
+    }
+
     .btn--small {
       padding: 4px 8px;
       font-size: 10px;
@@ -450,12 +489,15 @@ export class DevDebugComponent {
   private readonly eventService = inject(EventService);
   protected readonly debugService = inject(DebugService);
   protected readonly authStore = inject(AuthStore);
+  private readonly cleanupService = inject(CleanupService);
+  private readonly userService = inject(UserService);
   protected readonly environment = environment;
 
   // Component state
   protected readonly expanded = signal(false);
   protected readonly deleting = signal(false);
   protected readonly generating = signal(false);
+  protected readonly cleaningUsers = signal(false);
   protected readonly showOnlyMockEvents = signal(false);
 
   // Computed properties for event statistics
@@ -702,6 +744,124 @@ export class DevDebugComponent {
     } catch (error) {
       this.debugService.error('[DevDebug] Performance measurement failed', error);
       alert('Performance measurement failed. Check console for details.');
+    }
+  }
+
+  protected async clearAnonymousUsers(): Promise<void> {
+    // Note: Since we don't store the `isAnonymous` flag in user documents,
+    // we'll identify anonymous users by missing or null email addresses
+    // and specific display name patterns common to anonymous users
+
+    const confirmed = confirm(
+      'This will delete users with null/empty emails or anonymous display names.\n\n' +
+      'This action cannot be undone. Continue?'
+    );
+
+    if (!confirmed) {
+      this.debugService.standard('[DevDebug] Anonymous user cleanup cancelled by user');
+      return;
+    }
+
+    this.cleaningUsers.set(true);
+    this.debugService.standard('[DevDebug] Starting anonymous user cleanup');
+
+    try {
+      // Get all users to identify anonymous ones
+      const allUsers = await this.userService.getAllUsers();
+      
+      // Identify anonymous users by common patterns:
+      // 1. Null or empty email
+      // 2. Display names like "Anonymous", "Guest", or auto-generated patterns
+      const anonymousUsers = allUsers.filter(user => 
+        !user.email || 
+        user.email.trim() === '' ||
+        user.displayName.toLowerCase().includes('anonymous') ||
+        user.displayName.toLowerCase().includes('guest') ||
+        user.displayName.match(/^(User|Anon)\d+$/i) // Auto-generated patterns
+      );
+
+      if (anonymousUsers.length === 0) {
+        this.debugService.standard('[DevDebug] No anonymous users found');
+        alert('No anonymous users found to delete.');
+        return;
+      }
+
+      this.debugService.standard(`[DevDebug] Found ${anonymousUsers.length} anonymous users to delete`, {
+        userIds: anonymousUsers.map(u => u.uid),
+        patterns: anonymousUsers.map(u => ({ uid: u.uid, email: u.email, displayName: u.displayName }))
+      });
+
+      // Use cleanup service batch operations for efficiency
+      let deletedCount = 0;
+      
+      for (const user of anonymousUsers) {
+        try {
+          await this.userService.deleteUser(user.uid);
+          deletedCount++;
+          this.debugService.standard(`[DevDebug] Deleted anonymous user: ${user.displayName} (${user.email || 'no email'})`);
+        } catch (error) {
+          this.debugService.error(`[DevDebug] Failed to delete user ${user.uid}`, error);
+        }
+      }
+
+      this.debugService.success(`[DevDebug] Anonymous user cleanup completed. Deleted ${deletedCount}/${anonymousUsers.length} users`);
+      alert(`Successfully deleted ${deletedCount} anonymous users.\n\nCheck console for details.`);
+
+    } catch (error) {
+      this.debugService.error('[DevDebug] Failed to cleanup anonymous users', error);
+      alert('Failed to cleanup anonymous users. Check console for details.');
+    } finally {
+      this.cleaningUsers.set(false);
+    }
+  }
+
+  protected async clearAllTestUsers(): Promise<void> {
+    const confirmed = confirm(
+      '⚠️ DANGER: This will delete ALL users from the database.\n\n' +
+      'This includes real users, not just test data!\n\n' +
+      'This action cannot be undone. Are you absolutely sure?'
+    );
+
+    if (!confirmed) {
+      this.debugService.standard('[DevDebug] All user cleanup cancelled by user');
+      return;
+    }
+
+    const doubleConfirm = confirm(
+      'FINAL WARNING: You are about to delete ALL USERS.\n\n' +
+      'Type YES in the next prompt to confirm.'
+    );
+
+    if (!doubleConfirm) {
+      this.debugService.standard('[DevDebug] All user cleanup cancelled at double confirmation');
+      return;
+    }
+
+    const finalConfirm = prompt('Type "YES" to confirm deletion of ALL users:');
+    if (finalConfirm !== 'YES') {
+      this.debugService.standard('[DevDebug] All user cleanup cancelled - incorrect confirmation');
+      return;
+    }
+
+    this.cleaningUsers.set(true);
+    this.debugService.standard('[DevDebug] Starting complete user data cleanup');
+
+    try {
+      const result = await this.cleanupService.clearUserData();
+      
+      this.debugService.success('[DevDebug] Complete user cleanup finished', result);
+      
+      const totalDeleted = result.users.deletedCount + result.earnedBadges.deletedCount;
+      alert(`Successfully deleted all user data:\n\n` +
+            `Users: ${result.users.deletedCount}\n` +
+            `Earned Badges: ${result.earnedBadges.deletedCount}\n` +
+            `Total: ${totalDeleted} documents`);
+
+    } catch (error) {
+      this.debugService.error('[DevDebug] Failed to cleanup all users', error);
+      alert('Failed to cleanup all users. Check console for details.');
+    } finally {
+      this.cleaningUsers.set(false);
     }
   }
 }

@@ -5,7 +5,7 @@ import { provideClientHydration, withEventReplay } from '@angular/platform-brows
 import { initializeApp, provideFirebaseApp } from '@angular/fire/app';
 import { getAuth, provideAuth } from '@angular/fire/auth';
 import { getAnalytics, provideAnalytics, ScreenTrackingService, UserTrackingService } from '@angular/fire/analytics';
-import { getFirestore, provideFirestore, enableIndexedDbPersistence } from '@angular/fire/firestore';
+import { getFirestore, provideFirestore, initializeFirestore, connectFirestoreEmulator, persistentLocalCache, persistentSingleTabManager } from '@angular/fire/firestore';
 import { USER_THEME_TOKEN } from '../libs/tokens/user-theme.token';
 import { ThemeStore } from './shared/data-access/theme.store';
 import { TemplatePageTitleStrategy } from './TemplatePageTitleStrategy';
@@ -27,30 +27,35 @@ export const appConfig: ApplicationConfig = {
     ScreenTrackingService, 
     UserTrackingService, 
     provideFirestore(() => {
-      const firestore = getFirestore();
-      
       // 🔥 ENABLE FIREBASE OFFLINE PERSISTENCE 🔥
-      // This enables automatic IndexedDB caching for all Firestore operations
+      // Using modern initializeFirestore with persistent local cache
       // Only enable in browser environment (not during SSR)
       if (typeof window !== 'undefined' && typeof navigator !== 'undefined') {
-        enableIndexedDbPersistence(firestore).then(() => {
+        try {
+          // Get the Firebase app instance
+          const app = initializeApp(environment.firebaseConfig);
+          const firestore = initializeFirestore(app, {
+            localCache: persistentLocalCache({
+              tabManager: persistentSingleTabManager({})
+            })
+          });
+          
           console.log('🔥 [Firebase] ✅ OFFLINE PERSISTENCE ENABLED!');
           console.log('🔥 [Firebase] 💾 All reads will be cached in IndexedDB');
           console.log('🔥 [Firebase] 📱 App will work offline automatically');
           console.log('🔥 [Firebase] 🔄 Writes will queue when offline and sync when back online');
-        }).catch((err) => {
-          if (err.code === 'failed-precondition') {
-            console.warn('🔥 [Firebase] ⚠️ Offline persistence failed: Multiple tabs open');
-            console.warn('🔥 [Firebase] 💡 Persistence can only be enabled in one tab at a time');
-          } else if (err.code === 'unimplemented') {
-            console.warn('🔥 [Firebase] ⚠️ Browser does not support offline persistence');
-          } else {
-            console.error('🔥 [Firebase] ❌ Offline persistence error:', err);
-          }
-        });
+          
+          return firestore;
+        } catch (err: any) {
+          console.warn('🔥 [Firebase] ⚠️ Offline persistence failed:', err.message);
+          console.warn('🔥 [Firebase] 💡 Falling back to default Firestore');
+          // Fallback to default Firestore without persistence
+          return getFirestore();
+        }
+      } else {
+        // SSR environment - use default configuration without persistence
+        return getFirestore();
       }
-      
-      return firestore;
     }),
     { provide: TitleStrategy, useClass: TemplatePageTitleStrategy },
   ]

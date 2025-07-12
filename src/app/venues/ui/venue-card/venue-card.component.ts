@@ -15,10 +15,10 @@ import { HeartButtonComponent } from '../../../shared/ui/heart-button/heart-butt
           <span class="icon">{{ categoryIcon() }}</span>
         </div>
         <div class="venue-status">
-          <app-chip 
-            [text]="statusLabel()" 
-            type="ui" 
-            variant="status" 
+          <app-chip
+            [text]="statusLabel()"
+            type="ui"
+            variant="status"
             [status]="chipStatus()"
           />
         </div>
@@ -27,13 +27,13 @@ import { HeartButtonComponent } from '../../../shared/ui/heart-button/heart-butt
       <!-- Venue Content -->
       <div class="venue-content">
         <h3 class="venue-name">{{ venue().name }}</h3>
-        
+
         <div class="venue-details">
           <div class="venue-address">
             <span class="address-icon">📍</span>
             <span>{{ venue().address }}</span>
           </div>
-          
+
           @if (venue().category) {
             <div class="venue-category">
               <span class="category-icon">🏢</span>
@@ -146,13 +146,13 @@ import { HeartButtonComponent } from '../../../shared/ui/heart-button/heart-butt
   `,
   styles: [`
     .venue-card {
-      background: var(--color-background-lightest);
+      background: var(--background-lightest);
       border-radius: 12px;
       overflow: hidden;
       box-shadow: 0 4px 8px rgba(0,0,0,0.1);
       cursor: pointer;
       transition: all 0.2s;
-      border: 1px solid var(--color-border-strong);
+      border: 1px solid var(--border-strong);
       display: flex;
       flex-direction: column;
       height: 100%;
@@ -161,7 +161,7 @@ import { HeartButtonComponent } from '../../../shared/ui/heart-button/heart-butt
     .venue-card:hover {
       transform: translateY(-4px);
       box-shadow: 0 8px 16px rgba(0,0,0,0.15);
-      border-color: var(--color-primary);
+      border-color: var(--primary);
     }
 
     .venue-header {
@@ -169,13 +169,13 @@ import { HeartButtonComponent } from '../../../shared/ui/heart-button/heart-butt
       justify-content: space-between;
       align-items: center;
       padding: 1rem 1rem 0.5rem;
-      background: linear-gradient(135deg, var(--color-background-lighter), var(--color-background-darker));
+      background: linear-gradient(135deg, var(--background-lighter), var(--background-darker));
     }
 
     .venue-icon {
       width: 48px;
       height: 48px;
-      background: var(--color-background-lighter);
+      background: var(--background-lighter);
       border-radius: 12px;
       display: flex;
       align-items: center;
@@ -198,7 +198,7 @@ import { HeartButtonComponent } from '../../../shared/ui/heart-button/heart-butt
       margin: 0 0 1rem 0;
       font-size: 18px;
       font-weight: 600;
-      color: var(--color-text);
+      color: var(--text);
       line-height: 1.3;
     }
 
@@ -212,7 +212,7 @@ import { HeartButtonComponent } from '../../../shared/ui/heart-button/heart-butt
       gap: 8px;
       margin-bottom: 6px;
       font-size: 14px;
-      color: var(--color-text-secondary);
+      color: var(--text-secondary);
     }
 
     .address-icon, .category-icon, .capacity-icon {
@@ -228,7 +228,7 @@ import { HeartButtonComponent } from '../../../shared/ui/heart-button/heart-butt
       margin: 0 0 0.5rem 0;
       font-size: 13px;
       font-weight: 600;
-      color: var(--color-text);
+      color: var(--text);
       text-transform: uppercase;
       letter-spacing: 0.5px;
     }
@@ -240,25 +240,25 @@ import { HeartButtonComponent } from '../../../shared/ui/heart-button/heart-butt
     }
 
     .accessibility-badge, .amenity-badge {
-      background: var(--color-background-darker);
-      color: var(--color-text-secondary);
+      background: var(--background-darker);
+      color: var(--text-secondary);
       padding: 3px 8px;
       border-radius: 12px;
       font-size: 11px;
       font-weight: 500;
-      border: 1px solid var(--color-border);
+      border: 1px solid var(--border);
     }
 
     .accessibility-badge {
-      background: var(--color-success)25;
-      color: var(--color-success);
-      border-color: var(--color-success);
+      background: var(--success)25;
+      color: var(--success);
+      border-color: var(--success);
     }
 
     .amenity-badge.more {
-      background: var(--color-accent)25;
-      color: var(--color-accent);
-      border-color: var(--color-accent);
+      background: var(--accent)25;
+      color: var(--accent);
+      border-color: var(--accent);
     }
 
     .contact-info, .transport-section {
@@ -270,7 +270,7 @@ import { HeartButtonComponent } from '../../../shared/ui/heart-button/heart-butt
       align-items: center;
       gap: 6px;
       font-size: 12px;
-      color: var(--color-text-muted);
+      color: var(--text-muted);
       margin-bottom: 4px;
     }
 
@@ -282,14 +282,14 @@ import { HeartButtonComponent } from '../../../shared/ui/heart-button/heart-butt
       margin: 0 0 0.5rem 0;
       font-size: 13px;
       font-weight: 600;
-      color: var(--color-text);
+      color: var(--text);
       text-transform: uppercase;
       letter-spacing: 0.5px;
     }
 
     .venue-actions {
       padding: 1rem;
-      border-top: 1px solid var(--color-border);
+      border-top: 1px solid var(--border);
       display: flex;
       gap: 8px;
       flex-wrap: wrap;
@@ -312,18 +312,18 @@ import { HeartButtonComponent } from '../../../shared/ui/heart-button/heart-butt
     }
 
     .view-btn {
-      background: var(--color-primary);
-      color: var(--color-on-primary);
+      background: var(--primary);
+      color: var(--on-primary);
     }
 
     .directions-btn {
-      background: var(--color-accent);
-      color: var(--color-on-accent);
+      background: var(--accent);
+      color: var(--on-accent);
     }
 
     .website-btn {
-      background: var(--color-secondary);
-      color: var(--color-on-secondary);
+      background: var(--secondary);
+      color: var(--on-secondary);
     }
 
     .action-btn:hover {
@@ -335,7 +335,7 @@ import { HeartButtonComponent } from '../../../shared/ui/heart-button/heart-butt
       .venue-actions {
         flex-direction: column;
       }
-      
+
       .action-btn {
         justify-content: center;
       }
@@ -406,14 +406,14 @@ export class VenueCardComponent {
   readonly accessibilityFeatures = computed(() => {
     const venue = this.venue();
     const features: string[] = [];
-    
+
     if (venue.accessibleEntrance) features.push('Accessible Entrance');
     if (venue.stepFreeAccess) features.push('Step-free Access');
     if (venue.elevatorAvailable) features.push('Elevator');
     if (venue.toilets?.accessibleToilet) features.push('Accessible Toilets');
     if (venue.toilets?.babyChanging) features.push('Baby Changing');
     if (venue.toilets?.genderNeutral) features.push('Gender Neutral Toilets');
-    
+
     return features;
   });
 

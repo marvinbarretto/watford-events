@@ -6,27 +6,27 @@ import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angula
 import { AuthStore } from '../data-access/auth.store';
 
 @Component({
-  selector: 'app-login',
+  selector: 'app-register',
   standalone: true,
   imports: [CommonModule, RouterModule, ReactiveFormsModule],
   template: `
-    <div class="login-container">
-      <div class="login-card">
-        <div class="login-header">
+    <div class="register-container">
+      <div class="register-card">
+        <div class="register-header">
           <div class="app-logo">📅</div>
-          <h1>Watford Events</h1>
-          <p>Create events from flyer photos using AI</p>
+          <h1>Join Watford Events</h1>
+          <p>Create an account to start managing events with AI</p>
         </div>
 
-        <div class="login-content">
+        <div class="register-content">
           <!-- Quick Start with Google -->
           <div class="quick-start-section">
             <h2>Get Started Quickly</h2>
-            <button class="google-login-btn" (click)="loginWithGoogle()" [disabled]="isLoading()">
+            <button class="google-register-btn" (click)="registerWithGoogle()" [disabled]="isLoading()">
               <span class="google-icon">🚀</span>
-              <span>{{ isLoading() ? 'Signing in...' : 'Continue with Google' }}</span>
+              <span>{{ isLoading() ? 'Creating account...' : 'Sign up with Google' }}</span>
             </button>
-            <p class="quick-start-note">Sign in with Google to start creating events instantly</p>
+            <p class="quick-start-note">Create your account with Google in one click</p>
           </div>
 
           <div class="divider">
@@ -34,10 +34,10 @@ import { AuthStore } from '../data-access/auth.store';
           </div>
 
           <!-- Email/Password Form -->
-          <div class="email-login-section">
-            <h3>Sign in with Email</h3>
+          <div class="email-register-section">
+            <h3>Sign up with Email</h3>
             
-            <form [formGroup]="loginForm" (ngSubmit)="loginWithEmail()">
+            <form [formGroup]="registerForm" (ngSubmit)="registerWithEmail()">
               <div class="form-group">
                 <label for="email">Email</label>
                 <input
@@ -60,7 +60,7 @@ import { AuthStore } from '../data-access/auth.store';
                   type="password"
                   formControlName="password"
                   class="form-control"
-                  placeholder="Enter your password"
+                  placeholder="Create a password (min 6 characters)"
                   [class.error]="passwordError()"
                 />
                 @if (passwordError()) {
@@ -68,21 +68,29 @@ import { AuthStore } from '../data-access/auth.store';
                 }
               </div>
 
+              <div class="form-group">
+                <label for="confirmPassword">Confirm Password</label>
+                <input
+                  id="confirmPassword"
+                  type="password"
+                  formControlName="confirmPassword"
+                  class="form-control"
+                  placeholder="Confirm your password"
+                  [class.error]="confirmPasswordError()"
+                />
+                @if (confirmPasswordError()) {
+                  <span class="error-text">{{ confirmPasswordError() }}</span>
+                }
+              </div>
+
               <button 
                 type="submit" 
-                class="email-login-btn"
-                [disabled]="!loginForm.valid || isLoading()"
+                class="email-register-btn"
+                [disabled]="!registerForm.valid || isLoading()"
               >
-                {{ isLoading() ? 'Signing in...' : 'Sign In' }}
+                {{ isLoading() ? 'Creating account...' : 'Create Account' }}
               </button>
             </form>
-          </div>
-
-          <!-- Auth Links -->
-          <div class="auth-links">
-            <p>
-              <a routerLink="/forgot-password" class="forgot-link">Forgot your password?</a>
-            </p>
           </div>
         </div>
 
@@ -97,39 +105,39 @@ import { AuthStore } from '../data-access/auth.store';
 
         <!-- Features Preview -->
         <div class="features-preview">
-          <h3>What you can do:</h3>
+          <h3>What you'll be able to do:</h3>
           <div class="feature-list">
             <div class="feature-item">
               <span class="feature-icon">📸</span>
-              <span>Take photos of event flyers</span>
+              <span>Upload flyer photos to create events</span>
             </div>
             <div class="feature-item">
               <span class="feature-icon">🤖</span>
-              <span>AI extracts event details automatically</span>
+              <span>AI automatically extracts event details</span>
             </div>
             <div class="feature-item">
               <span class="feature-icon">📝</span>
-              <span>Edit and publish your events</span>
+              <span>Manage and publish your events</span>
             </div>
             <div class="feature-item">
               <span class="feature-icon">📱</span>
-              <span>Mobile-first design for on-the-go use</span>
+              <span>Access from any device</span>
             </div>
           </div>
         </div>
 
         <!-- Footer -->
-        <div class="login-footer">
+        <div class="register-footer">
           <p>
-            Don't have an account? 
-            <a routerLink="/register" class="register-link">Create one here</a>
+            Already have an account? 
+            <a routerLink="/login" class="login-link">Sign in here</a>
           </p>
         </div>
       </div>
     </div>
   `,
   styles: [`
-    .login-container {
+    .register-container {
       min-height: 100vh;
       display: flex;
       align-items: center;
@@ -138,7 +146,7 @@ import { AuthStore } from '../data-access/auth.store';
       padding: 20px;
     }
 
-    .login-card {
+    .register-card {
       background: white;
       border-radius: 16px;
       padding: 40px;
@@ -147,7 +155,7 @@ import { AuthStore } from '../data-access/auth.store';
       box-shadow: 0 20px 40px rgba(0,0,0,0.1);
     }
 
-    .login-header {
+    .register-header {
       text-align: center;
       margin-bottom: 40px;
     }
@@ -157,19 +165,19 @@ import { AuthStore } from '../data-access/auth.store';
       margin-bottom: 15px;
     }
 
-    .login-header h1 {
+    .register-header h1 {
       margin: 0 0 10px 0;
       color: #333;
       font-size: 28px;
     }
 
-    .login-header p {
+    .register-header p {
       margin: 0;
       color: #666;
       font-size: 16px;
     }
 
-    .login-content {
+    .register-content {
       margin-bottom: 30px;
     }
 
@@ -185,7 +193,7 @@ import { AuthStore } from '../data-access/auth.store';
       font-size: 20px;
     }
 
-    .google-login-btn {
+    .google-register-btn {
       display: flex;
       align-items: center;
       justify-content: center;
@@ -202,12 +210,12 @@ import { AuthStore } from '../data-access/auth.store';
       transition: all 0.2s;
     }
 
-    .google-login-btn:hover:not(:disabled) {
+    .google-register-btn:hover:not(:disabled) {
       background: #3367d6;
       transform: translateY(-2px);
     }
 
-    .google-login-btn:disabled {
+    .google-register-btn:disabled {
       background: #ccc;
       cursor: not-allowed;
       transform: none;
@@ -247,8 +255,8 @@ import { AuthStore } from '../data-access/auth.store';
       font-size: 14px;
     }
 
-    /* Email Login Section */
-    .email-login-section h3 {
+    /* Email Register Section */
+    .email-register-section h3 {
       margin: 0 0 20px 0;
       color: #333;
       font-size: 18px;
@@ -291,10 +299,10 @@ import { AuthStore } from '../data-access/auth.store';
       font-size: 14px;
     }
 
-    .email-login-btn {
+    .email-register-btn {
       width: 100%;
       padding: 15px;
-      background: #007bff;
+      background: #28a745;
       color: white;
       border: none;
       border-radius: 6px;
@@ -304,36 +312,13 @@ import { AuthStore } from '../data-access/auth.store';
       transition: all 0.2s;
     }
 
-    .email-login-btn:hover:not(:disabled) {
-      background: #0056b3;
+    .email-register-btn:hover:not(:disabled) {
+      background: #218838;
     }
 
-    .email-login-btn:disabled {
+    .email-register-btn:disabled {
       background: #ccc;
       cursor: not-allowed;
-    }
-
-    /* Auth Links */
-    .auth-links {
-      text-align: center;
-      margin-top: 20px;
-      padding-top: 20px;
-      border-top: 1px solid #e9ecef;
-    }
-
-    .auth-links p {
-      margin: 0;
-      color: #666;
-      font-size: 14px;
-    }
-
-    .forgot-link {
-      color: #007bff;
-      text-decoration: none;
-    }
-
-    .forgot-link:hover {
-      text-decoration: underline;
     }
 
     /* Error Banner */
@@ -395,36 +380,36 @@ import { AuthStore } from '../data-access/auth.store';
     }
 
     /* Footer */
-    .login-footer {
+    .register-footer {
       text-align: center;
       margin-top: 30px;
       padding-top: 20px;
       border-top: 1px solid #e9ecef;
     }
 
-    .login-footer p {
+    .register-footer p {
       margin: 0;
       color: #666;
       font-size: 14px;
     }
 
-    .register-link {
+    .login-link {
       color: #007bff;
       text-decoration: none;
       font-weight: 600;
     }
 
-    .register-link:hover {
+    .login-link:hover {
       text-decoration: underline;
     }
 
     /* Mobile Optimizations */
     @media (max-width: 768px) {
-      .login-container {
+      .register-container {
         padding: 10px;
       }
       
-      .login-card {
+      .register-card {
         padding: 30px 20px;
       }
       
@@ -432,31 +417,33 @@ import { AuthStore } from '../data-access/auth.store';
         font-size: 40px;
       }
       
-      .login-header h1 {
+      .register-header h1 {
         font-size: 24px;
       }
     }
   `]
 })
-export class LoginComponent {
+export class RegisterComponent {
   // Services
   private authStore = inject(AuthStore);
   private router = inject(Router);
   private fb = inject(FormBuilder);
 
   // Form
-  loginForm: FormGroup;
+  registerForm: FormGroup;
 
   // State
   readonly isLoading = signal(false);
   readonly error = signal<string | null>(null);
   readonly emailError = signal<string | null>(null);
   readonly passwordError = signal<string | null>(null);
+  readonly confirmPasswordError = signal<string | null>(null);
 
   constructor() {
-    this.loginForm = this.fb.group({
+    this.registerForm = this.fb.group({
       email: ['', [Validators.required, Validators.email]],
-      password: ['', [Validators.required, Validators.minLength(6)]]
+      password: ['', [Validators.required, Validators.minLength(6)]],
+      confirmPassword: ['', [Validators.required]]
     });
 
     // Redirect if already authenticated
@@ -465,9 +452,18 @@ export class LoginComponent {
         this.router.navigate(['/']);
       }
     });
+
+    // Add password confirmation validation
+    this.registerForm.get('confirmPassword')?.valueChanges.subscribe(() => {
+      this.validatePasswordConfirmation();
+    });
+
+    this.registerForm.get('password')?.valueChanges.subscribe(() => {
+      this.validatePasswordConfirmation();
+    });
   }
 
-  async loginWithGoogle() {
+  async registerWithGoogle() {
     if (this.isLoading()) return;
 
     this.isLoading.set(true);
@@ -477,58 +473,73 @@ export class LoginComponent {
       this.authStore.loginWithGoogle();
       // Navigation will happen automatically via the effect
     } catch (error: any) {
-      console.error('Google login failed:', error);
-      this.error.set(error.message || 'Google login failed');
+      console.error('Google registration failed:', error);
+      this.error.set(error.message || 'Google registration failed');
     } finally {
       this.isLoading.set(false);
     }
   }
 
-  async loginWithEmail() {
-    if (!this.loginForm.valid || this.isLoading()) return;
+  async registerWithEmail() {
+    if (!this.registerForm.valid || this.isLoading()) return;
 
     this.clearFieldErrors();
+    this.validatePasswordConfirmation();
+
+    if (this.confirmPasswordError()) return;
+
     this.isLoading.set(true);
     this.error.set(null);
 
     try {
-      const { email, password } = this.loginForm.value;
-      this.authStore.loginWithEmail(email, password);
+      const { email, password } = this.registerForm.value;
+      this.authStore.registerWithEmail(email, password);
       // Navigation will happen automatically via the effect
     } catch (error: any) {
-      console.error('Email login failed:', error);
-      this.handleLoginError(error);
+      console.error('Email registration failed:', error);
+      this.handleRegistrationError(error);
     } finally {
       this.isLoading.set(false);
     }
   }
 
+  private validatePasswordConfirmation() {
+    const password = this.registerForm.get('password')?.value;
+    const confirmPassword = this.registerForm.get('confirmPassword')?.value;
 
-  private handleLoginError(error: any) {
+    if (confirmPassword && password !== confirmPassword) {
+      this.confirmPasswordError.set('Passwords do not match');
+    } else {
+      this.confirmPasswordError.set(null);
+    }
+  }
+
+  private handleRegistrationError(error: any) {
     const errorCode = error.code;
     const errorMessage = error.message;
 
     switch (errorCode) {
-      case 'auth/user-not-found':
-        this.emailError.set('No account found with this email');
-        break;
-      case 'auth/wrong-password':
-        this.passwordError.set('Incorrect password');
+      case 'auth/email-already-in-use':
+        this.emailError.set('An account with this email already exists');
         break;
       case 'auth/invalid-email':
         this.emailError.set('Invalid email address');
+        break;
+      case 'auth/weak-password':
+        this.passwordError.set('Password is too weak. Please choose a stronger password.');
         break;
       case 'auth/too-many-requests':
         this.error.set('Too many failed attempts. Please try again later.');
         break;
       default:
-        this.error.set(errorMessage || 'Login failed. Please try again.');
+        this.error.set(errorMessage || 'Registration failed. Please try again.');
     }
   }
 
   private clearFieldErrors() {
     this.emailError.set(null);
     this.passwordError.set(null);
+    this.confirmPasswordError.set(null);
   }
 
   clearError() {

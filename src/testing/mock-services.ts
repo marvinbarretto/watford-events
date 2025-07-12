@@ -4,10 +4,10 @@
 import { signal } from '@angular/core';
 import { Observable, of, throwError } from 'rxjs';
 import { User } from '@angular/fire/auth';
-import { 
-  createMockFirebaseUser, 
-  createMockDocumentSnapshot, 
-  createMockQuerySnapshot 
+import {
+  createMockFirebaseUser,
+  createMockDocumentSnapshot,
+  createMockQuerySnapshot
 } from './firebase-test-utils';
 import { User as AppUser } from '@users/utils/user.model';
 
@@ -18,12 +18,12 @@ console.log('🏭 Loading mock services catalog');
 
 export const createFirestoreServiceMock = () => {
   console.log('🔥 Creating FirestoreService mock');
-  
+
   return {
     // Observable methods (protected in real service, public in mock for testing)
     collection$: jest.fn((path: string) => of([])),
     doc$: jest.fn((path: string) => of(undefined)),
-    
+
     // Promise methods
     setDoc: jest.fn(() => Promise.resolve()),
     updateDoc: jest.fn(() => Promise.resolve()),
@@ -32,7 +32,7 @@ export const createFirestoreServiceMock = () => {
     getDocByPath: jest.fn(() => Promise.resolve(undefined)),
     getDocsWhere: jest.fn(() => Promise.resolve([])),
     exists: jest.fn(() => Promise.resolve(false)),
-    
+
     // Utility methods
     mapSnapshotWithId: jest.fn((snapshot) => [])
   };
@@ -42,12 +42,12 @@ export const createFirestoreServiceMock = () => {
 // Mock for FirestoreCrudService abstract class
 export const createFirestoreCrudServiceMock = () => {
   console.log('🔥 Creating FirestoreCrudService mock');
-  
+
   const firestoreMock = createFirestoreServiceMock();
-  
+
   return {
     ...firestoreMock,
-    
+
     // FirestoreCrudService specific methods
     getAll: jest.fn(() => Promise.resolve([])),
     getById: jest.fn(() => Promise.resolve(null)),
@@ -57,7 +57,7 @@ export const createFirestoreCrudServiceMock = () => {
     delete: jest.fn(() => Promise.resolve()),
     createMany: jest.fn(() => Promise.resolve()),
     updateMany: jest.fn(() => Promise.resolve()),
-    
+
     // Protected property for testing
     path: 'mock-path'
   };
@@ -68,12 +68,12 @@ export const createFirestoreCrudServiceMock = () => {
 
 export const createUserServiceMock = () => {
   console.log('👤 Creating UserService mock');
-  
+
   const firestoreMock = createFirestoreServiceMock();
-  
+
   return {
     ...firestoreMock,
-    
+
     // UserService specific methods
     getUser: jest.fn((uid: string) => of(undefined)),
     updateUser: jest.fn((uid: string, data: Partial<AppUser>) => Promise.resolve()),
@@ -87,28 +87,28 @@ export const createUserServiceMock = () => {
 
 export const createAuthServiceMock = () => {
   console.log('🔐 Creating AuthService mock');
-  
+
   const userSignal = signal<User | null>(null);
   const isAuthenticatedSignal = signal(false);
   const isLoadingSignal = signal(false);
-  
+
   return {
     // Signals
     user: userSignal,
     isAuthenticated: isAuthenticatedSignal,
     isLoading: isLoadingSignal,
-    
+
     // Methods
-    signIn: jest.fn((email: string, password: string) => 
+    signIn: jest.fn((email: string, password: string) =>
       Promise.resolve({ user: createMockFirebaseUser({ email }) })),
-    signUp: jest.fn((email: string, password: string, displayName?: string) => 
+    signUp: jest.fn((email: string, password: string, displayName?: string) =>
       Promise.resolve({ user: createMockFirebaseUser({ email, displayName }) })),
     signOut: jest.fn(() => Promise.resolve()),
     resetPassword: jest.fn((email: string) => Promise.resolve()),
     updateProfile: jest.fn((profile: any) => Promise.resolve()),
     checkRole: jest.fn((role: string) => false),
     hasAnyRole: jest.fn((roles: string[]) => false),
-    
+
     // Test helpers
     setMockUser: (user: User | null) => {
       userSignal.set(user);
@@ -126,7 +126,7 @@ export const createAuthServiceMock = () => {
 
 export const createFirebaseMetricsServiceMock = () => {
   console.log('📊 Creating FirebaseMetricsService mock');
-  
+
   return {
     trackCall: jest.fn(),
     trackError: jest.fn(),
@@ -139,9 +139,9 @@ export const createFirebaseMetricsServiceMock = () => {
 
 export const createThemeServiceMock = () => {
   console.log('🎨 Creating ThemeService mock');
-  
+
   const themeSignal = signal('light');
-  
+
   return {
     theme: themeSignal,
     setTheme: jest.fn((theme: string) => {
@@ -162,9 +162,9 @@ export const createThemeServiceMock = () => {
 
 export const createNotificationServiceMock = () => {
   console.log('🔔 Creating NotificationService mock');
-  
+
   const notificationsSignal = signal<any[]>([]);
-  
+
   return {
     notifications: notificationsSignal,
     show: jest.fn((notification: any) => {
@@ -188,9 +188,9 @@ export const createNotificationServiceMock = () => {
 
 export const createToastServiceMock = () => {
   console.log('🍞 Creating ToastService mock');
-  
+
   const toastsSignal = signal<any[]>([]);
-  
+
   return {
     toasts: toastsSignal,
     success: jest.fn((message: string) => {
@@ -220,9 +220,9 @@ export const createToastServiceMock = () => {
 
 export const createLocationServiceMock = () => {
   console.log('📍 Creating LocationService mock');
-  
+
   const currentLocationSignal = signal<GeolocationPosition | null>(null);
-  
+
   return {
     currentLocation: currentLocationSignal,
     getCurrentPosition: jest.fn(() => Promise.resolve({
@@ -245,9 +245,9 @@ export const createLocationServiceMock = () => {
 
 export const createPageTitleServiceMock = () => {
   console.log('📄 Creating PageTitleService mock');
-  
+
   const titleSignal = signal('Test App');
-  
+
   return {
     title: titleSignal,
     setTitle: jest.fn((title: string) => {
@@ -268,11 +268,11 @@ export const createPageTitleServiceMock = () => {
 
 export const createPaginationServiceMock = () => {
   console.log('📖 Creating PaginationService mock');
-  
+
   const currentPageSignal = signal(1);
   const totalPagesSignal = signal(0);
   const pageSizeSignal = signal(10);
-  
+
   return {
     currentPage: currentPageSignal,
     totalPages: totalPagesSignal,
@@ -309,9 +309,9 @@ export const createPaginationServiceMock = () => {
 
 export const createFeatureFlagServiceMock = () => {
   console.log('🏁 Creating FeatureFlagService mock');
-  
+
   const flags = new Map<string, boolean>();
-  
+
   return {
     isEnabled: jest.fn((flag: string) => flags.get(flag) || false),
     enable: jest.fn((flag: string) => {
@@ -334,12 +334,12 @@ export const createFeatureFlagServiceMock = () => {
 
 export const createEventServiceMock = () => {
   console.log('📅 Creating EventService mock');
-  
+
   const firestoreMock = createFirestoreServiceMock();
-  
+
   return {
     ...firestoreMock,
-    
+
     // EventService specific methods
     getEvent: jest.fn((eventId: string) => of(undefined)),
     getUserEvents: jest.fn((userId: string) => Promise.resolve([])),
@@ -358,12 +358,12 @@ export const createEventServiceMock = () => {
 
 export const createVenueServiceMock = () => {
   console.log('🏢 Creating VenueService mock');
-  
+
   const firestoreMock = createFirestoreServiceMock();
-  
+
   return {
     ...firestoreMock,
-    
+
     // VenueService specific methods
     getVenue: jest.fn((venueId: string) => of(undefined)),
     getUserVenues: jest.fn((userId: string) => Promise.resolve([])),
@@ -388,15 +388,15 @@ export const createVenueServiceMock = () => {
 
 export const createLLMServiceMock = () => {
   console.log('🤖 Creating LLMService mock');
-  
+
   const isProcessingSignal = signal(false);
   const requestCountSignal = signal(0);
-  
+
   return {
     // Signals
     isProcessing: isProcessingSignal,
     requestCount: requestCountSignal,
-    
+
     // Methods
     testConnection: jest.fn((prompt?: string) => Promise.resolve({
       success: true,
@@ -435,7 +435,7 @@ export const createLLMServiceMock = () => {
     clearCache: jest.fn(() => {
       console.log('Mock LLM cache cleared');
     }),
-    
+
     // Test helpers
     setMockProcessing: (processing: boolean) => {
       isProcessingSignal.set(processing);
@@ -451,7 +451,7 @@ export const createLLMServiceMock = () => {
 
 export const createEthicalScraperServiceMock = () => {
   console.log('🕷️ Creating EthicalScraperService mock');
-  
+
   return {
     scrapeUrl: jest.fn((request: any) => of({
       url: request.url,
@@ -507,7 +507,7 @@ export const createEthicalScraperServiceMock = () => {
     })),
     getCacheStats: jest.fn(() => of({ size: 10, urls: ['mock-url-1', 'mock-url-2'] })),
     clearCache: jest.fn(() => of({ message: 'Cache cleared successfully' })),
-    
+
     // Helper methods
     createActionSequence: {
       acceptCookiesAndWait: jest.fn(() => []),
@@ -527,7 +527,7 @@ export const createEthicalScraperServiceMock = () => {
 
 export const createSchedulerServiceMock = () => {
   console.log('⏰ Creating SchedulerService mock');
-  
+
   return {
     start: jest.fn(() => Promise.resolve()),
     stop: jest.fn(() => Promise.resolve()),
@@ -541,7 +541,7 @@ export const createSchedulerServiceMock = () => {
         enableDebugLogs: true
       }
     })),
-    
+
     // Test helpers
     setMockRunning: jest.fn((running: boolean) => {
       console.log('Mock scheduler running:', running);
@@ -557,28 +557,28 @@ export const createSchedulerServiceMock = () => {
 
 export const createCameraServiceMock = () => {
   console.log('📷 Creating CameraService mock');
-  
+
   const stateSignal = signal({
     isActive: false,
     hasPermission: false,
     error: null,
     streamId: null
   });
-  
+
   const mockStream = {
     id: 'mock-stream-id',
     getTracks: jest.fn(() => []),
     getVideoTracks: jest.fn(() => []),
     getAudioTracks: jest.fn(() => [])
   } as any;
-  
+
   return {
     // Observables
     state$: of(stateSignal()),
     currentState: stateSignal(),
     isActive: false,
     currentStream: null,
-    
+
     // Methods
     requestRearCamera: jest.fn(() => Promise.resolve(mockStream)),
     requestFrontCamera: jest.fn(() => Promise.resolve(mockStream)),
@@ -600,7 +600,7 @@ export const createCameraServiceMock = () => {
       console.log('Mock camera detached from video element');
     }),
     emergencyCleanup: jest.fn(() => Promise.resolve()),
-    
+
     // Test helpers
     setMockState: (state: any) => {
       stateSignal.set(state);
@@ -617,7 +617,7 @@ export const createCameraServiceMock = () => {
 
 export const createViewportServiceMock = () => {
   console.log('📱 Creating ViewportService mock');
-  
+
   const viewportSignal = signal({
     width: 1920,
     height: 1080,
@@ -625,7 +625,7 @@ export const createViewportServiceMock = () => {
     isTablet: false,
     isDesktop: true
   });
-  
+
   return {
     viewport: viewportSignal,
     width: 1920,
@@ -633,11 +633,11 @@ export const createViewportServiceMock = () => {
     isMobile: false,
     isTablet: false,
     isDesktop: true,
-    
+
     // Methods
     checkViewport: jest.fn(() => viewportSignal()),
     onResize: jest.fn(() => of(viewportSignal())),
-    
+
     // Test helpers
     setMockViewport: (viewport: any) => {
       viewportSignal.set(viewport);
@@ -650,7 +650,7 @@ export const createViewportServiceMock = () => {
 
 export const createSsrPlatformServiceMock = () => {
   console.log('🌐 Creating SsrPlatformService mock');
-  
+
   return {
     isBrowser: true,
     isServer: false,
@@ -662,7 +662,7 @@ export const createSsrPlatformServiceMock = () => {
     }),
     getWindow: jest.fn(() => window),
     getDocument: jest.fn(() => document),
-    
+
     // Test helpers
     setMockPlatform: jest.fn((isBrowser: boolean) => {
       console.log('Mock platform set to browser:', isBrowser);
@@ -675,7 +675,7 @@ export const createSsrPlatformServiceMock = () => {
 
 export const createDeviceCapabilityCheckServiceMock = () => {
   console.log('📱 Creating DeviceCapabilityCheckService mock');
-  
+
   return {
     checkCameraSupport: jest.fn(() => Promise.resolve(true)),
     checkMicrophoneSupport: jest.fn(() => Promise.resolve(true)),
@@ -690,7 +690,7 @@ export const createDeviceCapabilityCheckServiceMock = () => {
       isIOS: false,
       isAndroid: false
     })),
-    
+
     // Test helpers
     setMockCapabilities: jest.fn((capabilities: any) => {
       console.log('Mock device capabilities set:', capabilities);
@@ -703,7 +703,7 @@ export const createDeviceCapabilityCheckServiceMock = () => {
 
 export const createDebugServiceMock = () => {
   console.log('🐛 Creating DebugService mock');
-  
+
   return {
     log: jest.fn((message: string, data?: any) => {
       console.log('[DEBUG]', message, data);
@@ -737,7 +737,7 @@ export const createDebugServiceMock = () => {
 
 export const createCleanupServiceMock = () => {
   console.log('🧹 Creating CleanupService mock');
-  
+
   return {
     registerCleanupTask: jest.fn((taskId: string, cleanupFn: () => void) => {
       console.log('Mock cleanup task registered:', taskId);
@@ -748,7 +748,7 @@ export const createCleanupServiceMock = () => {
     runCleanupTasks: jest.fn(() => Promise.resolve()),
     runCleanupTask: jest.fn((taskId: string) => Promise.resolve()),
     getRegisteredTasks: jest.fn(() => []),
-    
+
     // Test helpers
     setMockTasks: jest.fn((tasks: string[]) => {
       console.log('Mock cleanup tasks set:', tasks);
@@ -761,12 +761,12 @@ export const createCleanupServiceMock = () => {
 
 export const createOverlayServiceMock = () => {
   console.log('🎭 Creating OverlayService mock');
-  
+
   const overlaysSignal = signal<any[]>([]);
-  
+
   return {
     overlays: overlaysSignal,
-    
+
     // Methods
     showOverlay: jest.fn((overlayConfig: any) => {
       const overlays = overlaysSignal();
@@ -780,7 +780,7 @@ export const createOverlayServiceMock = () => {
     hideAllOverlays: jest.fn(() => {
       overlaysSignal.set([]);
     }),
-    
+
     // Test helpers
     setMockOverlays: (overlays: any[]) => {
       overlaysSignal.set(overlays);
@@ -793,9 +793,9 @@ export const createOverlayServiceMock = () => {
 
 export const createIndexedDbServiceMock = () => {
   console.log('💾 Creating IndexedDbService mock');
-  
+
   const mockDb = new Map<string, any>();
-  
+
   return {
     openDatabase: jest.fn((dbName: string, version: number) => Promise.resolve()),
     closeDatabase: jest.fn(() => Promise.resolve()),
@@ -816,7 +816,7 @@ export const createIndexedDbServiceMock = () => {
     }),
     getAllKeys: jest.fn((storeName: string) => Promise.resolve(Array.from(mockDb.keys()))),
     getAllValues: jest.fn((storeName: string) => Promise.resolve(Array.from(mockDb.values()))),
-    
+
     // Test helpers
     setMockData: (key: string, value: any) => {
       mockDb.set(key, value);
@@ -864,23 +864,23 @@ export const MockServices = {
 
 export const createAuthStoreMock = () => {
   console.log('🔐 Creating AuthStore mock');
-  
+
   const userSignal = signal<any>(null);
   const tokenSignal = signal<string | null>(null);
   const readySignal = signal(false);
   const userChangeCounterSignal = signal(0);
-  
+
   return {
     // Signals
     user: userSignal,
     token: tokenSignal,
     ready: readySignal,
     userChangeSignal: userChangeCounterSignal,
-    
+
     // Computed properties
     isAuthenticated: computed(() => !!tokenSignal()),
     uid: computed(() => userSignal()?.uid ?? null),
-    
+
     // Methods
     logout: jest.fn(() => {
       userSignal.set(null);
@@ -893,7 +893,7 @@ export const createAuthStoreMock = () => {
     loginWithEmail: jest.fn((email: string, password: string) => {
       console.log('Mock email login:', email);
     }),
-    
+
     // Test helpers
     setMockUser: (user: any) => {
       userSignal.set(user);
@@ -911,26 +911,26 @@ export const createAuthStoreMock = () => {
 
 export const createEventStoreMock = () => {
   console.log('📅 Creating EventStore mock');
-  
+
   const userEventsSignal = signal<any[]>([]);
   const loadingSignal = signal(false);
   const errorSignal = signal<string | null>(null);
   const currentEventSignal = signal<any>(null);
-  
+
   return {
     // Signals
     userEvents: userEventsSignal,
     loading: loadingSignal,
     error: errorSignal,
     currentEvent: currentEventSignal,
-    
+
     // Computed properties
     hasEvents: computed(() => userEventsSignal().length > 0),
     eventsCount: computed(() => userEventsSignal().length),
     draftEvents: computed(() => userEventsSignal().filter(e => e.status === 'draft')),
     publishedEvents: computed(() => userEventsSignal().filter(e => e.status === 'published')),
     upcomingEvents: computed(() => userEventsSignal().filter(e => new Date(e.date) > new Date())),
-    
+
     // Methods
     loadUserEvents: jest.fn((userId: string) => {
       loadingSignal.set(true);
@@ -978,7 +978,7 @@ export const createEventStoreMock = () => {
       loadingSignal.set(false);
       errorSignal.set(null);
     }),
-    
+
     // Test helpers
     setMockEvents: (events: any[]) => {
       userEventsSignal.set(events);
@@ -997,7 +997,7 @@ export const createEventStoreMock = () => {
 
 export const createVenueStoreMock = () => {
   console.log('🏢 Creating VenueStore mock');
-  
+
   const venuesSignal = signal<any[]>([]);
   const selectedVenueSignal = signal<any>(null);
   const venuesLoadingSignal = signal(false);
@@ -1006,7 +1006,7 @@ export const createVenueStoreMock = () => {
   const selectedCategorySignal = signal<string>('all');
   const selectedStatusSignal = signal<string>('all');
   const showOnlyAccessibleSignal = signal(false);
-  
+
   return {
     // Signals
     venues: venuesSignal,
@@ -1017,7 +1017,7 @@ export const createVenueStoreMock = () => {
     selectedCategory: selectedCategorySignal,
     selectedStatus: selectedStatusSignal,
     showOnlyAccessible: showOnlyAccessibleSignal,
-    
+
     // Computed properties
     hasVenues: computed(() => venuesSignal().length > 0),
     hasSelectedVenue: computed(() => !!selectedVenueSignal()),
@@ -1030,7 +1030,7 @@ export const createVenueStoreMock = () => {
       draftVenues: venuesSignal().filter(v => v.status === 'draft').length,
       archivedVenues: venuesSignal().filter(v => v.status === 'archived').length
     })),
-    
+
     // Methods
     setVenues: jest.fn((venues: any[]) => {
       venuesSignal.set(venues);
@@ -1078,7 +1078,7 @@ export const createVenueStoreMock = () => {
     refreshVenueStats: jest.fn(() => {
       console.log('Mock venue stats refreshed');
     }),
-    
+
     // Test helpers
     setMockVenues: (venues: any[]) => {
       venuesSignal.set(venues);
@@ -1091,7 +1091,7 @@ export const createVenueStoreMock = () => {
 
 export const createAdminStoreMock = () => {
   console.log('⚙️ Creating AdminStore mock');
-  
+
   const eventsSignal = signal<any[]>([]);
   const usersSignal = signal<any[]>([]);
   const venuesSignal = signal<any[]>([]);
@@ -1101,7 +1101,7 @@ export const createAdminStoreMock = () => {
   const eventsLoadingSignal = signal(false);
   const usersLoadingSignal = signal(false);
   const venuesLoadingSignal = signal(false);
-  
+
   return {
     // Signals
     events: eventsSignal,
@@ -1113,7 +1113,7 @@ export const createAdminStoreMock = () => {
     eventsLoading: eventsLoadingSignal,
     usersLoading: usersLoadingSignal,
     venuesLoading: venuesLoadingSignal,
-    
+
     // Computed properties
     dashboardStats: computed(() => ({
       totalEvents: eventsSignal().length,
@@ -1128,7 +1128,7 @@ export const createAdminStoreMock = () => {
     hasSelectedEvent: computed(() => !!selectedEventSignal()),
     hasSelectedUser: computed(() => !!selectedUserSignal()),
     hasSelectedVenue: computed(() => !!selectedVenueSignal()),
-    
+
     // Event management methods
     setEvents: jest.fn((events: any[]) => {
       eventsSignal.set(events);
@@ -1147,7 +1147,7 @@ export const createAdminStoreMock = () => {
     removeEvent: jest.fn((eventId: string) => {
       eventsSignal.update(events => events.filter(e => e.id !== eventId));
     }),
-    
+
     // User management methods
     setUsers: jest.fn((users: any[]) => {
       usersSignal.set(users);
@@ -1163,7 +1163,7 @@ export const createAdminStoreMock = () => {
         users.map(u => u.uid === userId ? { ...u, ...updates } : u)
       );
     }),
-    
+
     // Venue management methods
     setVenues: jest.fn((venues: any[]) => {
       venuesSignal.set(venues);
@@ -1182,12 +1182,12 @@ export const createAdminStoreMock = () => {
     removeVenue: jest.fn((venueId: string) => {
       venuesSignal.update(venues => venues.filter(v => v.id !== venueId));
     }),
-    
+
     // Dashboard methods
     refreshDashboardStats: jest.fn(() => {
       console.log('Mock dashboard stats refreshed');
     }),
-    
+
     // Test helpers
     setMockEvents: (events: any[]) => {
       eventsSignal.set(events);
@@ -1206,24 +1206,24 @@ export const createAdminStoreMock = () => {
 
 export const createBaseStoreMock = () => {
   console.log('🏗️ Creating BaseStore mock');
-  
+
   const dataSignal = signal<any[]>([]);
   const loadingSignal = signal(false);
   const errorSignal = signal<string | null>(null);
   const userIdSignal = signal<string | null>(null);
-  
+
   return {
     // Signals
     data: dataSignal,
     loading: loadingSignal,
     error: errorSignal,
     userId: userIdSignal,
-    
+
     // Computed properties
     hasData: computed(() => dataSignal().length > 0),
     isEmpty: computed(() => dataSignal().length === 0),
     itemCount: computed(() => dataSignal().length),
-    
+
     // Methods
     loadOnce: jest.fn(() => Promise.resolve()),
     load: jest.fn(() => Promise.resolve()),
@@ -1276,7 +1276,7 @@ export const createBaseStoreMock = () => {
       isEmpty: dataSignal().length === 0,
       userId: userIdSignal()
     })),
-    
+
     // Test helpers
     setMockData: (data: any[]) => {
       dataSignal.set(data);
@@ -1298,10 +1298,10 @@ export const createBaseStoreMock = () => {
 
 export const createThemeStoreMock = () => {
   console.log('🎨 Creating ThemeStore mock');
-  
+
   const themeTypeSignal = signal<string>('fresh');
   const isLoadedSignal = signal(false);
-  
+
   return {
     // Signals
     themeType: themeTypeSignal,
@@ -1318,7 +1318,7 @@ export const createThemeStoreMock = () => {
       }
     })),
     isDark: computed(() => themeTypeSignal() === 'midnight'),
-    
+
     // Methods
     setTheme: jest.fn((type: string) => {
       themeTypeSignal.set(type);
@@ -1341,13 +1341,13 @@ export const createThemeStoreMock = () => {
       { type: 'midnight', theme: { name: 'Midnight', isDark: true } }
     ]),
     getCSSVariables: jest.fn(() => ({
-      '--color-primary': '#007bff',
-      '--color-secondary': '#6c757d',
-      '--color-background': '#ffffff',
-      '--color-text': '#333333'
+      '--primary': '#007bff',
+      '--secondary': '#6c757d',
+      '--background': '#ffffff',
+      '--text': '#333333'
     })),
     hasSystemThemePreference: jest.fn(() => true),
-    
+
     // Test helpers
     setMockTheme: (theme: string) => {
       themeTypeSignal.set(theme);
@@ -1375,9 +1375,9 @@ export const MockStores = {
 
 export const createMockServices = (serviceNames: (keyof typeof MockServices)[]): Record<string, any> => {
   console.log('🏭 Creating mock services:', serviceNames);
-  
+
   const services: Record<string, any> = {};
-  
+
   serviceNames.forEach(serviceName => {
     if (MockServices[serviceName]) {
       services[serviceName] = MockServices[serviceName]();
@@ -1385,7 +1385,7 @@ export const createMockServices = (serviceNames: (keyof typeof MockServices)[]):
       console.warn(`⚠️ Unknown mock service: ${serviceName}`);
     }
   });
-  
+
   return services;
 };
 
@@ -1393,7 +1393,7 @@ export const createMockServices = (serviceNames: (keyof typeof MockServices)[]):
 // Helper to create providers from mock services
 
 export const createMockServiceProviders = (
-  services: Record<string, any>, 
+  services: Record<string, any>,
   serviceMap: Record<string, any>
 ): any[] => {
   return Object.entries(services).map(([key, mockService]) => ({

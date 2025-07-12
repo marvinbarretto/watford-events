@@ -22,4 +22,8 @@ export class UserService extends FirestoreService {
   async getAllUsers(): Promise<User[]> {
     return this.getDocsWhere<User>('users');
   }
+
+  deleteUser(uid: string): Promise<void> {
+    return this.deleteDoc(`users/${uid}`);
+  }
 }

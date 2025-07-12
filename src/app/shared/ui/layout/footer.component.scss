@@ -1,6 +1,6 @@
 .footer {
-  background: var(--color-background-secondary);
-  border-top: 1px solid var(--color-border);
+  background: var(--background-secondary);
+  border-top: 1px solid var(--border);
   margin-top: auto;
 
   &__container {
@@ -18,14 +18,14 @@
 
   &__brand {
     h3 {
-      color: var(--color-primary);
+      color: var(--primary);
       margin: 0 0 0.5rem 0;
       font-size: 1.25rem;
       font-weight: 600;
     }
 
     p {
-      color: var(--color-text-secondary);
+      color: var(--text-secondary);
       margin: 0;
       font-size: 0.9rem;
     }
@@ -39,7 +39,7 @@
 
   &__section {
     h4 {
-      color: var(--color-text);
+      color: var(--text);
       margin: 0 0 1rem 0;
       font-size: 0.95rem;
       font-weight: 600;
@@ -56,24 +56,24 @@
     }
 
     a {
-      color: var(--color-text-secondary);
+      color: var(--text-secondary);
       text-decoration: none;
       font-size: 0.9rem;
       transition: color 0.2s ease;
 
       &:hover {
-        color: var(--color-primary);
+        color: var(--primary);
       }
     }
   }
 
   &__bottom {
     padding-top: 1rem;
-    border-top: 1px solid var(--color-border);
+    border-top: 1px solid var(--border);
     text-align: center;
 
     p {
-      color: var(--color-text-secondary);
+      color: var(--text-secondary);
       margin: 0;
       font-size: 0.85rem;
     }

@@ -15,9 +15,9 @@ type Particle = {
   standalone: true,
   imports: [IconComponent],
   template: `
-    <button 
-      class="heart-button" 
-      [class.liked]="isLiked()" 
+    <button
+      class="heart-button"
+      [class.liked]="isLiked()"
       [class.loading]="loading()"
       [class.animating]="isAnimating()"
       (click)="onHeartClick()"
@@ -26,7 +26,7 @@ type Particle = {
       type="button"
     >
       <div class="heart-wrapper">
-        <app-icon 
+        <app-icon
           name="favorite"
           [fill]="isLiked() ? 1 : 0"
           [color]="heartColor()"
@@ -35,13 +35,13 @@ type Particle = {
           animation="none"
           [customClass]="iconClass()"
         />
-        
+
         @if (showParticles()) {
           <div class="particles-container">
             @for (particle of particles(); track particle.id) {
-              <div 
-                class="particle" 
-                [style.--x]="particle.x" 
+              <div
+                class="particle"
+                [style.--x]="particle.x"
                 [style.--y]="particle.y"
                 [style.--delay]="particle.delay"
                 [style.--color]="particle.color"
@@ -50,7 +50,7 @@ type Particle = {
           </div>
         }
       </div>
-      
+
       @if (showCount() && likeCount() > 0) {
         <span class="like-count" [class.count-animating]="countAnimating()">
           {{ formattedCount() }}
@@ -76,7 +76,7 @@ type Particle = {
     }
 
     .heart-button:hover {
-      background: var(--color-background-darker);
+      background: var(--background-darker);
       transform: translateY(-1px);
     }
 
@@ -87,11 +87,11 @@ type Particle = {
     }
 
     .heart-button.liked {
-      background: var(--color-error)10;
+      background: var(--error)10;
     }
 
     .heart-button.liked:hover {
-      background: var(--color-error)20;
+      background: var(--error)20;
     }
 
     .heart-wrapper {
@@ -112,14 +112,14 @@ type Particle = {
     .like-count {
       font-size: 12px;
       font-weight: 600;
-      color: var(--color-text-secondary);
+      color: var(--text-secondary);
       transition: all 0.3s ease;
       position: relative;
       overflow: hidden;
     }
 
     .heart-button.liked .like-count {
-      color: var(--color-error);
+      color: var(--error);
     }
 
     .count-animating {
@@ -150,59 +150,59 @@ type Particle = {
 
     /* Heart animations */
     @keyframes heart-burst {
-      0% { 
-        transform: scale(1); 
+      0% {
+        transform: scale(1);
       }
-      25% { 
-        transform: scale(1.4); 
+      25% {
+        transform: scale(1.4);
       }
-      50% { 
-        transform: scale(0.9); 
+      50% {
+        transform: scale(0.9);
       }
-      75% { 
-        transform: scale(1.1); 
+      75% {
+        transform: scale(1.1);
       }
-      100% { 
-        transform: scale(1); 
+      100% {
+        transform: scale(1);
       }
     }
 
     @keyframes heart-pulse {
-      0%, 100% { 
-        transform: scale(1); 
-        opacity: 1; 
+      0%, 100% {
+        transform: scale(1);
+        opacity: 1;
       }
-      50% { 
-        transform: scale(1.05); 
-        opacity: 0.8; 
+      50% {
+        transform: scale(1.05);
+        opacity: 0.8;
       }
     }
 
     /* Count animation */
     @keyframes count-pop {
-      0% { 
-        transform: translateY(0) scale(1); 
+      0% {
+        transform: translateY(0) scale(1);
       }
-      30% { 
-        transform: translateY(-3px) scale(1.1); 
+      30% {
+        transform: translateY(-3px) scale(1.1);
       }
-      100% { 
-        transform: translateY(0) scale(1); 
+      100% {
+        transform: translateY(0) scale(1);
       }
     }
 
     /* Particle burst animation */
     @keyframes particle-burst {
-      0% { 
-        transform: translate(0, 0) scale(0); 
-        opacity: 1; 
+      0% {
+        transform: translate(0, 0) scale(0);
+        opacity: 1;
       }
-      20% { 
-        opacity: 1; 
+      20% {
+        opacity: 1;
       }
-      100% { 
-        transform: translate(var(--x), var(--y)) scale(1.2); 
-        opacity: 0; 
+      100% {
+        transform: translate(var(--x), var(--y)) scale(1.2);
+        opacity: 0;
       }
     }
 
@@ -213,8 +213,8 @@ type Particle = {
 
     /* Accessibility improvements */
     @media (prefers-reduced-motion: reduce) {
-      .heart-button, 
-      .heart-wrapper, 
+      .heart-button,
+      .heart-wrapper,
       .like-count,
       .particle,
       :host ::ng-deep .material-symbols-outlined {
@@ -225,19 +225,19 @@ type Particle = {
 
     /* Focus styles */
     .heart-button:focus-visible {
-      outline: 2px solid var(--color-primary);
+      outline: 2px solid var(--primary);
       outline-offset: 2px;
     }
 
     /* High contrast mode support */
     @media (prefers-contrast: high) {
       .heart-button {
-        border: 1px solid var(--color-border-strong);
+        border: 1px solid var(--border-strong);
       }
-      
+
       .heart-button.liked {
-        background: var(--color-error);
-        color: var(--color-on-primary);
+        background: var(--error);
+        color: var(--on-primary);
       }
     }
   `]
@@ -246,11 +246,11 @@ export class HeartButtonComponent {
   // Required inputs
   readonly contentId = input.required<string>();
   readonly contentType = input.required<ContentType>();
-  
+
   // Optional inputs
   readonly showCount = input<boolean>(true);
   readonly size = input<'sm' | 'md' | 'lg'>('md');
-  
+
   // Outputs
   readonly liked = output<boolean>();
   readonly error = output<string>();
@@ -270,9 +270,9 @@ export class HeartButtonComponent {
   // Computed properties
   readonly heartColor = computed(() => {
     if (this.isLiked()) {
-      return 'var(--color-error)';
+      return 'var(--error)';
     }
-    return 'var(--color-text-secondary)';
+    return 'var(--text-secondary)';
   });
 
   readonly iconClass = computed(() => {
@@ -301,7 +301,7 @@ export class HeartButtonComponent {
     effect(async () => {
       const contentId = this.contentId();
       const contentType = this.contentType();
-      
+
       if (contentId && contentType) {
         await this.loadLikeState();
       }
@@ -313,42 +313,42 @@ export class HeartButtonComponent {
 
     try {
       this.loading.set(true);
-      
+
       // Optimistic update
       const wasLiked = this.isLiked();
       const oldCount = this.likeCount();
-      
+
       this.isLiked.set(!wasLiked);
       this.likeCount.set(oldCount + (wasLiked ? -1 : 1));
-      
+
       // Trigger animations
       if (!wasLiked) {
         this.triggerLikeAnimation();
       }
-      
+
       // Perform the actual like/unlike operation
       const newLikeState = await this.likeService.toggleLike(
-        this.contentId(), 
+        this.contentId(),
         this.contentType()
       );
-      
+
       // Get the updated count from the service
       const updatedCount = await this.likeService.getLikeCount(
         this.contentId(),
         this.contentType()
       );
-      
+
       // Update state with actual values
       this.isLiked.set(newLikeState);
       this.likeCount.set(updatedCount);
-      
+
       // Emit the new state
       this.liked.emit(newLikeState);
-      
+
     } catch (error) {
       // Rollback optimistic update
       await this.loadLikeState();
-      
+
       const errorMessage = error instanceof Error ? error.message : 'Failed to update like status';
       this.error.emit(errorMessage);
       console.error('Heart button error:', error);
@@ -360,16 +360,16 @@ export class HeartButtonComponent {
   private async loadLikeState(): Promise<void> {
     try {
       this.loading.set(true);
-      
+
       // Load like state and count in parallel
       const [liked, count] = await Promise.all([
         this.likeService.isLiked(this.contentId(), this.contentType()),
         this.likeService.getLikeCount(this.contentId(), this.contentType())
       ]);
-      
+
       this.isLiked.set(liked);
       this.likeCount.set(count);
-      
+
     } catch (error) {
       console.error('Failed to load like state:', error);
       // Set defaults on error
@@ -384,16 +384,16 @@ export class HeartButtonComponent {
     // Trigger heart burst animation
     this.isAnimating.set(true);
     setTimeout(() => this.isAnimating.set(false), 600);
-    
+
     // Trigger count animation if count is visible
     if (this.showCount()) {
       this.countAnimating.set(true);
       setTimeout(() => this.countAnimating.set(false), 400);
     }
-    
+
     // Generate particles
     this.generateParticles();
-    
+
     // Show particles briefly
     this.showParticles.set(true);
     setTimeout(() => {
@@ -405,22 +405,22 @@ export class HeartButtonComponent {
   private generateParticles(): void {
     const particleCount = 6;
     const colors = [
-      'var(--color-error)',
-      'var(--color-accent)',
-      'var(--color-warning)',
-      'var(--color-success)',
-      'var(--color-info)',
-      'var(--color-primary)'
+      'var(--error)',
+      'var(--accent)',
+      'var(--warning)',
+      'var(--success)',
+      'var(--info)',
+      'var(--primary)'
     ];
-    
+
     const newParticles: Particle[] = [];
-    
+
     for (let i = 0; i < particleCount; i++) {
       const angle = (i / particleCount) * 2 * Math.PI;
       const distance = 20 + Math.random() * 15; // Random distance 20-35px
       const x = Math.cos(angle) * distance;
       const y = Math.sin(angle) * distance;
-      
+
       newParticles.push({
         id: Date.now() + i,
         x: `${x}px`,
@@ -429,7 +429,7 @@ export class HeartButtonComponent {
         color: colors[i % colors.length]
       });
     }
-    
+
     this.particles.set(newParticles);
   }
 }

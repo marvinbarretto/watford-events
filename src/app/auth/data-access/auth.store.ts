@@ -129,6 +129,14 @@ export class AuthStore {
     this.authService.loginWithEmail(email, password);
   }
 
+  registerWithEmail(email: string, password: string): void {
+    this.authService.registerWithEmail(email, password);
+  }
+
+  resetPassword(email: string): void {
+    this.authService.resetPassword(email);
+  }
+
   /**
    * Determines the default role for a user based on their Firebase Auth data
    * @param firebaseUser - Firebase User object

@@ -3,6 +3,8 @@ import { Injectable, inject, signal, computed } from '@angular/core';
 import {
   Auth,
   signInWithEmailAndPassword,
+  createUserWithEmailAndPassword,
+  sendPasswordResetEmail,
   signOut,
   GoogleAuthProvider,
   signInWithPopup,
@@ -89,6 +91,32 @@ export class AuthService extends FirestoreService {
       return cred.user;
     } catch (error) {
       this.loading.set(false);
+      throw error;
+    }
+  }
+
+  async registerWithEmail(email: string, password: string): Promise<FirebaseUser> {
+    try {
+      this.loading.set(true);
+      const cred = await createUserWithEmailAndPassword(this.auth, email, password);
+      console.log('[AuthService] ✅ Email registration successful:', cred.user.uid);
+
+      // Ensure user document exists for registered users
+      await this.ensureRegisteredUserDocument(cred.user);
+
+      return cred.user;
+    } catch (error) {
+      this.loading.set(false);
+      throw error;
+    }
+  }
+
+  async resetPassword(email: string): Promise<void> {
+    try {
+      await sendPasswordResetEmail(this.auth, email);
+      console.log('[AuthService] ✅ Password reset email sent to:', email);
+    } catch (error) {
+      console.error('[AuthService] Password reset failed:', error);
       throw error;
     }
   }
