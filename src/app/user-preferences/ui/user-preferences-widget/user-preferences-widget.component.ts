@@ -181,7 +181,7 @@ import {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      padding: 16px 20px;
+      padding: 12px 16px;
       cursor: pointer;
       user-select: none;
       border-bottom: 1px solid transparent;
@@ -206,15 +206,15 @@ import {
     .widget-title {
       display: flex;
       align-items: center;
-      gap: 8px;
+      gap: 6px;
       margin: 0;
-      font-size: 16px;
+      font-size: 15px;
       font-weight: 600;
       color: var(--text);
     }
 
     .title-icon {
-      font-size: 18px;
+      font-size: 16px;
     }
 
     .widget-controls {
@@ -252,12 +252,12 @@ import {
     }
 
     .widget-content {
-      padding: 20px;
+      padding: 16px;
       background: var(--background);
     }
 
     .preference-section {
-      margin-bottom: 24px;
+      margin-bottom: 16px;
     }
 
     .preference-section:last-child {
@@ -267,25 +267,25 @@ import {
     .section-label {
       display: flex;
       align-items: center;
-      gap: 8px;
-      font-size: 14px;
+      gap: 6px;
+      font-size: 13px;
       font-weight: 600;
       color: var(--text);
-      margin-bottom: 12px;
+      margin-bottom: 10px;
     }
 
     .label-icon {
-      font-size: 16px;
+      font-size: 14px;
     }
 
     /* Radius Controls */
     .radius-controls {
-      margin-top: 8px;
+      margin-top: 6px;
     }
 
     .radius-slider {
       width: 100%;
-      height: 6px;
+      height: 5px;
       background: var(--border);
       border-radius: 3px;
       outline: none;
@@ -295,8 +295,8 @@ import {
 
     .radius-slider::-webkit-slider-thumb {
       appearance: none;
-      width: 18px;
-      height: 18px;
+      width: 16px;
+      height: 16px;
       background: var(--primary);
       border-radius: 50%;
       cursor: pointer;
@@ -304,8 +304,8 @@ import {
     }
 
     .radius-slider::-moz-range-thumb {
-      width: 18px;
-      height: 18px;
+      width: 16px;
+      height: 16px;
       background: var(--primary);
       border-radius: 50%;
       cursor: pointer;
@@ -316,9 +316,9 @@ import {
     .radius-labels {
       display: flex;
       justify-content: space-between;
-      font-size: 12px;
+      font-size: 11px;
       color: var(--text-secondary);
-      margin-top: 4px;
+      margin-top: 3px;
     }
 
     /* Unit Toggle */
@@ -332,10 +332,10 @@ import {
 
     .unit-option {
       flex: 1;
-      padding: 8px 16px;
+      padding: 6px 12px;
       background: transparent;
       border: none;
-      font-size: 14px;
+      font-size: 13px;
       color: var(--text-secondary);
       cursor: pointer;
       transition: all 0.2s ease;
@@ -354,11 +354,11 @@ import {
     /* Sort Select */
     .sort-select {
       width: 100%;
-      padding: 8px 12px;
+      padding: 6px 10px;
       background: var(--background-lighter);
       border: 1px solid var(--border);
       border-radius: 6px;
-      font-size: 14px;
+      font-size: 13px;
       color: var(--text);
       cursor: pointer;
     }
@@ -372,22 +372,22 @@ import {
     /* Categories Grid */
     .categories-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
-      gap: 8px;
-      margin-top: 8px;
+      grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+      gap: 6px;
+      margin-top: 6px;
     }
 
     .category-item {
       display: flex;
       align-items: center;
-      gap: 8px;
-      padding: 6px 8px;
+      gap: 6px;
+      padding: 4px 6px;
       background: var(--background-lighter);
       border: 1px solid var(--border);
-      border-radius: 6px;
+      border-radius: 4px;
       cursor: pointer;
       transition: all 0.2s ease;
-      font-size: 13px;
+      font-size: 12px;
     }
 
     .category-item:hover {
@@ -403,31 +403,31 @@ import {
     .category-label {
       display: flex;
       align-items: center;
-      gap: 4px;
+      gap: 3px;
       color: var(--text-secondary);
       font-weight: 500;
     }
 
     .category-icon {
-      font-size: 14px;
+      font-size: 12px;
     }
 
     /* Quick Actions */
     .quick-actions {
       display: flex;
-      gap: 12px;
+      gap: 8px;
       flex-wrap: wrap;
     }
 
     .action-btn {
       display: flex;
       align-items: center;
-      gap: 6px;
-      padding: 8px 12px;
+      gap: 4px;
+      padding: 6px 10px;
       background: var(--background-lighter);
       border: 1px solid var(--border);
-      border-radius: 6px;
-      font-size: 13px;
+      border-radius: 4px;
+      font-size: 12px;
       color: var(--text-secondary);
       cursor: pointer;
       transition: all 0.2s ease;
@@ -450,7 +450,7 @@ import {
     }
 
     .btn-icon {
-      font-size: 14px;
+      font-size: 12px;
     }
 
     /* Error Message */
@@ -458,11 +458,11 @@ import {
       display: flex;
       align-items: center;
       justify-content: space-between;
-      padding: 12px 16px;
+      padding: 10px 14px;
       background: var(--error-background, #fee);
       border-top: 1px solid var(--border);
       color: var(--error-text, #c53030);
-      font-size: 14px;
+      font-size: 13px;
     }
 
     .error-dismiss {
@@ -478,25 +478,30 @@ import {
     /* Mobile optimization */
     @media (max-width: 768px) {
       .widget-header {
-        padding: 12px 16px;
+        padding: 10px 12px;
       }
 
       .widget-content {
-        padding: 16px;
+        padding: 12px;
+      }
+
+      .preference-section {
+        margin-bottom: 12px;
       }
 
       .categories-grid {
-        grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
-        gap: 6px;
+        grid-template-columns: repeat(auto-fit, minmax(110px, 1fr));
+        gap: 4px;
       }
 
       .quick-actions {
         flex-direction: column;
-        gap: 8px;
+        gap: 6px;
       }
 
       .action-btn {
         justify-content: center;
+        padding: 5px 8px;
       }
     }
   `]

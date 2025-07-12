@@ -349,7 +349,7 @@ import { SsrPlatformService } from '../../utils/ssr/ssr-platform.service';
       display: flex;
       justify-content: space-between;
       align-items: center;
-      padding: 16px 20px;
+      padding: 12px 16px;
       cursor: pointer;
       user-select: none;
       border-bottom: 1px solid transparent;
@@ -375,15 +375,15 @@ import { SsrPlatformService } from '../../utils/ssr/ssr-platform.service';
     .widget-title {
       display: flex;
       align-items: center;
-      gap: 8px;
+      gap: 6px;
       margin: 0;
-      font-size: 16px;
+      font-size: 15px;
       font-weight: 600;
       color: var(--text);
     }
 
     .title-icon {
-      font-size: 18px;
+      font-size: 16px;
     }
 
     .widget-controls {
@@ -419,13 +419,13 @@ import { SsrPlatformService } from '../../utils/ssr/ssr-platform.service';
     }
 
     .widget-content {
-      padding: 20px;
+      padding: 16px;
       background: var(--background);
     }
 
     .info-section {
-      margin-bottom: 24px;
-      padding: 16px;
+      margin-bottom: 16px;
+      padding: 12px;
       background: var(--background-lightest);
       border: 1px solid var(--border);
       border-radius: 6px;
@@ -481,16 +481,16 @@ import { SsrPlatformService } from '../../utils/ssr/ssr-platform.service';
     .section-title {
       display: flex;
       align-items: center;
-      gap: 8px;
-      margin: 0 0 16px 0;
-      font-size: 14px;
+      gap: 6px;
+      margin: 0 0 12px 0;
+      font-size: 13px;
       font-weight: 600;
       color: var(--text);
       cursor: pointer;
     }
 
     .section-icon {
-      font-size: 16px;
+      font-size: 14px;
     }
 
     .expand-icon {
@@ -501,32 +501,33 @@ import { SsrPlatformService } from '../../utils/ssr/ssr-platform.service';
 
     .info-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-      gap: 12px;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 8px;
     }
 
     .info-item {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      padding: 8px 12px;
+      padding: 6px 10px;
       background: var(--background);
       border: 1px solid var(--border);
       border-radius: 4px;
-      font-size: 13px;
+      font-size: 12px;
     }
 
     .info-label {
       font-weight: 500;
       color: var(--text-secondary);
-      min-width: 120px;
+      min-width: 100px;
+      font-size: 11px;
     }
 
     .info-value {
       color: var(--text);
       text-align: right;
       font-family: 'SF Mono', Monaco, 'Cascadia Code', 'Roboto Mono', Consolas, 'Courier New', monospace;
-      font-size: 12px;
+      font-size: 11px;
     }
 
     .info-value.status-active {
@@ -561,11 +562,11 @@ import { SsrPlatformService } from '../../utils/ssr/ssr-platform.service';
     }
 
     .raw-data {
-      margin-top: 12px;
+      margin-top: 8px;
     }
 
     .raw-data-item {
-      margin-bottom: 16px;
+      margin-bottom: 12px;
     }
 
     .raw-data-item h5 {
@@ -579,9 +580,9 @@ import { SsrPlatformService } from '../../utils/ssr/ssr-platform.service';
       background: var(--background);
       border: 1px solid var(--border);
       border-radius: 4px;
-      padding: 12px;
-      font-size: 11px;
-      line-height: 1.4;
+      padding: 8px;
+      font-size: 10px;
+      line-height: 1.3;
       overflow-x: auto;
       color: var(--text-secondary);
       font-family: 'SF Mono', Monaco, 'Cascadia Code', 'Roboto Mono', Consolas, 'Courier New', monospace;
@@ -629,22 +630,28 @@ import { SsrPlatformService } from '../../utils/ssr/ssr-platform.service';
     /* Mobile optimization */
     @media (max-width: 768px) {
       .widget-header {
-        padding: 12px 16px;
+        padding: 10px 12px;
       }
 
       .widget-content {
-        padding: 16px;
+        padding: 12px;
+      }
+
+      .info-section {
+        padding: 10px;
+        margin-bottom: 12px;
       }
 
       .info-grid {
         grid-template-columns: 1fr;
-        gap: 8px;
+        gap: 6px;
       }
 
       .info-item {
         flex-direction: column;
         align-items: flex-start;
-        gap: 4px;
+        gap: 2px;
+        padding: 4px 8px;
       }
 
       .info-value {
