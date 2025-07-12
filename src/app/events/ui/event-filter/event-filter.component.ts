@@ -1,10 +1,12 @@
 import { Component, input, output } from '@angular/core';
 
-export type FilterOption = 'upcoming' | 'today' | 'this-week' | 'this-month' | 'all';
+export type FilterOption = 'upcoming' | 'today' | 'tomorrow' | 'this-week' | 'this-month' | 'all';
+export type UnitOption = 'today' | 'tomorrow' | 'this-week' | 'all';
 
 export interface EventCounts {
   upcoming: number;
   today: number;
+  tomorrow: number;
   thisWeek: number;
   thisMonth: number;
   all: number;
@@ -21,7 +23,7 @@ export interface EventCounts {
           <span class="total-count">{{ counts.all }} total</span>
         }
       </div>
-      
+
       <div class="filter-options">
         <button
           class="filter-option"
@@ -33,7 +35,7 @@ export interface EventCounts {
             <span class="option-count">{{ counts.upcoming }}</span>
           }
         </button>
-        
+
         <button
           class="filter-option"
           [class.active]="activeFilter() === 'today'"
@@ -44,7 +46,18 @@ export interface EventCounts {
             <span class="option-count">{{ counts.today }}</span>
           }
         </button>
-        
+
+        <button
+          class="filter-option"
+          [class.active]="activeFilter() === 'tomorrow'"
+          (click)="selectFilter('tomorrow')"
+        >
+          <span class="option-label">Tomorrow</span>
+          @if (eventCounts(); as counts) {
+            <span class="option-count">{{ counts.tomorrow }}</span>
+          }
+        </button>
+
         <button
           class="filter-option"
           [class.active]="activeFilter() === 'this-week'"
@@ -55,7 +68,7 @@ export interface EventCounts {
             <span class="option-count">{{ counts.thisWeek }}</span>
           }
         </button>
-        
+
         <button
           class="filter-option"
           [class.active]="activeFilter() === 'this-month'"
@@ -66,7 +79,7 @@ export interface EventCounts {
             <span class="option-count">{{ counts.thisMonth }}</span>
           }
         </button>
-        
+
         <button
           class="filter-option"
           [class.active]="activeFilter() === 'all'"
@@ -78,7 +91,7 @@ export interface EventCounts {
           }
         </button>
       </div>
-      
+
       <div class="search-section">
         <input
           type="text"
