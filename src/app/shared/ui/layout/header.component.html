@@ -12,6 +12,7 @@
     <nav class="header__nav">
       <a routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}">Home</a>
       <a routerLink="/events" routerLinkActive="active">Events</a>
+      <a routerLink="/events/enhanced-parser" routerLinkActive="active">Enhanced Parser</a>
       <a routerLink="/venues" routerLinkActive="active">Venues</a>
       
       <!-- Admin Links -->
@@ -70,6 +71,12 @@
         @if (authStore.isAuthenticated()) {
           <div class="header__user">
             <span class="header__username">{{ authStore.user()?.displayName }}</span>
+            <a 
+              routerLink="/settings"
+              class="header__settings-btn"
+              title="Settings">
+              ⚙️
+            </a>
             <button 
               class="header__logout-btn"
               (click)="onLogout()"

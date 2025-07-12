@@ -415,7 +415,9 @@ export class FlyerParserComponent {
           organizer: 0,
           ticketInfo: 0,
           contactInfo: 0,
-          website: 0
+          website: 0,
+          categories: 0,
+          tags: 0
         },
         error: 'Failed to process image'
       });

@@ -1,4 +1,5 @@
 import { Validators } from '@angular/forms';
+import { EVENT_CATEGORIES, EVENT_CATEGORY_SETTINGS } from './event.model';
 
 /**
  * Event Form Configuration
@@ -13,9 +14,11 @@ export interface FormFieldConfig {
   validators: any[];
   label: string;
   placeholder?: string;
-  type: 'text' | 'textarea' | 'date' | 'time' | 'email' | 'url';
+  type: 'text' | 'textarea' | 'date' | 'time' | 'email' | 'url' | 'multi-select' | 'tag-input';
   autoFillable: boolean;
   confidenceField?: string; // Maps to confidence object key if different from field name
+  options?: { value: any; label: string; description?: string }[]; // For multi-select fields
+  helpText?: string; // Additional help text for the field
 }
 
 export const EVENT_FORM_FIELDS: FormFieldConfig[] = [
@@ -101,6 +104,27 @@ export const EVENT_FORM_FIELDS: FormFieldConfig[] = [
     placeholder: 'Website or social media links',
     type: 'url',
     autoFillable: true
+  },
+  {
+    name: 'categories',
+    initialValue: [],
+    validators: [],
+    label: 'Categories',
+    placeholder: 'Select up to 3 categories',
+    type: 'multi-select',
+    autoFillable: true,
+    options: EVENT_CATEGORIES,
+    helpText: `Select up to ${EVENT_CATEGORY_SETTINGS.MAX_CATEGORIES_PER_EVENT} categories that best describe your event`
+  },
+  {
+    name: 'tags',
+    initialValue: [],
+    validators: [],
+    label: 'Tags',
+    placeholder: 'Add custom tags...',
+    type: 'tag-input',
+    autoFillable: true,
+    helpText: `Add up to ${EVENT_CATEGORY_SETTINGS.MAX_TAGS_PER_EVENT} custom tags to help people find your event`
   }
 ];
 

@@ -35,6 +35,16 @@ export const routes: Routes = [
     loadComponent: () => import('./events/feature/add-event.component').then(m => m.AddEventComponent)
   },
   {
+    path: 'events/parser',
+    data: { shell: 'main' },
+    loadComponent: () => import('./events/feature/event-parser.component').then(m => m.EventParserComponent)
+  },
+  {
+    path: 'events/enhanced-parser',
+    data: { shell: 'main' },
+    loadComponent: () => import('./events/feature/enhanced-event-parser.component').then(m => m.EnhancedEventParserComponent)
+  },
+  {
     path: 'events/:id',
     data: { shell: 'main' },
     loadComponent: () => import('./events/feature/event-detail.component').then(m => m.EventDetailComponent)
@@ -48,6 +58,12 @@ export const routes: Routes = [
     path: 'login',
     data: { shell: 'fullscreen' },
     loadComponent: () => import('./auth/feature/login.component').then(m => m.LoginComponent)
+  },
+  {
+    path: 'settings',
+    data: { shell: 'main' },
+    canActivate: [authGuard],
+    loadComponent: () => import('./user-preferences/feature/settings.component').then(m => m.SettingsComponent)
   },
   // Admin routes
   {
@@ -64,6 +80,16 @@ export const routes: Routes = [
     path: 'admin/venues',
     data: { shell: 'main' },
     loadComponent: () => import('./admin/feature/admin-venue-management/admin-venue-management').then(m => m.AdminVenueManagement)
+  },
+  {
+    path: 'admin/venues/new',
+    data: { shell: 'main' },
+    loadComponent: () => import('./venues/feature/venue-form.component').then(m => m.VenueFormComponent)
+  },
+  {
+    path: 'admin/venues/:id/edit',
+    data: { shell: 'main' },
+    loadComponent: () => import('./venues/feature/venue-form.component').then(m => m.VenueFormComponent)
   },
   // Example pages
   {

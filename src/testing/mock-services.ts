@@ -156,33 +156,6 @@ export const createThemeServiceMock = () => {
   };
 };
 
-// ==================== CACHE SERVICE MOCK ====================
-// Mock for cache-related services
-
-export const createCacheServiceMock = () => {
-  console.log('💾 Creating CacheService mock');
-  
-  const cache = new Map<string, any>();
-  
-  return {
-    get: jest.fn((key: string) => Promise.resolve(cache.get(key))),
-    set: jest.fn((key: string, value: any) => {
-      cache.set(key, value);
-      return Promise.resolve();
-    }),
-    delete: jest.fn((key: string) => {
-      cache.delete(key);
-      return Promise.resolve();
-    }),
-    clear: jest.fn(() => {
-      cache.clear();
-      return Promise.resolve();
-    }),
-    has: jest.fn((key: string) => Promise.resolve(cache.has(key))),
-    keys: jest.fn(() => Promise.resolve(Array.from(cache.keys()))),
-    size: jest.fn(() => Promise.resolve(cache.size))
-  };
-};
 
 // ==================== NOTIFICATION SERVICE MOCK ====================
 // Mock for notification services
@@ -875,7 +848,6 @@ export const MockServices = {
   indexedDb: createIndexedDbServiceMock,
   firebaseMetrics: createFirebaseMetricsServiceMock,
   theme: createThemeServiceMock,
-  cache: createCacheServiceMock,
   notification: createNotificationServiceMock,
   toast: createToastServiceMock,
   location: createLocationServiceMock,

@@ -1,13 +1,14 @@
 import { Component, input, output, computed } from '@angular/core';
 import { Venue } from '../../utils/venue.model';
 import { ChipComponent, ChipStatus } from '../../../shared/ui/chip/chip.component';
+import { HeartButtonComponent } from '../../../shared/ui/heart-button/heart-button.component';
 
 @Component({
-  selector: 'app-venue-card-rect',
+  selector: 'app-venue-card',
   standalone: true,
-  imports: [ChipComponent],
+  imports: [ChipComponent, HeartButtonComponent],
   template: `
-    <div class="venue-card-rect" (click)="handleClick()">
+    <div class="venue-card" (click)="handleClick()">
       <!-- Venue Header -->
       <div class="venue-header">
         <div class="venue-icon">
@@ -89,10 +90,43 @@ import { ChipComponent, ChipStatus } from '../../../shared/ui/chip/chip.componen
             }
           </div>
         }
+
+        @if (venue().transportInfo && hasTransportInfo()) {
+          <div class="transport-section">
+            <h4 class="transport-title">Getting There</h4>
+            @if (venue().transportInfo!.buses) {
+              <div class="transport-item">
+                <span class="transport-icon">🚌</span>
+                <span>{{ venue().transportInfo!.buses }}</span>
+              </div>
+            }
+            @if (venue().transportInfo!.trains) {
+              <div class="transport-item">
+                <span class="transport-icon">🚂</span>
+                <span>{{ venue().transportInfo!.trains }}</span>
+              </div>
+            }
+            @if (venue().transportInfo!.parking) {
+              <div class="transport-item">
+                <span class="transport-icon">🚗</span>
+                <span>{{ venue().transportInfo!.parking }}</span>
+              </div>
+            }
+          </div>
+        }
       </div>
 
       <!-- Venue Actions -->
       <div class="venue-actions" (click)="$event.stopPropagation()">
+        <!-- Heart/Like button for all users -->
+        <app-heart-button
+          [contentId]="venue().id"
+          contentType="venue"
+          [showCount]="true"
+          (liked)="onVenueLiked($event)"
+          (error)="onLikeError($event)"
+        />
+
         <button class="action-btn view-btn" (click)="viewVenue()">
           <span>👁️</span>
           <span>View Details</span>
@@ -111,20 +145,20 @@ import { ChipComponent, ChipStatus } from '../../../shared/ui/chip/chip.componen
     </div>
   `,
   styles: [`
-    .venue-card-rect {
-      background: var(--color-background-lighter);
+    .venue-card {
+      background: var(--color-background-lightest);
       border-radius: 12px;
       overflow: hidden;
       box-shadow: 0 4px 8px rgba(0,0,0,0.1);
       cursor: pointer;
       transition: all 0.2s;
-      border: 1px solid var(--color-border);
+      border: 1px solid var(--color-border-strong);
       display: flex;
       flex-direction: column;
       height: 100%;
     }
 
-    .venue-card-rect:hover {
+    .venue-card:hover {
       transform: translateY(-4px);
       box-shadow: 0 8px 16px rgba(0,0,0,0.15);
       border-color: var(--color-primary);
@@ -227,11 +261,11 @@ import { ChipComponent, ChipStatus } from '../../../shared/ui/chip/chip.componen
       border-color: var(--color-accent);
     }
 
-    .contact-info {
+    .contact-info, .transport-section {
       margin-bottom: 1rem;
     }
 
-    .contact-item {
+    .contact-item, .transport-item {
       display: flex;
       align-items: center;
       gap: 6px;
@@ -240,8 +274,17 @@ import { ChipComponent, ChipStatus } from '../../../shared/ui/chip/chip.componen
       margin-bottom: 4px;
     }
 
-    .contact-icon {
+    .contact-icon, .transport-icon {
       font-size: 14px;
+    }
+
+    .transport-title {
+      margin: 0 0 0.5rem 0;
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--color-text);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
     }
 
     .venue-actions {
@@ -299,12 +342,13 @@ import { ChipComponent, ChipStatus } from '../../../shared/ui/chip/chip.componen
     }
   `]
 })
-export class VenueCardRectComponent {
+export class VenueCardComponent {
   // Required inputs
   readonly venue = input.required<Venue>();
 
   // Outputs
   readonly clicked = output<Venue>();
+  readonly liked = output<{ venue: Venue; isLiked: boolean }>();
   readonly viewClicked = output<Venue>();
   readonly directionsClicked = output<Venue>();
   readonly websiteClicked = output<Venue>();
@@ -373,6 +417,11 @@ export class VenueCardRectComponent {
     return features;
   });
 
+  readonly hasTransportInfo = computed(() => {
+    const transport = this.venue().transportInfo;
+    return transport && (transport.buses || transport.trains || transport.parking);
+  });
+
   // Event handlers
   handleClick() {
     this.clicked.emit(this.venue());
@@ -388,5 +437,14 @@ export class VenueCardRectComponent {
 
   visitWebsite() {
     this.websiteClicked.emit(this.venue());
+  }
+
+  onVenueLiked(isLiked: boolean) {
+    this.liked.emit({ venue: this.venue(), isLiked });
+  }
+
+  onLikeError(error: string) {
+    console.error('Like error in venue card:', error);
+    // Could emit an error event or show a toast notification
   }
 }

@@ -17,7 +17,9 @@ const mockEvent: Event = {
   createdAt: new Date('2024-12-01'),
   updatedAt: new Date('2024-12-01'),
   attendeeIds: [],
-  status: 'published'
+  status: 'published',
+  eventType: 'single',
+  isException: false
 };
 
 const mockEvents: Event[] = [
@@ -164,7 +166,9 @@ describe('EventService', () => {
         createdAt: new Date(),
         updatedAt: new Date(),
         attendeeIds: [],
-        status: 'draft' as const
+        status: 'draft' as const,
+        eventType: 'single' as const,
+        isException: false
       };
 
       const result = await service.createEvent(eventData);
@@ -186,7 +190,9 @@ describe('EventService', () => {
         createdAt: new Date(),
         updatedAt: new Date(),
         attendeeIds: ['attendee-1', 'attendee-2'],
-        status: 'published' as const
+        status: 'published' as const,
+        eventType: 'single' as const,
+        isException: false
       };
 
       const result = await service.createEvent(eventData);
@@ -369,7 +375,9 @@ describe('EventService', () => {
         createdAt: new Date(),
         updatedAt: new Date(),
         attendeeIds: [],
-        status: 'draft' as const
+        status: 'draft' as const,
+        eventType: 'single' as const,
+        isException: false
       };
 
       await expect(service.createEvent(eventData)).rejects.toThrow('Create failed');

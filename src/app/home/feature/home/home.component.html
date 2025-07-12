@@ -19,6 +19,9 @@
     </button>
   </div>
 
+
+  <app-user-widget />
+
   <app-event-filter
     [activeFilter]="currentFilter()"
     [eventCounts]="eventCounts()"
@@ -26,6 +29,8 @@
     (filterChanged)="onFilterChanged($event)"
     (searchChanged)="onSearchChanged($event)"
   />
+
+  <app-user-preferences-widget />
 
   <!-- Loading State -->
   @if (loading()) {
@@ -56,6 +61,9 @@
               [isFeatured]="true"
               [isExpanded]="isEventExpanded(event.id)"
               [searchTerm]="searchTerm()"
+              [userDistance]="getEventDistance(event.id)"
+              [distanceUnit]="getDistanceUnit()"
+              [withinRadius]="isEventWithinRadius(event.id)"
               (clicked)="onEventClicked($event)"
               (expandToggled)="toggleEventExpanded(event.id)"
             />
@@ -78,6 +86,9 @@
                 [isFeatured]="false"
                 [isExpanded]="isEventExpanded(event.id)"
                 [searchTerm]="searchTerm()"
+                [userDistance]="getEventDistance(event.id)"
+                [distanceUnit]="getDistanceUnit()"
+                [withinRadius]="isEventWithinRadius(event.id)"
                 (clicked)="onEventClicked($event)"
                 (expandToggled)="toggleEventExpanded(event.id)"
               />

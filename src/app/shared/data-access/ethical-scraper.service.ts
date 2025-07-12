@@ -5,7 +5,6 @@
 import { inject, Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable, tap, catchError, of } from 'rxjs';
-import { CacheService } from './cache.service';
 
 export interface ScrapingRequest {
   url: string;
@@ -74,7 +73,6 @@ export interface CacheStats {
 })
 export class EthicalScraperService {
   private http = inject(HttpClient);
-  private cacheService = inject(CacheService);
   
   private readonly baseUrl = '/api/scrape';
 

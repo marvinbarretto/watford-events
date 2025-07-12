@@ -30,18 +30,23 @@ import { Injectable, inject } from '@angular/core';
 import { SsrPlatformService } from '../utils/ssr/ssr-platform.service';
 
 export type FirebaseOperation = 'read' | 'write' | 'delete' | 'batch-write' | 'transaction';
+export type RequestSource = 'cache' | 'firebase';
 
 export type FirebaseCallMetrics = {
   operation: FirebaseOperation;
   collection: string;
   timestamp: number;
   callId: string;
+  source?: RequestSource;
+  requestIndex?: number;
 };
 
 export type SessionSummary = {
   totalCalls: number;
   breakdown: Record<string, number>;
   operationBreakdown: Record<FirebaseOperation, number>;
+  sourceBreakdown: Record<RequestSource, number>;
+  cacheHitRate: number;
   sessionDuration: number;
   sessionStart: number;
   callsPerMinute: number;
@@ -56,9 +61,11 @@ export class FirebaseMetricsService {
   // Session tracking
   private sessionCalls = new Map<string, number>();
   private operationCalls = new Map<FirebaseOperation, number>();
+  private sourceCalls = new Map<RequestSource, number>();
   private sessionStart = Date.now();
   private callHistory: FirebaseCallMetrics[] = [];
   private callCounter = 0;
+  private requestIndex = 0;
 
   // Configuration
   private readonly MAX_HISTORY = 100; // Keep last 100 calls for analysis
@@ -81,8 +88,10 @@ export class FirebaseMetricsService {
    * @param operation - Type of Firebase operation
    * @param collection - Collection name being accessed
    * @param details - Optional additional details for debugging
+   * @param source - Whether this was served from cache or Firebase
    */
-  trackCall(operation: FirebaseOperation, collection: string, details?: string): void {
+  trackCall(operation: FirebaseOperation, collection: string, details?: string, source: RequestSource = 'firebase'): void {
+    const requestIdx = ++this.requestIndex;
     const callId = `${operation}-${collection}-${++this.callCounter}`;
     const timestamp = Date.now();
     
@@ -90,13 +99,16 @@ export class FirebaseMetricsService {
     const key = `${operation}:${collection}`;
     this.sessionCalls.set(key, (this.sessionCalls.get(key) || 0) + 1);
     this.operationCalls.set(operation, (this.operationCalls.get(operation) || 0) + 1);
+    this.sourceCalls.set(source, (this.sourceCalls.get(source) || 0) + 1);
     
     // Add to call history
     const callMetrics: FirebaseCallMetrics = {
       operation,
       collection,
       timestamp,
-      callId
+      callId,
+      source,
+      requestIndex: requestIdx
     };
     
     this.callHistory.push(callMetrics);
@@ -106,8 +118,10 @@ export class FirebaseMetricsService {
       this.callHistory.shift();
     }
     
-    // Log the call
-    console.log(`🔥 [FirebaseMetrics] ${operation.toUpperCase()} ${collection}${details ? ` (${details})` : ''} [${callId}]`);
+    // Enhanced logging with source and request index
+    const sourceIcon = source === 'cache' ? '🎯' : '🔥';
+    const sourceLabel = source === 'cache' ? 'CACHE' : 'FIREBASE';
+    console.log(`${sourceIcon} [${sourceLabel}] #${requestIdx} ${operation.toUpperCase()} ${collection}${details ? ` (${details})` : ''} [${callId}]`);
     
     // Log milestone summaries
     const totalCalls = Array.from(this.operationCalls.values()).reduce((sum, count) => sum + count, 0);
@@ -141,6 +155,20 @@ export class FirebaseMetricsService {
     this.operationCalls.forEach((count, operation) => {
       operationBreakdown[operation] = count;
     });
+
+    // Build source breakdown
+    const sourceBreakdown: Record<RequestSource, number> = {
+      'cache': 0,
+      'firebase': 0
+    };
+    this.sourceCalls.forEach((count, source) => {
+      sourceBreakdown[source] = count;
+    });
+
+    // Calculate cache hit rate
+    const cacheHits = sourceBreakdown.cache || 0;
+    const firebaseHits = sourceBreakdown.firebase || 0;
+    const cacheHitRate = totalCalls > 0 ? (cacheHits / totalCalls) * 100 : 0;
     
     // Find most active collection
     let mostActiveCollection = 'none';
@@ -159,6 +187,8 @@ export class FirebaseMetricsService {
       totalCalls,
       breakdown,
       operationBreakdown,
+      sourceBreakdown,
+      cacheHitRate,
       sessionDuration,
       sessionStart: this.sessionStart,
       callsPerMinute,
@@ -179,8 +209,10 @@ export class FirebaseMetricsService {
     // Clear all counters
     this.sessionCalls.clear();
     this.operationCalls.clear();
+    this.sourceCalls.clear();
     this.callHistory = [];
     this.callCounter = 0;
+    this.requestIndex = 0;
     this.sessionStart = Date.now();
     
     console.log('🔥 [FirebaseMetrics] ✅ Session reset complete - new tracking session started');
@@ -195,18 +227,22 @@ export class FirebaseMetricsService {
     
     console.log(`🔥 [FirebaseMetrics] === ${title.toUpperCase()} ===`);
     console.log(`🔥 [FirebaseMetrics] Total calls: ${summary.totalCalls}`);
+    console.log(`🔥 [FirebaseMetrics] Cache hit rate: ${summary.cacheHitRate.toFixed(1)}%`);
     console.log(`🔥 [FirebaseMetrics] Session duration: ${(summary.sessionDuration / 1000).toFixed(1)}s`);
     console.log(`🔥 [FirebaseMetrics] Calls per minute: ${summary.callsPerMinute.toFixed(1)}`);
     console.log(`🔥 [FirebaseMetrics] Most active: ${summary.mostActiveCollection}`);
     
     if (summary.totalCalls > 0) {
       console.log('🔥 [FirebaseMetrics] Operation breakdown:', summary.operationBreakdown);
+      console.log('🔥 [FirebaseMetrics] Source breakdown:', summary.sourceBreakdown);
       console.log('🔥 [FirebaseMetrics] Collection breakdown:', summary.breakdown);
       
       if (summary.recentCalls.length > 0) {
         console.log('🔥 [FirebaseMetrics] Recent calls:');
         summary.recentCalls.forEach(call => {
-          console.log(`  📱 ${call.operation} ${call.collection} [${call.callId}]`);
+          const sourceIcon = call.source === 'cache' ? '🎯' : '🔥';
+          const index = call.requestIndex ? `#${call.requestIndex}` : '';
+          console.log(`  ${sourceIcon} ${index} ${call.operation} ${call.collection} [${call.callId}]`);
         });
       }
     }

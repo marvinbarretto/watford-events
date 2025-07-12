@@ -6,15 +6,17 @@ import { TypeaheadComponent, TypeaheadOption } from '../../shared/ui/typeahead/t
 import { VenueLookupService } from '../../shared/data-access/venue-lookup.service';
 import { Venue } from '../../venues/utils/venue.model';
 import { ChipComponent } from '../../shared/ui/chip/chip.component';
+import { MultiSelectComponent } from '../../shared/ui/multi-select/multi-select.component';
+import { TagInputComponent } from '../../shared/ui/tag-input/tag-input.component';
 
 import { EventStore } from '../data-access/event.store';
-import { Event } from '../utils/event.model';
+import { Event, EVENT_CATEGORIES, EVENT_CATEGORY_SETTINGS } from '../utils/event.model';
 import { EventExtractionResult } from '../../shared/utils/event-extraction-types';
 import { parseEventDateTime, isLikelyDateTime } from '../utils/date-time-parser.util';
 
 @Component({
   selector: 'app-event-form',
-  imports: [ReactiveFormsModule, TypeaheadComponent, ChipComponent],
+  imports: [ReactiveFormsModule, TypeaheadComponent, ChipComponent, MultiSelectComponent, TagInputComponent],
   template: `
     <div class="event-form-container">
       <!-- Extraction Result Summary -->
@@ -47,6 +49,11 @@ import { parseEventDateTime, isLikelyDateTime } from '../utils/date-time-parser.
         <!-- Title -->
         <div class="form-group">
           <label for="title">Event Title *</label>
+          @if (getConfidence('title') > 0 && getRawExtractedValue('title')) {
+            <div class="extracted-value">
+              <small>AI extracted: "{{ getRawExtractedValue('title') }}"</small>
+            </div>
+          }
           <input
             id="title"
             type="text"
@@ -68,6 +75,11 @@ import { parseEventDateTime, isLikelyDateTime } from '../utils/date-time-parser.
         <!-- Description -->
         <div class="form-group">
           <label for="description">Description</label>
+          @if (getConfidence('description') > 0 && getRawExtractedValue('description')) {
+            <div class="extracted-value">
+              <small>AI extracted: "{{ getRawExtractedValue('description') }}"</small>
+            </div>
+          }
           <textarea
             id="description"
             formControlName="description"
@@ -89,6 +101,11 @@ import { parseEventDateTime, isLikelyDateTime } from '../utils/date-time-parser.
         <!-- Date -->
         <div class="form-group">
           <label for="date">Event Date *</label>
+          @if (getConfidence('date') > 0 && getRawExtractedValue('date')) {
+            <div class="extracted-value">
+              <small>AI extracted: "{{ getRawExtractedValue('date') }}"</small>
+            </div>
+          }
           <input
             id="date"
             type="date"
@@ -108,7 +125,12 @@ import { parseEventDateTime, isLikelyDateTime } from '../utils/date-time-parser.
 
         <!-- Time -->
         <div class="form-group">
-          <label for="time">Event Time *</label>
+          <label for="time">Event Time</label>
+          @if (getConfidence('time') > 0 && getRawExtractedValue('time')) {
+            <div class="extracted-value">
+              <small>AI extracted from date field: "{{ getRawExtractedValue('time') }}"</small>
+            </div>
+          }
           <input
             id="time"
             type="time"
@@ -129,6 +151,11 @@ import { parseEventDateTime, isLikelyDateTime } from '../utils/date-time-parser.
         <!-- Location -->
         <div class="form-group">
           <label for="location">Location *</label>
+          @if (getConfidence('location') > 0 && getRawExtractedValue('location')) {
+            <div class="extracted-value">
+              <small>AI extracted: "{{ getRawExtractedValue('location') }}"</small>
+            </div>
+          }
           <div class="location-input-container">
             <!-- Venue Selection -->
             <app-typeahead
@@ -176,6 +203,11 @@ import { parseEventDateTime, isLikelyDateTime } from '../utils/date-time-parser.
         <!-- Organizer -->
         <div class="form-group">
           <label for="organizer">Organizer</label>
+          @if (getConfidence('organizer') > 0 && getRawExtractedValue('organizer')) {
+            <div class="extracted-value">
+              <small>AI extracted: "{{ getRawExtractedValue('organizer') }}"</small>
+            </div>
+          }
           <input
             id="organizer"
             type="text"
@@ -197,6 +229,11 @@ import { parseEventDateTime, isLikelyDateTime } from '../utils/date-time-parser.
         <!-- Ticket Info -->
         <div class="form-group">
           <label for="ticketInfo">Ticket Information</label>
+          @if (getConfidence('ticketInfo') > 0 && getRawExtractedValue('ticketInfo')) {
+            <div class="extracted-value">
+              <small>AI extracted: "{{ getRawExtractedValue('ticketInfo') }}"</small>
+            </div>
+          }
           <input
             id="ticketInfo"
             type="text"
@@ -218,6 +255,11 @@ import { parseEventDateTime, isLikelyDateTime } from '../utils/date-time-parser.
         <!-- Contact Info -->
         <div class="form-group">
           <label for="contactInfo">Contact Information</label>
+          @if (getConfidence('contactInfo') > 0 && getRawExtractedValue('contactInfo')) {
+            <div class="extracted-value">
+              <small>AI extracted: "{{ getRawExtractedValue('contactInfo') }}"</small>
+            </div>
+          }
           <input
             id="contactInfo"
             type="text"
@@ -239,6 +281,11 @@ import { parseEventDateTime, isLikelyDateTime } from '../utils/date-time-parser.
         <!-- Website -->
         <div class="form-group">
           <label for="website">Website/Social Media</label>
+          @if (getConfidence('website') > 0 && getRawExtractedValue('website')) {
+            <div class="extracted-value">
+              <small>AI extracted: "{{ getRawExtractedValue('website') }}"</small>
+            </div>
+          }
           <input
             id="website"
             type="text"
@@ -253,6 +300,54 @@ import { parseEventDateTime, isLikelyDateTime } from '../utils/date-time-parser.
               type="ui"
               variant="confidence"
               [lowConfidence]="getConfidence('website') < 70"
+            />
+          }
+        </div>
+
+        <!-- Categories -->
+        <div class="form-group">
+          <label for="categories">Categories</label>
+          @if (getConfidence('categories') > 0 && getRawExtractedValue('categories')) {
+            <div class="extracted-value">
+              <small>AI suggested categories: {{ getRawExtractedValue('categories') }}</small>
+            </div>
+          }
+          <app-multi-select
+            formControlName="categories"
+            [searchFunction]="searchCategories"
+            [displayFunction]="displayCategory"
+            [maxSelections]="EVENT_CATEGORY_SETTINGS.MAX_CATEGORIES_PER_EVENT"
+            [helpText]="'Select up to ' + EVENT_CATEGORY_SETTINGS.MAX_CATEGORIES_PER_EVENT + ' categories that best describe your event'"
+            placeholder="Search and select categories..."
+          />
+          @if (getConfidence('categories') > 0) {
+            <app-chip
+              [text]="getConfidence('categories') + '% confident'"
+              type="ui"
+              variant="confidence"
+              [lowConfidence]="getConfidence('categories') < 70"
+            />
+          }
+        </div>
+
+        <!-- Tags -->
+        <div class="form-group">
+          <label for="tags">Tags</label>
+          @if (getConfidence('tags') > 0 && getRawExtractedValue('tags')) {
+            <div class="extracted-value">
+              <small>AI suggested tags: {{ getRawExtractedValue('tags') }}</small>
+            </div>
+          }
+          <app-tag-input
+            formControlName="tags"
+            #tagInputComponent
+          />
+          @if (getConfidence('tags') > 0) {
+            <app-chip
+              [text]="getConfidence('tags') + '% confident'"
+              type="ui"
+              variant="confidence"
+              [lowConfidence]="getConfidence('tags') < 70"
             />
           }
         </div>
@@ -421,6 +516,23 @@ import { parseEventDateTime, isLikelyDateTime } from '../utils/date-time-parser.
       cursor: not-allowed;
     }
 
+    /* Extracted Values Display */
+    .extracted-value {
+      background: #f8f9fa;
+      border: 1px solid #dee2e6;
+      border-radius: 4px;
+      padding: 8px 12px;
+      margin-bottom: 8px;
+      font-size: 0.875rem;
+      color: #495057;
+    }
+
+    .extracted-value small {
+      display: block;
+      word-wrap: break-word;
+      overflow-wrap: break-word;
+    }
+
     /* Debug JSON */
     .debug-json {
       margin-top: 15px;
@@ -492,18 +604,36 @@ export class EventFormComponent implements OnInit {
   displayVenue = (venue: Venue) => this.venueLookupService.displayVenue(venue);
   compareVenues = (a: Venue, b: Venue) => this.venueLookupService.compareVenues(a, b);
 
+  // Category constants for template access
+  EVENT_CATEGORY_SETTINGS = EVENT_CATEGORY_SETTINGS;
+
+  // Category search functions
+  searchCategories = (query: string) => {
+    return EVENT_CATEGORIES.filter(category => 
+      category.label.toLowerCase().includes(query.toLowerCase()) ||
+      category.description?.toLowerCase().includes(query.toLowerCase())
+    );
+  };
+
+  displayCategory = (categoryValue: string) => {
+    const category = EVENT_CATEGORIES.find(cat => cat.value === categoryValue);
+    return category?.label || categoryValue;
+  };
+
   constructor() {
     this.eventForm = this.fb.group({
       title: ['', Validators.required],
       description: [''],
       date: ['', Validators.required],
-      time: ['', Validators.required],
+      time: [''],
       venue: [null], // Venue selection
       location: [''], // Custom location fallback
       organizer: [''],
       ticketInfo: [''],
       contactInfo: [''],
-      website: ['']
+      website: [''],
+      categories: [[]],
+      tags: [[]]
     });
   }
 
@@ -519,7 +649,7 @@ export class EventFormComponent implements OnInit {
 
     const fieldsToFill = [
       'title', 'description', 'location', 'organizer',
-      'ticketInfo', 'contactInfo', 'website'
+      'ticketInfo', 'contactInfo', 'website', 'categories', 'tags'
     ];
 
     fieldsToFill.forEach(field => {
@@ -566,6 +696,24 @@ export class EventFormComponent implements OnInit {
     }
 
     return this.extractionResult.confidence[field as keyof typeof this.extractionResult.confidence] || 0;
+  }
+
+  getRawExtractedValue(field: string): string | null {
+    if (!this.extractionResult?.eventData) return null;
+
+    // Handle date/time fields specially - they both come from the 'date' field
+    if (field === 'time' || field === 'date') {
+      return this.extractionResult.eventData.date || null;
+    }
+
+    const value = this.extractionResult.eventData[field as keyof typeof this.extractionResult.eventData];
+    
+    // Handle array fields (categories, tags) - convert to string representation
+    if (Array.isArray(value)) {
+      return value.length > 0 ? value.join(', ') : null;
+    }
+    
+    return (value as string) || null;
   }
 
   getDebugJson(): string {
@@ -653,8 +801,14 @@ export class EventFormComponent implements OnInit {
         ticketInfo: formValue.ticketInfo,
         contactInfo: formValue.contactInfo,
         website: formValue.website,
+        categories: formValue.categories || [],
+        tags: formValue.tags || [],
         status,
         attendeeIds: [],
+
+        // Event type (AI-parsed events are always single events)
+        eventType: 'single' as const,
+        isException: false,
 
         // LLM metadata
         imageUrl: this.capturedImage || undefined,

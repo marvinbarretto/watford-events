@@ -1,12 +1,13 @@
 import { Component, input, output, computed } from '@angular/core';
-import { Event } from '../../utils/event.model';
+import { Event, EVENT_CATEGORIES } from '../../utils/event.model';
 import { convertToDate } from '../../../shared/utils/date-utils';
 import { ChipComponent } from '../../../shared/ui/chip/chip.component';
+import { HeartButtonComponent } from '../../../shared/ui/heart-button/heart-button.component';
 
 @Component({
   selector: 'app-event-card',
   standalone: true,
-  imports: [ChipComponent],
+  imports: [ChipComponent, HeartButtonComponent],
   template: `
     <div class="event-card" (click)="handleClick()">
       <!-- Event Image -->
@@ -67,8 +68,43 @@ import { ChipComponent } from '../../../shared/ui/chip/chip.component';
           <p class="event-description">{{ event().description }}</p>
         }
 
+        <!-- Categories and Tags -->
+        @if (event().categories?.length || event().tags?.length) {
+          <div class="event-tags">
+            @if (event().categories?.length) {
+              @for (category of event().categories; track category) {
+                <app-chip
+                  [text]="getCategoryLabel(category)"
+                  type="ui"
+                  variant="category"
+                  (clicked)="onCategoryClicked(category)"
+                />
+              }
+            }
+            @if (event().tags?.length) {
+              @for (tag of event().tags; track tag) {
+                <app-chip
+                  [text]="'#' + tag"
+                  type="ui"
+                  variant="feature"
+                  (clicked)="onTagClicked(tag)"
+                />
+              }
+            }
+          </div>
+        }
+
         <!-- Event Actions -->
         <div class="event-actions" (click)="$event.stopPropagation()">
+          <!-- Heart/Like button for all users -->
+          <app-heart-button
+            [contentId]="event().id"
+            contentType="event"
+            [showCount]="true"
+            (liked)="onEventLiked($event)"
+            (error)="onLikeError($event)"
+          />
+
           <!-- Share button for all users -->
           <button class="action-btn share-btn" (click)="shareEvent()">
             <span>📤</span>
@@ -227,6 +263,13 @@ import { ChipComponent } from '../../../shared/ui/chip/chip.component';
       overflow: hidden;
     }
 
+    .event-tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-bottom: 15px;
+    }
+
     .event-actions {
       display: flex;
       gap: 8px;
@@ -280,10 +323,13 @@ export class EventCardComponent {
 
   // Outputs
   readonly clicked = output<Event>();
+  readonly liked = output<{ event: Event; isLiked: boolean }>();
   readonly shareClicked = output<Event>();
   readonly editClicked = output<Event>();
   readonly publishClicked = output<Event>();
   readonly deleteClicked = output<Event>();
+  readonly categoryClicked = output<string>();
+  readonly tagClicked = output<string>();
 
   // Computed properties
   readonly eventDate = computed(() => convertToDate(this.event().date));
@@ -351,5 +397,27 @@ export class EventCardComponent {
 
   deleteEvent() {
     this.deleteClicked.emit(this.event());
+  }
+
+  getCategoryLabel(categoryValue: string): string {
+    const category = EVENT_CATEGORIES.find(cat => cat.value === categoryValue);
+    return category?.label || categoryValue;
+  }
+
+  onCategoryClicked(category: string) {
+    this.categoryClicked.emit(category);
+  }
+
+  onTagClicked(tag: string) {
+    this.tagClicked.emit(tag);
+  }
+
+  onEventLiked(isLiked: boolean) {
+    this.liked.emit({ event: this.event(), isLiked });
+  }
+
+  onLikeError(error: string) {
+    console.error('Like error in event card:', error);
+    // Could emit an error event or show a toast notification
   }
 }

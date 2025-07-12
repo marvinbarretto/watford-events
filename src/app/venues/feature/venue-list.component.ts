@@ -7,7 +7,7 @@ import { VenueService } from '../data-access/venue.service';
 import { VenueStore } from '../data-access/venue.store';
 import { Venue } from '../utils/venue.model';
 import { VenueCardSlimComponent } from '../ui/venue-card-slim/venue-card-slim.component';
-import { VenueCardRectComponent } from '../ui/venue-card-rect/venue-card-rect.component';
+import { VenueCardComponent } from '../ui/venue-card/venue-card.component';
 
 type ViewMode = 'slim' | 'grid';
 type SortBy = 'name' | 'category' | 'status' | 'createdAt';
@@ -15,7 +15,7 @@ type SortBy = 'name' | 'category' | 'status' | 'createdAt';
 @Component({
   selector: 'app-venue-list',
   standalone: true,
-  imports: [CommonModule, FormsModule, VenueCardSlimComponent, VenueCardRectComponent],
+  imports: [CommonModule, FormsModule, VenueCardSlimComponent, VenueCardComponent],
   template: `
     <div class="venue-list-page">
       <!-- Header -->
@@ -128,7 +128,7 @@ type SortBy = 'name' | 'category' | 'status' | 'createdAt';
               }
             } @else {
               @for (venue of filteredVenues(); track venue.id) {
-                <app-venue-card-rect
+                <app-venue-card
                   [venue]="venue"
                   (clicked)="onVenueClick($event)"
                   (viewClicked)="onViewVenue($event)"

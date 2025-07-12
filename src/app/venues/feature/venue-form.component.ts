@@ -1,7 +1,8 @@
-import { Component, signal, inject, Input, Output, EventEmitter, OnInit } from '@angular/core';
+import { Component, signal, inject, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
-import { Router } from '@angular/router';
+import { Router, ActivatedRoute, RouterModule } from '@angular/router';
+import { firstValueFrom } from 'rxjs';
 
 import { VenueService } from '../data-access/venue.service';
 import { VenueStore } from '../data-access/venue.store';
@@ -11,12 +12,12 @@ import { Venue, VenueFormData } from '../utils/venue.model';
 
 @Component({
   selector: 'app-venue-form',
-  imports: [CommonModule, ReactiveFormsModule],
+  imports: [CommonModule, ReactiveFormsModule, RouterModule],
   template: `
     <div class="venue-form-container">
       <div class="header">
         <h2>{{ isEditing() ? 'Edit' : 'Add New' }} Venue</h2>
-        <button type="button" class="close-btn" (click)="cancel()">×</button>
+        <a routerLink="/admin/venues" class="back-link">← Back to Venues</a>
       </div>
 
       <form [formGroup]="venueForm" (ngSubmit)="saveVenue()" class="venue-form">
@@ -228,6 +229,44 @@ import { Venue, VenueFormData } from '../utils/venue.model';
           </div>
         </fieldset>
 
+        <!-- Transport Information -->
+        <fieldset class="form-section">
+          <legend>Transport Information</legend>
+          
+          <div class="form-group">
+            <label for="buses">Bus Information</label>
+            <textarea
+              id="buses"
+              formControlName="buses"
+              placeholder="e.g. 142, 258 from High Street (5 min walk)"
+              class="form-control"
+              rows="2"
+            ></textarea>
+          </div>
+
+          <div class="form-group">
+            <label for="trains">Train Information</label>
+            <textarea
+              id="trains"
+              formControlName="trains"
+              placeholder="e.g. Watford Junction 15 min walk, High Street 8 min"
+              class="form-control"
+              rows="2"
+            ></textarea>
+          </div>
+
+          <div class="form-group">
+            <label for="parking">Parking Information</label>
+            <textarea
+              id="parking"
+              formControlName="parking"
+              placeholder="e.g. Free evening parking on Church Road, paid car park opposite"
+              class="form-control"
+              rows="2"
+            ></textarea>
+          </div>
+        </fieldset>
+
         <!-- Additional Information -->
         <fieldset class="form-section">
           <legend>Additional Information</legend>
@@ -272,17 +311,15 @@ import { Venue, VenueFormData } from '../utils/venue.model';
   styleUrl: './venue-form.component.scss'
 })
 export class VenueFormComponent implements OnInit {
-  @Input() venue: Venue | null = null;
-  @Output() saved = new EventEmitter<Venue>();
-  @Output() cancelled = new EventEmitter<void>();
-  @Output() result = new EventEmitter<Venue | null>();
-
   private readonly fb = inject(FormBuilder);
   private readonly router = inject(Router);
+  private readonly route = inject(ActivatedRoute);
   private readonly venueService = inject(VenueService);
   private readonly venueStore = inject(VenueStore);
   private readonly adminStore = inject(AdminStore);
   private readonly authStore = inject(AuthStore);
+
+  private venue: Venue | null = null;
 
   readonly saving = signal(false);
   readonly isEditing = signal(false);
@@ -318,14 +355,35 @@ export class VenueFormComponent implements OnInit {
     phone: [''],
     email: [''],
     website: [''],
+    buses: [''],
+    trains: [''],
+    parking: [''],
     notesForVisitors: [''],
     amenities: ['']
   });
 
-  ngOnInit() {
-    if (this.venue) {
+  async ngOnInit() {
+    const venueId = this.route.snapshot.paramMap.get('id');
+    
+    if (venueId) {
+      // Edit mode - fetch venue data
       this.isEditing.set(true);
-      this.populateForm(this.venue);
+      try {
+        const venueData = await firstValueFrom(this.venueService.getVenue(venueId));
+        this.venue = venueData || null;
+        if (this.venue) {
+          this.populateForm(this.venue);
+        } else {
+          // Venue not found, redirect back to admin venues
+          await this.router.navigate(['/admin/venues']);
+        }
+      } catch (error) {
+        console.error('Failed to load venue:', error);
+        await this.router.navigate(['/admin/venues']);
+      }
+    } else {
+      // Create mode
+      this.isEditing.set(false);
     }
   }
 
@@ -348,6 +406,9 @@ export class VenueFormComponent implements OnInit {
       phone: venue.contactInfo?.phone,
       email: venue.contactInfo?.email,
       website: venue.contactInfo?.website,
+      buses: venue.transportInfo?.buses || '',
+      trains: venue.transportInfo?.trains || '',
+      parking: venue.transportInfo?.parking || '',
       notesForVisitors: venue.notesForVisitors,
       amenities: venue.amenities?.join(', ')
     });
@@ -395,6 +456,11 @@ export class VenueFormComponent implements OnInit {
           email: formValue.email || undefined,
           website: formValue.website || undefined
         } : undefined,
+        transportInfo: (formValue.buses || formValue.trains || formValue.parking) ? {
+          buses: formValue.buses || undefined,
+          trains: formValue.trains || undefined,
+          parking: formValue.parking || undefined
+        } : undefined,
         notesForVisitors: formValue.notesForVisitors || undefined,
         amenities: formValue.amenities ? 
           formValue.amenities.split(',').map((s: string) => s.trim()).filter((s: string) => s) : 
@@ -410,8 +476,6 @@ export class VenueFormComponent implements OnInit {
         this.venueStore.updateVenue(this.venue.id, { ...venueData, updatedAt: new Date() });
         
         const updatedVenue = { ...this.venue, ...venueData, updatedAt: new Date() };
-        this.saved.emit(updatedVenue);
-        this.result.emit(updatedVenue);
       } else {
         // Create new venue
         const newVenue = await this.venueService.createVenue({
@@ -425,16 +489,10 @@ export class VenueFormComponent implements OnInit {
         // Update stores
         this.adminStore.setVenues([...this.adminStore.venues(), newVenue]);
         this.venueStore.addVenue(newVenue);
-        
-        this.saved.emit(newVenue);
-        this.result.emit(newVenue);
       }
 
-      // Reset form if creating new venue
-      if (!this.isEditing()) {
-        this.venueForm.reset();
-        this.venueForm.patchValue({ status: 'draft' });
-      }
+      // Navigate back to admin venues list
+      await this.router.navigate(['/admin/venues']);
 
     } catch (error) {
       console.error('Failed to save venue:', error);
@@ -443,8 +501,7 @@ export class VenueFormComponent implements OnInit {
     }
   }
 
-  cancel() {
-    this.cancelled.emit();
-    this.result.emit(null);
+  async cancel() {
+    await this.router.navigate(['/admin/venues']);
   }
 }

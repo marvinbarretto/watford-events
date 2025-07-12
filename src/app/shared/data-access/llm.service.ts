@@ -3,6 +3,7 @@ import { GoogleGenerativeAI } from '@google/generative-ai';
 import { environment } from '../../../environments/environment';
 import { LLMRequest, LLMResponse } from '../utils/llm-types';
 import { EventExtractionResult, EventData, EventConfidence } from '../utils/event-extraction-types';
+import { EVENT_CATEGORIES } from '../../events/utils/event.model';
 import { VenueService } from '../../venues/data-access/venue.service';
 import { Venue } from '../../venues/utils/venue.model';
 
@@ -158,10 +159,19 @@ ${venues.map(venue => `- ${venue.name} (${venue.address})`).join('\n')}
 If the location matches any of these venues, extract the location exactly as shown in the venue name above.
 ` : '';
 
+    // Create category context for better classification
+    const categoryContext = `
+AVAILABLE CATEGORIES:
+Choose up to 3 categories from this list that best describe the event:
+${EVENT_CATEGORIES.map(cat => `- ${cat.value}: ${cat.label} (${cat.description})`).join('\n')}
+`;
+
     return `
 You are an expert at extracting event information from flyer images. 
 
 ${venueContext}
+
+${categoryContext}
 
 Analyze the attached flyer image and extract the following information:
 
@@ -173,6 +183,8 @@ Analyze the attached flyer image and extract the following information:
 6. **Ticket information** - Price, where to buy, booking details
 7. **Contact information** - Phone numbers, email addresses
 8. **Website or social media** - URLs, social handles, QR codes
+9. **Categories** - Select 1-3 categories from the list above that best describe this event
+10. **Tags** - Suggest 3-7 hashtag-style tags that would help people find this event (e.g., #livemusic, #family, #outdoor)
 
 SPECIAL INSTRUCTIONS:
 - For **dates**: Keep the original format but be precise (e.g., "Sunday 20th July 2025, 3 PM")
@@ -180,6 +192,8 @@ SPECIAL INSTRUCTIONS:
 - For **QR codes**: If you see a QR code, try to determine what it links to. If it's near ticket info, it's likely a booking URL. If it's near contact info, it might be a website. Describe what the QR code is for (e.g., "QR code for ticket booking", "QR code for website link")
 - For **ticket info**: If you see a QR code near ticket information, include it in your response (e.g., "£15 advance, £20 on door - QR code for online booking")
 - For **websites**: Look for URLs, social media handles (@username), and describe QR codes that might contain links
+- For **categories**: Return an array of category values (not labels) from the list above. Max 3 categories.
+- For **tags**: Return an array of lowercase tag strings without # symbol. Focus on specific keywords that would help people find this event (e.g., ["livemusic", "jazz", "weekend", "family"])
 
 For each field, provide:
 - The extracted value (keep original formatting when possible)
@@ -196,7 +210,9 @@ Return the response as a JSON object with this exact structure:
     "organizer": "string",
     "ticketInfo": "string (include QR code info if relevant)",
     "contactInfo": "string",
-    "website": "string (include social handles and QR code descriptions)"
+    "website": "string (include social handles and QR code descriptions)",
+    "categories": ["array", "of", "category", "values"],
+    "tags": ["array", "of", "tag", "strings"]
   },
   "confidence": {
     "title": number,
@@ -206,7 +222,9 @@ Return the response as a JSON object with this exact structure:
     "organizer": number,
     "ticketInfo": number,
     "contactInfo": number,
-    "website": number
+    "website": number,
+    "categories": number,
+    "tags": number
   }
 }
 
@@ -279,8 +297,32 @@ Be thorough but concise. If text is unclear or partially obscured, still provide
         throw new Error('Invalid response structure');
       }
 
-      // Calculate overall confidence
-      const confidenceValues = Object.values(parsed.confidence) as number[];
+      // Validate and fix confidence scores
+      // If value is "Not found" or empty, confidence should be 0
+      const correctedConfidence: any = {};
+      for (const field in parsed.eventData) {
+        const value = parsed.eventData[field];
+        const confidence = parsed.confidence[field] || 0;
+        
+        // Special handling for array fields (categories, tags)
+        if (Array.isArray(value)) {
+          if (!value || value.length === 0) {
+            correctedConfidence[field] = 0;
+            console.log(`[LLMService] Corrected confidence for ${field}: ${confidence} → 0 (empty array)`);
+          } else {
+            correctedConfidence[field] = confidence;
+          }
+        } else if (!value || value === 'Not found' || value.trim() === '') {
+          // Force confidence to 0 if no valid value
+          correctedConfidence[field] = 0;
+          console.log(`[LLMService] Corrected confidence for ${field}: ${confidence} → 0 (value was "${value}")`);
+        } else {
+          correctedConfidence[field] = confidence;
+        }
+      }
+
+      // Calculate overall confidence using corrected values
+      const confidenceValues = Object.values(correctedConfidence) as number[];
       const overall = Math.round(confidenceValues.reduce((sum, val) => sum + val, 0) / confidenceValues.length);
 
       return {
@@ -288,7 +330,7 @@ Be thorough but concise. If text is unclear or partially obscured, still provide
         eventData: parsed.eventData,
         confidence: {
           overall,
-          ...parsed.confidence
+          ...correctedConfidence
         },
         rawText: response
       };
@@ -320,7 +362,9 @@ Be thorough but concise. If text is unclear or partially obscured, still provide
       organizer: 0,
       ticketInfo: 0,
       contactInfo: 0,
-      website: 0
+      website: 0,
+      categories: 0,
+      tags: 0
     };
   }
 

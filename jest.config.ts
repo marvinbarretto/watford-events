@@ -4,15 +4,16 @@ export default {
 
   testEnvironment: 'jsdom',
   moduleFileExtensions: ['ts', 'js', 'html', 'json', 'mjs'],
-  
+
   // Focus test matching on current development areas only
   testMatch: [
     '<rootDir>/src/app/events/**/*.spec.ts',
-    '<rootDir>/src/app/home/**/*.spec.ts', 
+    '<rootDir>/src/app/home/**/*.spec.ts',
     '<rootDir>/src/app/shared/**/*.spec.ts',
     '<rootDir>/src/testing/**/*.spec.ts',
     '<rootDir>/src/app/auth/**/*.spec.ts',
-    '<rootDir>/src/app/users/**/*.spec.ts'
+    '<rootDir>/src/app/users/**/*.spec.ts',
+    '<rootDir>/src/app/venues/**/*.spec.ts',
   ],
 
   // Aggressively ignore large directories to reduce file watching

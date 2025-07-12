@@ -5,12 +5,10 @@
 import { TestBed } from '@angular/core/testing';
 import { HttpClientTestingModule, HttpTestingController } from '@angular/common/http/testing';
 import { EthicalScraperService, ScrapingRequest, ScrapingResult } from './ethical-scraper.service';
-import { CacheService } from './cache.service';
 
 describe('EthicalScraperService', () => {
   let service: EthicalScraperService;
   let httpMock: HttpTestingController;
-  let cacheService: jest.Mocked<CacheService>;
 
   const mockScrapingResult: ScrapingResult = {
     url: 'https://example.com',
@@ -32,23 +30,15 @@ describe('EthicalScraperService', () => {
   };
 
   beforeEach(() => {
-    const cacheServiceSpy = {
-      get: jest.fn(),
-      set: jest.fn(),
-      clear: jest.fn()
-    } as jest.Mocked<CacheService>;
-
     TestBed.configureTestingModule({
       imports: [HttpClientTestingModule],
       providers: [
-        EthicalScraperService,
-        { provide: CacheService, useValue: cacheServiceSpy }
+        EthicalScraperService
       ]
     });
 
     service = TestBed.inject(EthicalScraperService);
     httpMock = TestBed.inject(HttpTestingController);
-    cacheService = TestBed.inject(CacheService) as jest.Mocked<CacheService>;
   });
 
   afterEach(() => {

@@ -3,7 +3,7 @@ import { RouterModule, Router } from '@angular/router';
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 
 import { EventStore } from '../data-access/event.store';
-import { Event } from '../utils/event.model';
+import { Event, EventType, RecurrenceRule, RECURRENCE_FREQUENCIES, DAYS_OF_WEEK } from '../utils/event.model';
 import { VenueLookupService } from '../../shared/data-access/venue-lookup.service';
 import { TypeaheadComponent, TypeaheadOption } from '../../shared/ui/typeahead/typeahead.component';
 import { Venue } from '../../venues/utils/venue.model';
@@ -25,10 +25,22 @@ import { Venue } from '../../venues/utils/venue.model';
 
       <!-- Alternative Method Link -->
       <div class="alternative-method">
-        <p>Have a flyer? Try our camera scanner for faster entry!</p>
-        <button class="camera-btn" (click)="useCameraInstead()">
-          📸 Use Camera Instead
-        </button>
+        <p>Have a flyer? Try our AI scanner for faster entry!</p>
+        <div class="scanner-options">
+          <button class="scanner-btn" (click)="useCameraInstead()">
+            📸 Use Camera
+          </button>
+          <button class="scanner-btn" (click)="uploadPhotoInstead()">
+            📂 Upload Photo
+          </button>
+        </div>
+        <input 
+          #fileInput 
+          type="file" 
+          accept="image/*" 
+          style="display: none" 
+          (change)="onFileSelected($event)"
+        />
       </div>
 
       <!-- Manual Form -->
@@ -121,6 +133,154 @@ import { Venue } from '../../venues/utils/venue.model';
               <div class="error-message">{{ getLocationError() }}</div>
             }
           </div>
+        </section>
+
+        <!-- Event Type & Recurrence Section -->
+        <section class="form-section recurrence">
+          <h2>Event Schedule</h2>
+          
+          <!-- Event Type Selection -->
+          <div class="form-group">
+            <label>Event Type *</label>
+            <div class="radio-group">
+              <label class="radio-option">
+                <input 
+                  type="radio" 
+                  formControlName="eventType" 
+                  value="single"
+                  name="eventType"
+                />
+                <span class="radio-custom"></span>
+                <span class="radio-label">One-time event</span>
+              </label>
+              <label class="radio-option">
+                <input 
+                  type="radio" 
+                  formControlName="eventType" 
+                  value="recurring"
+                  name="eventType"
+                />
+                <span class="radio-custom"></span>
+                <span class="radio-label">Recurring event</span>
+              </label>
+            </div>
+          </div>
+
+          <!-- Recurrence Options (shown when recurring is selected) -->
+          @if (showRecurrenceSection()) {
+            <div class="recurrence-options">
+              <!-- Frequency and Interval -->
+              <div class="form-row">
+                <div class="form-group">
+                  <label for="recurrenceFrequency">Repeats</label>
+                  <select 
+                    id="recurrenceFrequency"
+                    formControlName="recurrenceFrequency"
+                    class="form-control"
+                  >
+                    @for (freq of recurrenceFrequencies; track freq.value) {
+                      <option [value]="freq.value">{{ freq.label }}</option>
+                    }
+                  </select>
+                </div>
+                <div class="form-group">
+                  <label for="recurrenceInterval">Every</label>
+                  <input
+                    id="recurrenceInterval"
+                    type="number"
+                    formControlName="recurrenceInterval"
+                    class="form-control"
+                    min="1"
+                    max="52"
+                  />
+                </div>
+              </div>
+
+              <!-- Days of Week (for weekly recurrence) -->
+              @if (eventForm.get('recurrenceFrequency')?.value === 'weekly') {
+                <div class="form-group">
+                  <label>Days of Week</label>
+                  <div class="days-of-week">
+                    @for (day of daysOfWeek; track day.value) {
+                      <label class="day-checkbox">
+                        <input 
+                          type="checkbox"
+                          [value]="day.value"
+                          (change)="onDayOfWeekChange(day.value, $event)"
+                        />
+                        <span class="day-label">{{ day.short }}</span>
+                      </label>
+                    }
+                  </div>
+                </div>
+              }
+
+              <!-- End Condition -->
+              <div class="form-group">
+                <label>Ends</label>
+                <div class="radio-group">
+                  <label class="radio-option">
+                    <input 
+                      type="radio" 
+                      formControlName="recurrenceEndType" 
+                      value="never"
+                      name="recurrenceEndType"
+                    />
+                    <span class="radio-custom"></span>
+                    <span class="radio-label">Never</span>
+                  </label>
+                  <label class="radio-option">
+                    <input 
+                      type="radio" 
+                      formControlName="recurrenceEndType" 
+                      value="date"
+                      name="recurrenceEndType"
+                    />
+                    <span class="radio-custom"></span>
+                    <span class="radio-label">On date</span>
+                  </label>
+                  <label class="radio-option">
+                    <input 
+                      type="radio" 
+                      formControlName="recurrenceEndType" 
+                      value="count"
+                      name="recurrenceEndType"
+                    />
+                    <span class="radio-custom"></span>
+                    <span class="radio-label">After</span>
+                  </label>
+                </div>
+              </div>
+
+              <!-- End Date (shown when "On date" is selected) -->
+              @if (eventForm.get('recurrenceEndType')?.value === 'date') {
+                <div class="form-group">
+                  <label for="recurrenceEndDate">End Date</label>
+                  <input
+                    id="recurrenceEndDate"
+                    type="date"
+                    formControlName="recurrenceEndDate"
+                    class="form-control"
+                  />
+                </div>
+              }
+
+              <!-- Occurrence Count (shown when "After" is selected) -->
+              @if (eventForm.get('recurrenceEndType')?.value === 'count') {
+                <div class="form-group">
+                  <label for="recurrenceOccurrences">Number of occurrences</label>
+                  <input
+                    id="recurrenceOccurrences"
+                    type="number"
+                    formControlName="recurrenceOccurrences"
+                    class="form-control"
+                    min="1"
+                    max="365"
+                  />
+                </div>
+              }
+            </div>
+          }
         </section>
 
         <!-- Optional Details Section -->
@@ -282,19 +442,27 @@ import { Venue } from '../../venues/utils/venue.model';
       font-size: 14px;
     }
 
-    .camera-btn {
+    .scanner-options {
+      display: flex;
+      gap: 12px;
+      justify-content: center;
+    }
+
+    .scanner-btn {
       background: var(--primary);
       color: var(--on-primary);
       border: none;
-      padding: 12px 24px;
+      padding: 12px 20px;
       border-radius: 6px;
       font-size: 14px;
       font-weight: 600;
       cursor: pointer;
       transition: all 0.2s;
+      flex: 1;
+      max-width: 140px;
     }
 
-    .camera-btn:hover {
+    .scanner-btn:hover {
       background: var(--primary-hover);
       transform: translateY(-1px);
     }
@@ -307,6 +475,13 @@ import { Venue } from '../../venues/utils/venue.model';
     .form-section.essential {
       background: var(--background);
       padding: 0;
+    }
+
+    .form-section.recurrence {
+      background: var(--background-lighter);
+      border-radius: 8px;
+      padding: 20px;
+      border: 2px solid var(--border);
     }
 
     .form-section.optional {
@@ -394,6 +569,120 @@ import { Venue } from '../../venues/utils/venue.model';
 
     .form-control::placeholder {
       color: var(--text-secondary);
+    }
+
+    /* Radio Buttons */
+    .radio-group {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .radio-option {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      cursor: pointer;
+      padding: 8px;
+      border-radius: 6px;
+      transition: background-color 0.2s;
+    }
+
+    .radio-option:hover {
+      background: var(--background-lighter);
+    }
+
+    .radio-option input[type="radio"] {
+      display: none;
+    }
+
+    .radio-custom {
+      width: 20px;
+      height: 20px;
+      border: 2px solid var(--border);
+      border-radius: 50%;
+      position: relative;
+      transition: all 0.2s;
+    }
+
+    .radio-option input[type="radio"]:checked + .radio-custom {
+      border-color: var(--primary);
+    }
+
+    .radio-option input[type="radio"]:checked + .radio-custom::after {
+      content: '';
+      position: absolute;
+      width: 10px;
+      height: 10px;
+      background: var(--primary);
+      border-radius: 50%;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+    }
+
+    .radio-label {
+      font-size: 14px;
+      color: var(--text);
+      font-weight: 500;
+    }
+
+    /* Recurrence Options */
+    .recurrence-options {
+      margin-top: 20px;
+      padding: 20px;
+      background: var(--background);
+      border-radius: 6px;
+      border: 1px solid var(--border);
+    }
+
+    /* Days of Week */
+    .days-of-week {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .day-checkbox {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      cursor: pointer;
+      padding: 8px 12px;
+      border: 2px solid var(--border);
+      border-radius: 6px;
+      transition: all 0.2s;
+      min-width: 45px;
+    }
+
+    .day-checkbox:hover {
+      border-color: var(--primary);
+      background: var(--background-lighter);
+    }
+
+    .day-checkbox input[type="checkbox"] {
+      display: none;
+    }
+
+    .day-checkbox input[type="checkbox"]:checked + .day-label {
+      color: var(--primary);
+      font-weight: 600;
+    }
+
+    .day-checkbox:has(input[type="checkbox"]:checked) {
+      border-color: var(--primary);
+      background: var(--primary);
+    }
+
+    .day-checkbox:has(input[type="checkbox"]:checked) .day-label {
+      color: var(--on-primary);
+    }
+
+    .day-label {
+      font-size: 12px;
+      font-weight: 500;
+      color: var(--text);
+      transition: all 0.2s;
     }
 
     /* Location Input */
@@ -547,6 +836,15 @@ import { Venue } from '../../venues/utils/venue.model';
         padding: 15px;
         margin-bottom: 20px;
       }
+
+      .scanner-options {
+        flex-direction: column;
+        gap: 8px;
+      }
+
+      .scanner-btn {
+        max-width: none;
+      }
     }
 
     @media (max-width: 480px) {
@@ -572,6 +870,11 @@ export class AddEventComponent implements OnInit {
   readonly error = signal<string | null>(null);
   readonly showOptionalSection = signal(false);
   readonly selectedVenue = signal<Venue | null>(null);
+  readonly showRecurrenceSection = signal(false);
+
+  // Constants for templates
+  readonly recurrenceFrequencies = RECURRENCE_FREQUENCIES;
+  readonly daysOfWeek = DAYS_OF_WEEK;
 
   // Form
   eventForm: FormGroup;
@@ -592,7 +895,21 @@ export class AddEventComponent implements OnInit {
       organizer: [''],
       ticketInfo: [''],
       contactInfo: [''],
-      website: ['']
+      website: [''],
+      
+      // Event type and recurrence
+      eventType: ['single', Validators.required],
+      recurrenceFrequency: ['weekly'],
+      recurrenceInterval: [1, [Validators.min(1)]],
+      recurrenceDaysOfWeek: [[]],
+      recurrenceEndType: ['never'],
+      recurrenceEndDate: [''],
+      recurrenceOccurrences: [1, [Validators.min(1)]]
+    });
+
+    // Watch for event type changes to show/hide recurrence section
+    this.eventForm.get('eventType')?.valueChanges.subscribe(value => {
+      this.showRecurrenceSection.set(value === 'recurring');
     });
   }
 
@@ -626,6 +943,20 @@ export class AddEventComponent implements OnInit {
       venue: null,
       location: ''
     });
+  }
+
+  onDayOfWeekChange(dayValue: number, event: any) {
+    const isChecked = event.target.checked;
+    const currentDays = this.eventForm.get('recurrenceDaysOfWeek')?.value || [];
+    
+    let updatedDays: number[];
+    if (isChecked) {
+      updatedDays = [...currentDays, dayValue].sort();
+    } else {
+      updatedDays = currentDays.filter((day: number) => day !== dayValue);
+    }
+    
+    this.eventForm.patchValue({ recurrenceDaysOfWeek: updatedDays });
   }
 
   getLocationError(): string | null {
@@ -685,6 +1016,28 @@ export class AddEventComponent implements OnInit {
         venueId: undefined
       };
 
+      // Build recurrence rule if this is a recurring event
+      let recurrenceRule: RecurrenceRule | undefined;
+      if (formValue.eventType === 'recurring') {
+        const endCondition: RecurrenceRule['endCondition'] = {
+          type: formValue.recurrenceEndType
+        };
+
+        if (formValue.recurrenceEndType === 'date' && formValue.recurrenceEndDate) {
+          endCondition.endDate = new Date(formValue.recurrenceEndDate);
+        } else if (formValue.recurrenceEndType === 'count') {
+          endCondition.occurrences = formValue.recurrenceOccurrences || 1;
+        }
+
+        recurrenceRule = {
+          frequency: formValue.recurrenceFrequency,
+          interval: formValue.recurrenceInterval || 1,
+          daysOfWeek: formValue.recurrenceFrequency === 'weekly' ? formValue.recurrenceDaysOfWeek : undefined,
+          endCondition,
+          exceptions: []
+        };
+      }
+
       const eventData = {
         title: formValue.title,
         description: formValue.description,
@@ -695,7 +1048,10 @@ export class AddEventComponent implements OnInit {
         contactInfo: formValue.contactInfo,
         website: formValue.website,
         status,
-        attendeeIds: []
+        attendeeIds: [],
+        eventType: formValue.eventType as EventType,
+        recurrenceRule,
+        isException: false
       };
 
       const savedEvent = await this.eventStore.createEvent(eventData);
@@ -717,6 +1073,26 @@ export class AddEventComponent implements OnInit {
 
   useCameraInstead() {
     this.router.navigate(['/events/add/camera']);
+  }
+
+  uploadPhotoInstead() {
+    // Trigger the hidden file input
+    const fileInput = document.querySelector('input[type="file"]') as HTMLInputElement;
+    if (fileInput) {
+      fileInput.click();
+    }
+  }
+
+  onFileSelected(event: any) {
+    const input = event.target as HTMLInputElement;
+    if (input.files && input.files.length > 0) {
+      const file = input.files[0];
+      // Navigate to camera component with the selected file
+      // The camera component should handle both camera capture and file upload
+      this.router.navigate(['/events/add/camera'], { 
+        state: { uploadedFile: file } 
+      });
+    }
   }
 
   clearError() {

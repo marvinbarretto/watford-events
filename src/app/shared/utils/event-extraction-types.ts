@@ -16,6 +16,8 @@ export type EventData = {
   ticketInfo?: string;
   contactInfo?: string;
   website?: string;
+  categories?: string[];
+  tags?: string[];
   imageUrl?: string;
 };
 
@@ -30,6 +32,8 @@ export type EventConfidence = {
   ticketInfo: number;
   contactInfo: number;
   website: number;
+  categories: number;
+  tags: number;
 };
 
 export type EventField = keyof Omit<EventData, 'imageUrl'>;

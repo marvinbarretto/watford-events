@@ -47,6 +47,13 @@ import { ChipComponent, ChipStatus } from '../../../shared/ui/chip/chip.componen
             <span class="features-list">{{ accessibilityFeatures().join(', ') }}</span>
           </div>
         }
+
+        @if (hasTransportInfo()) {
+          <div class="transport-info">
+            <span class="transport-label">Transport:</span>
+            <span class="transport-details">{{ transportSummary() }}</span>
+          </div>
+        }
       </div>
 
       <!-- Venue Actions -->
@@ -152,17 +159,18 @@ import { ChipComponent, ChipStatus } from '../../../shared/ui/chip/chip.componen
       font-size: 14px;
     }
 
-    .accessibility-features {
+    .accessibility-features, .transport-info {
       font-size: 12px;
       color: var(--color-text-muted);
       line-height: 1.3;
+      margin-bottom: 2px;
     }
 
-    .features-label {
+    .features-label, .transport-label {
       font-weight: 500;
     }
 
-    .features-list {
+    .features-list, .transport-details {
       margin-left: 4px;
     }
 
@@ -298,6 +306,23 @@ export class VenueCardSlimComponent {
     if (venue.toilets?.accessibleToilet) features.push('Accessible Toilets');
     
     return features;
+  });
+
+  readonly hasTransportInfo = computed(() => {
+    const transport = this.venue().transportInfo;
+    return transport && (transport.buses || transport.trains || transport.parking);
+  });
+
+  readonly transportSummary = computed(() => {
+    const transport = this.venue().transportInfo;
+    if (!transport) return '';
+
+    const items: string[] = [];
+    if (transport.buses) items.push(`🚌 ${transport.buses}`);
+    if (transport.trains) items.push(`🚂 ${transport.trains}`);
+    if (transport.parking) items.push(`🚗 ${transport.parking}`);
+    
+    return items.join(' • ');
   });
 
   // Event handlers

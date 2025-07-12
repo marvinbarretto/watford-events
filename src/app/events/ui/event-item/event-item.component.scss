@@ -123,6 +123,19 @@
   font-weight: 500;
 }
 
+.meta-item.distance {
+  color: var(--info);
+  font-weight: 500;
+}
+
+.meta-item.distance.within-radius {
+  color: var(--success);
+  font-weight: 600;
+  background: color-mix(in srgb, var(--success) 10%, var(--background-lighter));
+  padding: 2px 6px;
+  border-radius: 4px;
+}
+
 .icon {
   font-size: 14px;
 }
@@ -134,6 +147,13 @@
   color: var(--text-secondary);
   font-size: 14px;
   line-height: 1.5;
+}
+
+.event-tags {
+  margin-top: 12px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
 }
 
 .expand-btn {

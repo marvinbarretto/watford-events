@@ -10,6 +10,8 @@
       "@shared/*": ["app/shared/*"],
       "@auth/*": ["app/auth/*"],
       "@users/*": ["app/users/*"],
+      "@venues/*": ["app/venues/*"],
+      "@events/*": ["app/events/*"],
     },
     "strict": true,
     "noImplicitOverride": true,
