@@ -7,11 +7,12 @@ import { IconComponent } from '../../../shared/ui/icon/icon.component';
 import { HighlightPipe } from '../../../shared/pipes/highlight.pipe';
 import { DistanceUnit } from '../../../user-preferences/utils/user-preferences.types';
 import { formatDistance } from '../../../shared/utils/distance.utils';
+import { DateBoxComponent } from '../../../shared/ui/date-box/date-box.component';
 
 @Component({
   selector: 'app-event-item',
   standalone: true,
-  imports: [DatePipe, ChipComponent, IconComponent, HighlightPipe],
+  imports: [DatePipe, ChipComponent, IconComponent, HighlightPipe, DateBoxComponent],
   styleUrl: './event-item.component.scss',
   template: `
     <div
@@ -21,10 +22,7 @@ import { formatDistance } from '../../../shared/utils/distance.utils';
       (click)="handleClick()"
     >
       <div class="event-item-main">
-        <div class="event-date-box">
-          <div class="month">{{ eventDate() | date:'MMM' }}</div>
-          <div class="day">{{ eventDate() | date:'d' }}</div>
-        </div>
+        <app-date-box [date]="eventDate()" />
 
         <div class="event-content">
           <div class="event-header">
@@ -37,12 +35,14 @@ import { formatDistance } from '../../../shared/utils/distance.utils';
                 status="featured"
               />
             }
-            <app-chip
-              [text]="statusLabel()"
-              type="ui"
-              variant="status"
-              [status]="event().status"
-            />
+            @if (event().status !== 'published') {
+              <app-chip
+                [text]="statusLabel()"
+                type="ui"
+                variant="status"
+                [status]="event().status"
+              />
+            }
           </div>
 
           <div class="event-meta">
@@ -138,7 +138,7 @@ export class EventItemComponent {
 
   readonly statusLabel = computed(() => {
     switch (this.event().status) {
-      case 'published': return 'Live';
+      case 'published': return 'Published';
       case 'draft': return 'Draft';
       case 'cancelled': return 'Cancelled';
       default: return this.event().status;
