@@ -230,77 +230,7 @@ import { SsrPlatformService } from '../../utils/ssr/ssr-platform.service';
             </div>
           </div>
 
-          <!-- User Profile Data -->
-          <div class="info-section">
-            <h4 class="section-title">
-              <span class="section-icon">👤</span>
-              User Profile Data
-            </h4>
-            <div class="info-grid">
-              <div class="info-item fake-data">
-                <span class="info-label">UserStore:</span>
-                <span class="info-value hardcoded-data">Not Implemented</span>
-              </div>
-              <div class="info-item fake-data">
-                <span class="info-label">Total Points:</span>
-                <span class="info-value hardcoded-data">1,250 (demo)</span>
-              </div>
-              <div class="info-item fake-data">
-                <span class="info-label">Checked-in Pubs:</span>
-                <span class="info-value hardcoded-data">['pub-1', 'pub-3'] (demo)</span>
-              </div>
-              <div class="info-item fake-data">
-                <span class="info-label">Activity Streaks:</span>
-                <span class="info-value hardcoded-data">7 days (demo)</span>
-              </div>
-              <div class="info-item fake-data">
-                <span class="info-label">Joined Missions:</span>
-                <span class="info-value hardcoded-data">['mission-a', 'mission-b'] (demo)</span>
-              </div>
-            </div>
-          </div>
 
-          <!-- System Context -->
-          <div class="info-section">
-            <h4 class="section-title">
-              <span class="section-icon">🔧</span>
-              System Context
-            </h4>
-            <div class="info-grid">
-              <div class="info-item">
-                <span class="info-label">Platform:</span>
-                <span class="info-value">{{ platform.isBrowser ? 'Browser' : 'Server' }}</span>
-              </div>
-              <div class="info-item">
-                <span class="info-label">Theme Store Loaded:</span>
-                <span class="info-value" [class.status-active]="themeStore.isLoaded()">
-                  {{ themeStore.isLoaded() ? 'Yes' : 'No' }}
-                </span>
-              </div>
-              <div class="info-item">
-                <span class="info-label">Preferences Loading:</span>
-                <span class="info-value" [class.status-warning]="preferencesStore.loading()">
-                  {{ preferencesStore.loading() ? 'Yes' : 'No' }}
-                </span>
-              </div>
-              <div class="info-item">
-                <span class="info-label">Preferences Error:</span>
-                <span class="info-value error-text">
-                  {{ preferencesStore.error() || 'None' }}
-                </span>
-              </div>
-              <div class="info-item">
-                <span class="info-label">Last Sync:</span>
-                <span class="info-value">
-                  {{ preferencesStore.lastSyncTime()?.toLocaleTimeString() || 'Never' }}
-                </span>
-              </div>
-              <div class="info-item fake-data">
-                <span class="info-label">Cache Size:</span>
-                <span class="info-value hardcoded-data">2.3 MB (demo)</span>
-              </div>
-            </div>
-          </div>
 
           <!-- Raw Data (Collapsible) -->
           <div class="info-section">
@@ -724,13 +654,13 @@ export class UserWidgetComponent {
   readonly displayRadiusForDebugging = computed(() => {
     const radius = this.preferencesStore.searchRadius();
     const unit = this.preferencesStore.distanceUnit();
-    
+
     if (unit === 'miles') {
       // Now FIXED: proper conversion for display
       const miles = Math.round(radius * 0.621371);
       return `${miles} miles (converted from ${radius}km)`;
     }
-    
+
     return `${radius} km`;
   });
 
