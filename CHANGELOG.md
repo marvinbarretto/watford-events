@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.0.9](https://github.com/marvinbarretto/watford-events/compare/v0.0.8...v0.0.9) (2025-07-12)
+
+
+### Bug Fixes
+
+* Apply theme tokens to admin pages ([64725cf](https://github.com/marvinbarretto/watford-events/commit/64725cfd64d79aabe9c82319e2c2e9b1031820a0))
+
 ### [0.0.8](https://github.com/marvinbarretto/watford-events/compare/v0.0.7...v0.0.8) (2025-07-12)
 
 
