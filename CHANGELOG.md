@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.0.8](https://github.com/marvinbarretto/watford-events/compare/v0.0.7...v0.0.8) (2025-07-12)
+
+
+### Features
+
+* User prefs, updated Firebase offline capabilies, better parser.. wip ([45f313e](https://github.com/marvinbarretto/watford-events/commit/45f313e21a4d75f995ec6ba910dc2a55ba698863))
+
 ### [0.0.7](https://github.com/marvinbarretto/watford-events/compare/v0.0.6...v0.0.7) (2025-07-10)
 
 
