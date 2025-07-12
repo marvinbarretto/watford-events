@@ -1,11 +1,11 @@
 /**
  * @fileoverview UserPreferencesWidget - Contextual preferences adjustment component
- * 
+ *
  * PURPOSE:
  * - Display and modify contextual preferences (search radius, units, categories, etc.)
  * - Show on home page alongside event filter
  * - Quick access to frequently adjusted settings
- * 
+ *
  * FEATURES:
  * - Search radius slider with unit conversion display
  * - Distance unit toggle (miles/kilometers)
@@ -16,10 +16,10 @@
 import { Component, inject, computed, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { UserPreferencesStore } from '../../data-access/user-preferences.store';
-import { 
-  DistanceUnit, 
-  EventSortOrder, 
-  EventCategoryPreferences 
+import {
+  DistanceUnit,
+  EventSortOrder,
+  EventCategoryPreferences
 } from '../../utils/user-preferences.types';
 
 @Component({
@@ -68,47 +68,32 @@ import {
             </div>
           </div>
 
-          <!-- Distance Unit -->
-          <div class="preference-section">
-            <label class="section-label">
-              <span class="label-icon">📏</span>
-              Distance Unit
-            </label>
-            <div class="unit-toggle">
-              <button
-                class="unit-option"
-                [class.active]="preferencesStore.distanceUnit() === 'miles'"
-                (click)="updateDistanceUnit('miles')"
-              >
-                Miles
-              </button>
-              <button
-                class="unit-option"
-                [class.active]="preferencesStore.distanceUnit() === 'kilometers'"
-                (click)="updateDistanceUnit('kilometers')"
-              >
-                Kilometers
-              </button>
-            </div>
-          </div>
-
           <!-- Sort Order -->
           <div class="preference-section">
             <label class="section-label">
               <span class="label-icon">🔤</span>
-              Default Sort
+              Sort Events By
             </label>
-            <select
-              class="sort-select"
-              [value]="preferencesStore.defaultSortOrder()"
-              (change)="onSortOrderChange($event)"
-            >
-              <option value="date-asc">Date (Earliest First)</option>
-              <option value="date-desc">Date (Latest First)</option>
-              <option value="distance">Distance</option>
-              <option value="alphabetical">Alphabetical</option>
-            </select>
+            <div class="unit-toggle">
+              <button
+                class="unit-option"
+                [class.active]="preferencesStore.defaultSortOrder() === 'distance'"
+                (click)="updateSortOrder('distance')"
+              >
+                <span class="sort-icon">📍</span>
+                Near me
+              </button>
+              <button
+                class="unit-option"
+                [class.active]="preferencesStore.defaultSortOrder() === 'date-desc'"
+                (click)="updateSortOrder('date-desc')"
+              >
+                <span class="sort-icon">📅</span>
+                Latest
+              </button>
+            </div>
           </div>
+
 
           <!-- Event Categories -->
           <div class="preference-section">
@@ -144,7 +129,7 @@ import {
                 <span class="btn-icon">{{ preferencesStore.showPastEvents() ? '✅' : '⚪' }}</span>
                 Show Past Events
               </button>
-              
+
               <button
                 class="action-btn secondary"
                 (click)="resetToDefaults()"
@@ -351,23 +336,11 @@ import {
       color: var(--on-primary);
     }
 
-    /* Sort Select */
-    .sort-select {
-      width: 100%;
-      padding: 6px 10px;
-      background: var(--background-lighter);
-      border: 1px solid var(--border);
-      border-radius: 6px;
-      font-size: 13px;
-      color: var(--text);
-      cursor: pointer;
+    .sort-icon {
+      font-size: 12px;
+      margin-right: 4px;
     }
 
-    .sort-select:focus {
-      outline: none;
-      border-color: var(--primary);
-      box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
-    }
 
     /* Categories Grid */
     .categories-grid {
@@ -508,56 +481,21 @@ import {
 })
 export class UserPreferencesWidgetComponent {
   readonly preferencesStore = inject(UserPreferencesStore);
-  
+
   // Widget state
   readonly isCollapsed = signal(false);
 
   // Computed values
   readonly displayRadius = computed(() => {
     const radiusInKm = this.preferencesStore.searchRadius();
-    const unit = this.preferencesStore.distanceUnit();
-    
-    console.log('[UserPreferencesWidget] 📏 Computing display radius:', {
-      storedKm: radiusInKm,
-      displayUnit: unit
-    });
-    
-    if (unit === 'miles') {
-      // Convert km to miles for display
-      const miles = Math.round(radiusInKm * 0.621371);
-      console.log('[UserPreferencesWidget] 🔄 Display conversion km→miles:', {
-        km: radiusInKm,
-        miles,
-        conversionFactor: 0.621371
-      });
-      return `${miles} ${miles === 1 ? 'mile' : 'miles'}`;
-    }
-    
-    console.log('[UserPreferencesWidget] ✅ Display km directly:', { km: radiusInKm });
     return `${radiusInKm} ${radiusInKm === 1 ? 'kilometer' : 'kilometers'}`;
   });
 
   readonly sliderValue = computed(() => {
-    const radiusInKm = this.preferencesStore.searchRadius();
-    const unit = this.preferencesStore.distanceUnit();
-    
-    if (unit === 'miles') {
-      // Convert km to miles for slider position
-      const miles = Math.round(radiusInKm * 0.621371);
-      console.log('[UserPreferencesWidget] 🎚️ Slider value (miles):', {
-        storedKm: radiusInKm,
-        sliderMiles: miles
-      });
-      return miles;
-    }
-    
-    console.log('[UserPreferencesWidget] 🎚️ Slider value (km):', { sliderKm: radiusInKm });
-    return radiusInKm;
+    return this.preferencesStore.searchRadius();
   });
 
-  readonly unitAbbrev = computed(() => 
-    this.preferencesStore.distanceUnit() === 'miles' ? 'mi' : 'km'
-  );
+  readonly unitAbbrev = computed(() => 'km');
 
   readonly categoryList = computed(() => {
     const categories = this.preferencesStore.preferredCategories();
@@ -582,63 +520,12 @@ export class UserPreferencesWidgetComponent {
 
   onRadiusChange(event: Event): void {
     const target = event.target as HTMLInputElement;
-    const sliderValue = parseInt(target.value, 10);
-    const currentUnit = this.preferencesStore.distanceUnit();
-    
-    console.log('[UserPreferencesWidget] 🎚️ Radius slider changed:', {
-      sliderValue,
-      currentUnit,
-      timestamp: new Date().toISOString()
-    });
-    
-    // Convert slider value to kilometers for storage
-    let radiusInKm: number;
-    if (currentUnit === 'miles') {
-      // User is thinking in miles, convert to km for storage
-      radiusInKm = Math.round(sliderValue * 1.60934);
-      console.log('[UserPreferencesWidget] 🔄 Converting miles to km:', {
-        milesInput: sliderValue,
-        kmStored: radiusInKm,
-        conversionFactor: 1.60934
-      });
-    } else {
-      // User is thinking in km, store directly
-      radiusInKm = sliderValue;
-      console.log('[UserPreferencesWidget] ✅ Storing km directly:', {
-        kmInput: sliderValue,
-        kmStored: radiusInKm
-      });
-    }
-    
+    const radiusInKm = parseInt(target.value, 10);
     this.preferencesStore.updateSearchRadius(radiusInKm);
   }
 
-  updateDistanceUnit(unit: DistanceUnit): void {
-    const previousUnit = this.preferencesStore.distanceUnit();
-    const currentRadius = this.preferencesStore.searchRadius();
-    
-    console.log('[UserPreferencesWidget] 🔄 Distance unit changing:', {
-      from: previousUnit,
-      to: unit,
-      currentStoredRadiusKm: currentRadius,
-      timestamp: new Date().toISOString()
-    });
-    
-    this.preferencesStore.updateDistanceUnit(unit);
-    
-    // Log the effect of the change
-    setTimeout(() => {
-      console.log('[UserPreferencesWidget] ✅ Unit change complete:', {
-        newUnit: this.preferencesStore.distanceUnit(),
-        sliderWillShow: this.sliderValue(),
-        displayWillShow: this.displayRadius()
-      });
-    }, 0);
-  }
 
-  onSortOrderChange(event: Event): void {
-    const target = event.target as HTMLSelectElement;
-    const order = target.value as EventSortOrder;
+  updateSortOrder(order: EventSortOrder): void {
     this.preferencesStore.updateDefaultSortOrder(order);
   }
 

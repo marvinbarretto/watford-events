@@ -116,6 +116,45 @@ app-date-box {
   border-radius: 4px;
 }
 
+.meta-item.location {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  max-width: 250px;
+}
+
+.location-icon {
+  font-size: 14px;
+  flex-shrink: 0;
+}
+
+.location-text {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.location-primary {
+  font-weight: 500;
+  color: var(--text);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.location-secondary {
+  font-size: 12px;
+  color: var(--text-secondary);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.meta-item.location.has-venue .location-primary {
+  color: var(--primary);
+  font-weight: 600;
+}
+
 .icon {
   font-size: 14px;
 }
@@ -134,6 +173,41 @@ app-date-box {
   display: flex;
   flex-wrap: wrap;
   gap: 6px;
+}
+
+.event-actions {
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid var(--border);
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.action-btn {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 6px 12px;
+  background: var(--background);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  font-size: 13px;
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-decoration: none;
+}
+
+.action-btn:hover {
+  background: var(--background-lighter);
+  border-color: var(--primary);
+  color: var(--primary);
+}
+
+.action-btn:focus {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
 }
 
 .expand-btn {
@@ -180,5 +254,14 @@ app-date-box {
   .expand-btn {
     width: 28px;
     height: 28px;
+  }
+
+  .event-actions {
+    gap: 6px;
+  }
+
+  .action-btn {
+    padding: 5px 8px;
+    font-size: 12px;
   }
 }

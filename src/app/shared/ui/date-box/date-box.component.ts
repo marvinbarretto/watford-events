@@ -3,7 +3,6 @@ import { DatePipe } from '@angular/common';
 
 @Component({
   selector: 'app-date-box',
-  imports: [DatePipe],
   template: `
     <div class="date-box" [class.has-month]="showMonth()">
       <div class="day-of-week">{{ dayOfWeekText() }}</div>

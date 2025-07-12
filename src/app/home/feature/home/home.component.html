@@ -19,9 +19,6 @@
     </button>
   </div>
 
-
-  <app-user-widget />
-
   <app-event-filter
     [activeFilter]="currentFilter()"
     [eventCounts]="eventCounts()"
@@ -50,39 +47,16 @@
 
   <!-- Events List -->
   @if (!loading() && !error()) {
-    <!-- Featured Events -->
-    @if (featuredEvents().length > 0 && currentFilter() === 'upcoming') {
-      <section class="featured-section">
-        <h2 class="section-title">Featured Events</h2>
-        <div class="events-list">
-          @for (event of featuredEvents(); track event.id) {
-            <app-event-item
-              [event]="event"
-              [isFeatured]="true"
-              [isExpanded]="isEventExpanded(event.id)"
-              [searchTerm]="searchTerm()"
-              [userDistance]="getEventDistance(event.id)"
-              [distanceUnit]="getDistanceUnit()"
-              [withinRadius]="isEventWithinRadius(event.id)"
-              (clicked)="onEventClicked($event)"
-              (expandToggled)="toggleEventExpanded(event.id)"
-            />
-          }
-        </div>
-      </section>
-    }
 
     <!-- Regular Events -->
     @if (filteredEvents().length > 0) {
       <section class="events-section">
-        @if (featuredEvents().length > 0 && currentFilter() === 'upcoming') {
-          <h2 class="section-title">Other Events</h2>
-        }
         <div class="events-list">
           @for (event of filteredEvents(); track event.id) {
             @if (!isEventFeatured(event) || currentFilter() !== 'upcoming') {
               <app-event-item
                 [event]="event"
+                [venue]="getEventVenue(event.id)"
                 [isFeatured]="false"
                 [isExpanded]="isEventExpanded(event.id)"
                 [searchTerm]="searchTerm()"

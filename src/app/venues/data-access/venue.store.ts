@@ -1,8 +1,16 @@
 import { Injectable, signal, computed, inject } from '@angular/core';
 import { Venue, VenueSummary } from '../utils/venue.model';
+import { VenueService } from './venue.service';
 
 @Injectable({ providedIn: 'root' })
 export class VenueStore {
+  private readonly venueService = inject(VenueService);
+
+  constructor() {
+    // Auto-load published venues when store initializes
+    this.loadPublishedVenues();
+  }
+
   // ===== VENUE MANAGEMENT STATE =====
   
   // Private signals for venue management
@@ -10,12 +18,14 @@ export class VenueStore {
   private readonly _selectedVenue = signal<Venue | null>(null);
   private readonly _venuesLoading = signal(false);
   private readonly _venuesSaving = signal(false);
+  private readonly _error = signal<string | null>(null);
   
   // Public readonly signals
   readonly venues = this._venues.asReadonly();
   readonly selectedVenue = this._selectedVenue.asReadonly();
   readonly venuesLoading = this._venuesLoading.asReadonly();
   readonly venuesSaving = this._venuesSaving.asReadonly();
+  readonly error = this._error.asReadonly();
   
   // ===== VENUE FILTER/SEARCH STATE =====
   
@@ -240,5 +250,49 @@ export class VenueStore {
   refreshVenueStats() {
     const venues = this._venues();
     this.updateVenueStats(venues);
+  }
+
+  // ===== VENUE LOADING METHODS =====
+
+  /**
+   * Load all published venues from Firebase
+   */
+  async loadPublishedVenues(): Promise<void> {
+    this._venuesLoading.set(true);
+    this._error.set(null);
+
+    try {
+      console.log('[VenueStore] 📥 Loading published venues...');
+      const venues = await this.venueService.getPublishedVenues();
+      
+      this._venues.set(venues);
+      this.updateVenueStats(venues);
+      
+      console.log('[VenueStore] ✅ Loaded venues:', {
+        count: venues.length,
+        venues: venues.map(v => ({ id: v.id, name: v.name }))
+      });
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Failed to load venues';
+      console.error('[VenueStore] ❌ Error loading venues:', error);
+      this._error.set(errorMessage);
+    } finally {
+      this._venuesLoading.set(false);
+    }
+  }
+
+  /**
+   * Reload venues (force refresh)
+   */
+  async reload(): Promise<void> {
+    console.log('[VenueStore] 🔄 Reloading venues...');
+    await this.loadPublishedVenues();
+  }
+
+  /**
+   * Clear error state
+   */
+  clearError(): void {
+    this._error.set(null);
   }
 }

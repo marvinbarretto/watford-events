@@ -4,25 +4,24 @@ import { EventStore } from '../../../events/data-access/event.store';
 import { EventItemComponent } from '../../../events/ui/event-item/event-item.component';
 import { EventFilterComponent, FilterOption, EventCounts } from '../../../events/ui/event-filter/event-filter.component';
 import { UserPreferencesWidgetComponent } from '../../../user-preferences/ui/user-preferences-widget/user-preferences-widget.component';
-import { UserWidgetComponent } from '../../../shared/ui/user-widget/user-widget.component';
 import { Event } from '../../../events/utils/event.model';
 import { convertToDate, getStartOfDay, getEndOfDay, getThisWeekRange, getThisMonthRange } from '../../../shared/utils/date-utils';
 import { calculateDistanceBetweenPoints, convertDistance, isWithinRadius } from '../../../shared/utils/distance.utils';
-import { VenueService } from '../../../venues/data-access/venue.service';
 import { LocationService } from '../../../shared/data-access/location.service';
 import { UserPreferencesStore } from '../../../user-preferences/data-access/user-preferences.store';
+import { VenueStore } from '../../../venues/data-access/venue.store';
 
 @Component({
   selector: 'app-home',
   standalone: true,
-  imports: [EventItemComponent, EventFilterComponent, UserPreferencesWidgetComponent, UserWidgetComponent],
+  imports: [EventItemComponent, EventFilterComponent, UserPreferencesWidgetComponent],
   templateUrl: './home.component.html',
   styleUrl: './home.component.scss'
 })
 export class HomeComponent {
   protected readonly eventStore = inject(EventStore);
   protected readonly router = inject(Router);
-  private readonly venueService = inject(VenueService);
+  private readonly venueStore = inject(VenueStore);
   private readonly locationService = inject(LocationService);
   private readonly preferencesStore = inject(UserPreferencesStore);
 
@@ -31,18 +30,20 @@ export class HomeComponent {
   readonly searchTerm = signal<string>('');
   readonly expandedEventIds = signal<Set<string>>(new Set());
 
+
   // Data from store
   readonly events = this.eventStore.publishedEvents;
   readonly loading = this.eventStore.loading;
   readonly error = this.eventStore.error;
 
-  // Simple distance calculations using venues
+  // Calculate event distances using real venue coordinates
   readonly eventDistances = computed(() => {
     const events = this.events();
     const userLocation = this.locationService.location();
     const userUnit = this.preferencesStore.distanceUnit();
     const searchRadiusKm = this.preferencesStore.searchRadius();
-    
+    const venues = this.venueStore.venues();
+
     if (!userLocation || events.length === 0) {
       console.log('[HomeComponent] 📍 No user location or events for distance calculation:', {
         hasLocation: !!userLocation,
@@ -53,41 +54,50 @@ export class HomeComponent {
 
     console.log('[HomeComponent] 📊 Calculating distances for events:', {
       eventsCount: events.length,
+      venuesCount: venues.length,
       userLocation,
       userUnit,
       searchRadiusKm
     });
 
     const distanceMap = new Map<string, { distanceInUserUnit: number; withinRadius: boolean }>();
-    
-    // For now, add demo coordinates for testing
-    // TODO: Replace with actual venue lookup
+
+    // Calculate distances using real venue coordinates
     events.forEach(event => {
       if (!event.venueId) {
         console.log('[HomeComponent] ⚠️ Event missing venueId:', event.id);
         return;
       }
-      
-      // Demo coordinates (Watford area) - TODO: get from venue
-      const demoLat = 51.6560 + (Math.random() - 0.5) * 0.02; // ±1km variation
-      const demoLng = -0.3950 + (Math.random() - 0.5) * 0.02;
-      
+
+      // Find the venue for this event
+      const venue = venues.find(v => v.id === event.venueId);
+      if (!venue || !venue.geo) {
+        console.log('[HomeComponent] ⚠️ Venue not found or missing coordinates:', {
+          eventId: event.id,
+          venueId: event.venueId,
+          hasVenue: !!venue,
+          hasGeo: !!(venue?.geo)
+        });
+        return;
+      }
+
       const distanceKm = calculateDistanceBetweenPoints(
         userLocation,
-        { lat: demoLat, lng: demoLng }
+        { lat: venue.geo.lat, lng: venue.geo.lng }
       );
-      
+
       const distanceInUserUnit = convertDistance(distanceKm, userUnit);
       const withinRadius = isWithinRadius(distanceKm, searchRadiusKm);
-      
+
       console.log('[HomeComponent] 📍 Event distance calculated:', {
         eventId: event.id,
+        venueName: venue.name,
         distanceKm: distanceKm.toFixed(2),
         distanceInUserUnit: distanceInUserUnit.toFixed(2),
         unit: userUnit,
         withinRadius
       });
-      
+
       distanceMap.set(event.id, { distanceInUserUnit, withinRadius });
     });
 
@@ -100,39 +110,48 @@ export class HomeComponent {
     const search = this.searchTerm().toLowerCase();
     let events = this.events();
 
-    // Apply date filter using proper date conversion
+    // Apply date filter
     const today = getStartOfDay(new Date());
     const tomorrow = new Date(today);
     tomorrow.setDate(tomorrow.getDate() + 1);
 
+    // Apply filter-based filtering
     switch (filter) {
-      case 'upcoming':
-        events = events.filter(e => convertToDate(e.date) >= today);
-        break;
-      case 'today':
-        events = events.filter(e => {
-          const eventDate = convertToDate(e.date);
-          return eventDate >= today && eventDate < tomorrow;
-        });
-        break;
-      case 'this-week':
-        const weekRange = getThisWeekRange();
-        events = events.filter(e => {
-          const eventDate = convertToDate(e.date);
-          return eventDate >= weekRange.start && eventDate <= weekRange.end;
-        });
-        break;
-      case 'this-month':
-        const monthRange = getThisMonthRange();
-        events = events.filter(e => {
-          const eventDate = convertToDate(e.date);
-          return eventDate >= monthRange.start && eventDate <= monthRange.end;
-        });
-        break;
-      case 'all':
-        // No date filtering
-        break;
-    }
+        case 'upcoming':
+          events = events.filter(e => convertToDate(e.date) >= today);
+          break;
+        case 'today':
+          events = events.filter(e => {
+            const eventDate = convertToDate(e.date);
+            return eventDate >= today && eventDate < tomorrow;
+          });
+          break;
+        case 'tomorrow':
+          const dayAfterTomorrow = new Date(tomorrow);
+          dayAfterTomorrow.setDate(dayAfterTomorrow.getDate() + 1);
+          events = events.filter(e => {
+            const eventDate = convertToDate(e.date);
+            return eventDate >= tomorrow && eventDate < dayAfterTomorrow;
+          });
+          break;
+        case 'this-week':
+          const weekRange = getThisWeekRange();
+          events = events.filter(e => {
+            const eventDate = convertToDate(e.date);
+            return eventDate >= weekRange.start && eventDate <= weekRange.end;
+          });
+          break;
+        case 'this-month':
+          const monthRange = getThisMonthRange();
+          events = events.filter(e => {
+            const eventDate = convertToDate(e.date);
+            return eventDate >= monthRange.start && eventDate <= monthRange.end;
+          });
+          break;
+        case 'all':
+          // No date filtering
+          break;
+      }
 
     // Apply search filter
     if (search) {
@@ -143,10 +162,44 @@ export class HomeComponent {
       );
     }
 
-    // Sort by date using proper conversion
-    return events.sort((a, b) =>
-      convertToDate(a.date).getTime() - convertToDate(b.date).getTime()
-    );
+    // Apply radius filter - only show events within user's search radius
+    const userLocation = this.locationService.location();
+    if (userLocation) {
+      const eventDistances = this.eventDistances();
+      events = events.filter(event => {
+        const distanceData = eventDistances.get(event.id);
+        return distanceData ? distanceData.withinRadius : true; // Include events without distance data
+      });
+    }
+
+    // Sort based on user preference
+    const sortOrder = this.preferencesStore.defaultSortOrder();
+    const eventDistances = this.eventDistances();
+
+    return events.sort((a, b) => {
+      switch (sortOrder) {
+        case 'date-desc':
+          return convertToDate(b.date).getTime() - convertToDate(a.date).getTime();
+
+        case 'distance':
+          const distanceA = eventDistances.get(a.id)?.distanceInUserUnit ?? Infinity;
+          const distanceB = eventDistances.get(b.id)?.distanceInUserUnit ?? Infinity;
+
+          // If both have no distance, sort by date
+          if (distanceA === Infinity && distanceB === Infinity) {
+            return convertToDate(a.date).getTime() - convertToDate(b.date).getTime();
+          }
+
+          return distanceA - distanceB;
+
+        case 'alphabetical':
+          return a.title.localeCompare(b.title);
+
+        case 'date-asc':
+        default:
+          return convertToDate(a.date).getTime() - convertToDate(b.date).getTime();
+      }
+    });
   });
 
   readonly featuredEvents = computed(() => {
@@ -183,6 +236,12 @@ export class HomeComponent {
         const eventDate = convertToDate(e.date);
         return eventDate >= today && eventDate < tomorrow;
       }).length,
+      tomorrow: filteredEvents.filter(e => {
+        const eventDate = convertToDate(e.date);
+        const dayAfterTomorrow = new Date(tomorrow);
+        dayAfterTomorrow.setDate(dayAfterTomorrow.getDate() + 1);
+        return eventDate >= tomorrow && eventDate < dayAfterTomorrow;
+      }).length,
       thisWeek: filteredEvents.filter(e => {
         const eventDate = convertToDate(e.date);
         return eventDate >= weekRange.start && eventDate <= weekRange.end;
@@ -198,6 +257,7 @@ export class HomeComponent {
   onFilterChanged(filter: FilterOption) {
     this.currentFilter.set(filter);
   }
+
 
   onSearchChanged(search: string) {
     this.searchTerm.set(search);
@@ -242,5 +302,13 @@ export class HomeComponent {
 
   getDistanceUnit() {
     return this.preferencesStore.distanceUnit();
+  }
+
+  getEventVenue(eventId: string) {
+    const event = this.events().find(e => e.id === eventId);
+    if (!event?.venueId) return null;
+
+    const venues = this.venueStore.venues();
+    return venues.find(v => v.id === event.venueId) || null;
   }
 }
