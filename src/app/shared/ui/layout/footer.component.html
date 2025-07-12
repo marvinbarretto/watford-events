@@ -33,4 +33,9 @@
       <p>&copy; {{ currentYear }} Watford Events. All rights reserved. v{{ version }}</p>
     </div>
   </div>
+
+  <!-- Development Debug Panel -->
+  @if (showDevDebug) {
+    <app-dev-debug></app-dev-debug>
+  }
 </footer>

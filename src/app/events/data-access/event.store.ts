@@ -13,7 +13,7 @@
  * - Components call updateEvent() → optimistically updates specific event
  * 
  * DATA FLOW OUT:
- * - EventListComponent → reads userEvents from here (now contains all published events)
+ * - Event components → read userEvents from here (now contains all published events)
  * - All UI components → read event data from here
  * - Navigation → reads hasEvents for conditional routing
  * 

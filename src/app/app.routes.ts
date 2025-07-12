@@ -15,11 +15,6 @@ export const routes: Routes = [
     loadComponent: () => import('./shared/feature/test/test.component').then(m => m.TestComponent)
   },
   {
-    path: 'events',
-    data: { shell: 'main' },
-    loadComponent: () => import('./events/feature/event-list.component').then(m => m.EventListComponent)
-  },
-  {
     path: 'venues',
     data: { shell: 'main' },
     loadComponent: () => import('./venues/feature/venue-list.component').then(m => m.VenueListComponent)

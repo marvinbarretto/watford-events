@@ -5,6 +5,7 @@
 import { signal, WritableSignal } from '@angular/core';
 import { User } from '@users/utils/user.model';
 import { AuthResponse, LoginPayload, RegisterPayload, RegisterForm } from '@auth/utils/auth.model';
+import { Roles } from '@auth/utils/roles.enum';
 import { generateId, generateEmail, generateTimestamp, createGenericTestSignal } from './common-test-utils';
 
 console.log('🏭 Loading test data factories - Angular 20 Signal-First approach');
@@ -21,6 +22,7 @@ export const createMockUser = (overrides: Partial<User> = {}): User => {
     isAnonymous: false,
     photoURL: null,
     joinedAt: generateTimestamp().toISOString(),
+    role: Roles.Authenticated,
     checkedInPubIds: [],
     streaks: {},
     joinedMissionIds: [],

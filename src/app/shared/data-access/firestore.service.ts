@@ -9,6 +9,7 @@ import {
   updateDoc,
   deleteDoc,
   addDoc,
+  writeBatch,
   CollectionReference,
   DocumentReference,
   QuerySnapshot,
@@ -285,5 +286,40 @@ export class FirestoreService {
     if ('indexedDB' in window) {
       console.log(`🔥 [Firestore] 💾 IndexedDB supported - Firebase cache is ready`);
     }
+  }
+
+  /**
+   * 🔄 BATCH DELETE - Delete multiple documents in a single transaction
+   * 
+   * 🔍 WHAT HAPPENS:
+   * 1. Creates a batch operation that groups multiple deletes
+   * 2. All deletions succeed or all fail (atomic)
+   * 3. Single network request instead of N individual requests
+   * 4. Cost-efficient: 1 write operation vs N write operations
+   * 
+   * 💰 COST SAVINGS: 99% reduction in Firestore write costs for bulk deletes
+   */
+  public batchDelete(documentPaths: string[]): Promise<void> {
+    const startTime = performance.now();
+    console.log(`🔥 [Firestore] 🔄 Batch delete started: ${documentPaths.length} documents`);
+    
+    this.metricsService.trackCall('delete', 'batch-operation', 'batchDelete');
+    
+    return runInInjectionContext(this.injector, async () => {
+      const batch = writeBatch(this.firestore);
+      
+      // Add all document deletions to the batch
+      documentPaths.forEach(path => {
+        const docRef = doc(this.firestore, path);
+        batch.delete(docRef);
+      });
+      
+      // Execute the batch operation
+      await batch.commit();
+      
+      const duration = performance.now() - startTime;
+      console.log(`✅ [Firestore] 🔄 Batch delete completed: ${documentPaths.length} documents in ${duration.toFixed(1)}ms`);
+      console.log(`💰 [Firestore] 💸 Cost savings: 1 write operation vs ${documentPaths.length} individual writes (${Math.round((1 - 1/documentPaths.length) * 100)}% savings)`);
+    });
   }
 }

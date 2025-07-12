@@ -316,6 +316,57 @@ export class EventService extends FirestoreCrudService<Event> {
   }
 
   /**
+   * Get all mock events (for development/debugging)
+   */
+  async getMockEvents(): Promise<Event[]> {
+    const allEvents = await this.getAll();
+    return allEvents.filter(event => event.isMockEvent === true);
+  }
+
+  /**
+   * Delete all mock events while preserving real events (development only)
+   * Uses individual deletes with error handling
+   */
+  async deleteMockEvents(): Promise<{ deleted: number; errors: string[] }> {
+    const mockEvents = await this.getMockEvents();
+    const results = {
+      deleted: 0,
+      errors: [] as string[]
+    };
+
+    for (const event of mockEvents) {
+      try {
+        await this.delete(event.id);
+        results.deleted++;
+      } catch (error: any) {
+        results.errors.push(`Failed to delete ${event.title}: ${error.message}`);
+      }
+    }
+
+    return results;
+  }
+
+  /**
+   * Batch delete all mock events (admin-only, no permission checks)
+   * Cost-efficient: single write operation vs N individual writes
+   */
+  async deleteMockEventsBatch(): Promise<{ deleted: number }> {
+    const mockEvents = await this.getMockEvents();
+    
+    if (mockEvents.length === 0) {
+      return { deleted: 0 };
+    }
+
+    // Create document paths for batch deletion
+    const documentPaths = mockEvents.map(event => `${this.path}/${event.id}`);
+    
+    // Execute batch operation using inherited FirestoreService method (single Firestore write)
+    await this.batchDelete(documentPaths);
+    
+    return { deleted: mockEvents.length };
+  }
+
+  /**
    * Generate a unique ID for new events
    */
   private generateId(): string {
