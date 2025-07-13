@@ -1,6 +1,7 @@
 import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
+import { BaseComponent } from '@shared/data-access/base.component';
 import { ThemeStore } from '@shared/data-access/theme.store';
 import { AuthStore } from '@auth/data-access/auth.store';
 import { Roles } from '@auth/utils/roles.enum';
@@ -13,7 +14,7 @@ import packageJson from '../../../../../package.json';
   templateUrl: './header.component.html',
   styleUrl: './header.component.scss'
 })
-export class HeaderComponent {
+export class HeaderComponent extends BaseComponent {
   protected readonly themeStore = inject(ThemeStore);
   protected readonly authStore = inject(AuthStore);
   
@@ -29,7 +30,7 @@ export class HeaderComponent {
   }
 
   onLogin(): void {
-    this.authStore.loginWithGoogle();
+    this.router.navigate(['/login']);
   }
 
   onLogout(): void {

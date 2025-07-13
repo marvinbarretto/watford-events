@@ -1,5 +1,5 @@
 // src/app/auth/data-access/auth.service.ts
-import { Injectable, inject, signal, computed } from '@angular/core';
+import { Injectable, inject, signal, computed, Injector, runInInjectionContext } from '@angular/core';
 import {
   Auth,
   signInWithEmailAndPassword,

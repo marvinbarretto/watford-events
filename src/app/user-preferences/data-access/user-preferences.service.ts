@@ -117,7 +117,8 @@ export class UserPreferencesService extends FirestoreCrudService<UserPreferences
         userPrefs.contextual = existing.contextual;
       }
 
-      await this.update(userId, userPrefs);
+      // Use setDoc instead of update to create document if it doesn't exist
+      await this.setDoc(`${this.path}/${userId}`, userPrefs);
       
       // Update cache
       this.cachePersistentPreferences(preferences);
@@ -205,7 +206,8 @@ export class UserPreferencesService extends FirestoreCrudService<UserPreferences
         id: preferences.userId
       };
       
-      await this.update(preferences.userId, docToSave);
+      // Use setDoc instead of update to create document if it doesn't exist
+      await this.setDoc(`${this.path}/${preferences.userId}`, docToSave);
     } else {
       // Anonymous user - cache persistent preferences locally
       this.cachePersistentPreferences(preferences.persistent);
