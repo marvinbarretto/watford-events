@@ -2,6 +2,24 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.0.10](https://github.com/marvinbarretto/watford-events/compare/v0.0.8...v0.0.10) (2025-07-13)
+
+
+### Features
+
+* [DevDebug] Add debug, and remove events for time being ([ee172ae](https://github.com/marvinbarretto/watford-events/commit/ee172aec1254984aaff77e5c7e60cf33a146080a))
+* [EventFilter] add tomorrow filter ([cb94887](https://github.com/marvinbarretto/watford-events/commit/cb9488729fe436e4a6f8db15cba902688798a372))
+* [EventItem] create DateBox component ([f457703](https://github.com/marvinbarretto/watford-events/commit/f45770326dff3bd7211f6de674f7e2a86fb9f8f4))
+* [Home] more tweaks to homepage, wip ([91fd80e](https://github.com/marvinbarretto/watford-events/commit/91fd80e1750d355027ae8ba102177f80e69dea66))
+* Add UserInfoComponent ([9125785](https://github.com/marvinbarretto/watford-events/commit/9125785fe277330f6428de171f69d29de7703377))
+* Extract typeahead ([a71a4ca](https://github.com/marvinbarretto/watford-events/commit/a71a4ca61f7cdad025e213f3873d6ba58f6d33ff))
+* Remove unauthenticated users ([26559ea](https://github.com/marvinbarretto/watford-events/commit/26559ea6785e760f31dcd2c87c20a7d838af5261))
+
+
+### Bug Fixes
+
+* remove color prefix from themes ([c80a428](https://github.com/marvinbarretto/watford-events/commit/c80a4286b20ade207d4a94524dac9b5ab06aa355))
+
 ### [0.0.9](https://github.com/marvinbarretto/watford-events/compare/v0.0.8...v0.0.9) (2025-07-13)
 
 
