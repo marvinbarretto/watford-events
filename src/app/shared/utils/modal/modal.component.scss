@@ -1,7 +1,289 @@
-.modal {}
+// Modal component styles using theme tokens
+.modal {
+  background: var(--background-lighter);
+  border-radius: 12px;
+  box-shadow: var(--shadow);
+  border: 1px solid var(--border);
+  max-width: 90vw;
+  max-height: 90vh;
+  width: auto;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
 
-.modal__header {}
+.modal__header {
+  padding: 1.5rem 1.5rem 0;
+  border-bottom: 1px solid var(--border);
+  background: var(--background-lightest);
+  
+  h1, h2, h3 {
+    margin: 0 0 1rem 0;
+    color: var(--text);
+    font-weight: 600;
+  }
+  
+  h1 { font-size: 1.5rem; }
+  h2 { font-size: 1.25rem; }
+  h3 { font-size: 1.125rem; }
+  
+  // Close button styling
+  .modal__close-btn {
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
+    background: none;
+    border: none;
+    color: var(--text-muted);
+    font-size: 1.5rem;
+    cursor: pointer;
+    padding: 0.5rem;
+    border-radius: 4px;
+    transition: all 0.2s ease;
+    
+    &:hover {
+      color: var(--text);
+      background: var(--background-darker);
+    }
+    
+    &:focus-visible {
+      outline: 2px solid var(--primary);
+      outline-offset: 2px;
+    }
+  }
+}
 
-.modal__body {}
+.modal__body {
+  padding: 1.5rem;
+  overflow-y: auto;
+  flex: 1;
+  color: var(--text);
+  
+  // Typography within modal body
+  p {
+    margin: 0 0 1rem 0;
+    color: var(--text-secondary);
+    line-height: 1.6;
+    
+    &:last-child {
+      margin-bottom: 0;
+    }
+  }
+  
+  // Form elements within modal
+  .form-group {
+    margin-bottom: 1rem;
+    
+    label {
+      display: block;
+      margin-bottom: 0.5rem;
+      color: var(--text);
+      font-weight: 500;
+      font-size: 0.875rem;
+    }
+    
+    input, textarea, select {
+      width: 100%;
+      padding: 0.75rem;
+      border: 2px solid var(--border);
+      border-radius: 6px;
+      background: var(--background);
+      color: var(--text);
+      font-size: 1rem;
+      transition: border-color 0.2s ease;
+      
+      &:focus {
+        outline: none;
+        border-color: var(--primary);
+      }
+      
+      &:disabled {
+        background: var(--background-darker);
+        color: var(--text-muted);
+        cursor: not-allowed;
+      }
+      
+      &.error {
+        border-color: var(--error);
+      }
+    }
+    
+    .error-text {
+      display: block;
+      margin-top: 0.25rem;
+      color: var(--error);
+      font-size: 0.875rem;
+    }
+  }
+  
+  // Alert/message styling within modal
+  .alert {
+    padding: 0.75rem 1rem;
+    border-radius: 6px;
+    margin-bottom: 1rem;
+    
+    &.alert--success {
+      background: color-mix(in srgb, var(--success) 10%, var(--background));
+      border: 1px solid var(--success);
+      color: var(--success);
+    }
+    
+    &.alert--warning {
+      background: color-mix(in srgb, var(--warning) 10%, var(--background));
+      border: 1px solid var(--warning);
+      color: var(--warning);
+    }
+    
+    &.alert--error {
+      background: color-mix(in srgb, var(--error) 10%, var(--background));
+      border: 1px solid var(--error);
+      color: var(--error);
+    }
+    
+    &.alert--info {
+      background: color-mix(in srgb, var(--info) 10%, var(--background));
+      border: 1px solid var(--info);
+      color: var(--info);
+    }
+  }
+}
 
-.modal__footer {}
+.modal__footer {
+  padding: 1rem 1.5rem 1.5rem;
+  border-top: 1px solid var(--border);
+  background: var(--background-lightest);
+  display: flex;
+  gap: 0.75rem;
+  justify-content: flex-end;
+  align-items: center;
+  
+  // Button styling within modal footer
+  .btn {
+    padding: 0.75rem 1.5rem;
+    border-radius: 6px;
+    font-weight: 500;
+    font-size: 0.875rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    border: 1px solid transparent;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    
+    &:focus-visible {
+      outline: 2px solid var(--primary);
+      outline-offset: 2px;
+    }
+    
+    &:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+    
+    // Primary button
+    &.btn--primary {
+      background: var(--primary);
+      color: var(--on-primary);
+      border-color: var(--primary);
+      
+      &:hover:not(:disabled) {
+        background: var(--primary-hover);
+        border-color: var(--primary-hover);
+      }
+    }
+    
+    // Secondary button
+    &.btn--secondary {
+      background: var(--secondary);
+      color: var(--on-secondary);
+      border-color: var(--border-strong);
+      
+      &:hover:not(:disabled) {
+        background: var(--secondary-hover);
+      }
+    }
+    
+    // Accent button
+    &.btn--accent {
+      background: var(--accent);
+      color: var(--on-accent);
+      border-color: var(--accent);
+      
+      &:hover:not(:disabled) {
+        background: var(--accent-hover);
+        border-color: var(--accent-hover);
+      }
+    }
+    
+    // Outline button
+    &.btn--outline {
+      background: transparent;
+      color: var(--text);
+      border-color: var(--border-strong);
+      
+      &:hover:not(:disabled) {
+        background: var(--background-darker);
+        border-color: var(--text-muted);
+      }
+    }
+    
+    // Semantic buttons
+    &.btn--success {
+      background: var(--success);
+      color: white;
+      border-color: var(--success);
+      
+      &:hover:not(:disabled) {
+        background: var(--success-hover);
+        border-color: var(--success-hover);
+      }
+    }
+    
+    &.btn--warning {
+      background: var(--warning);
+      color: white;
+      border-color: var(--warning);
+      
+      &:hover:not(:disabled) {
+        background: var(--warning-hover);
+        border-color: var(--warning-hover);
+      }
+    }
+    
+    &.btn--error {
+      background: var(--error);
+      color: white;
+      border-color: var(--error);
+      
+      &:hover:not(:disabled) {
+        background: var(--error-hover);
+        border-color: var(--error-hover);
+      }
+    }
+  }
+}
+
+// Mobile responsive design
+@media (max-width: 640px) {
+  .modal {
+    margin: 1rem;
+    max-width: calc(100vw - 2rem);
+  }
+  
+  .modal__header,
+  .modal__body,
+  .modal__footer {
+    padding-left: 1rem;
+    padding-right: 1rem;
+  }
+  
+  .modal__footer {
+    flex-direction: column-reverse;
+    
+    .btn {
+      width: 100%;
+      justify-content: center;
+    }
+  }
+}

@@ -4,6 +4,9 @@ import { RouterModule } from '@angular/router';
 import { BaseComponent } from '@shared/data-access/base.component';
 import { ThemeStore } from '@shared/data-access/theme.store';
 import { AuthStore } from '@auth/data-access/auth.store';
+import { OverlayService } from '@shared/data-access/overlay.service';
+import { SsrPlatformService } from '@shared/utils/ssr/ssr-platform.service';
+import { ModalLoginComponent } from '@auth/feature/modal-login.component';
 import { Roles } from '@auth/utils/roles.enum';
 import packageJson from '../../../../../package.json';
 
@@ -17,7 +20,8 @@ import packageJson from '../../../../../package.json';
 export class HeaderComponent extends BaseComponent {
   protected readonly themeStore = inject(ThemeStore);
   protected readonly authStore = inject(AuthStore);
-  
+  protected readonly overlayService = inject(OverlayService);
+
   showExamplesDropdown = false;
   showMobileMenu = false;
   readonly version = packageJson.version;
@@ -31,17 +35,40 @@ export class HeaderComponent extends BaseComponent {
   }
 
   onLogin(): void {
-    this.router.navigate(['/login']);
+    // Progressive enhancement: Use modal in browser, page navigation in SSR/fallback
+    this.platform.onlyOnBrowser(() => {
+      // Enhanced experience: Modal login
+      const modalResult = this.overlayService.open(ModalLoginComponent);
+
+      modalResult.result.then((result) => {
+        if (result === 'success') {
+          // User successfully logged in - modal will close automatically
+          console.log('Login successful via modal');
+        } else if (result === 'cancelled') {
+          // User cancelled - modal will close automatically
+          console.log('Login cancelled');
+        }
+      }).catch((error) => {
+        // Fallback to page navigation if modal fails
+        console.warn('Modal login failed, falling back to page navigation:', error);
+        this.router.navigate(['/login']);
+      });
+    });
+
+    // Fallback: Page navigation (works in SSR and as fallback)
+    if (!this.platform.isBrowser) {
+      this.router.navigate(['/login']);
+    }
   }
 
   onLogout(): void {
     this.authStore.logout();
   }
-  
+
   toggleExamplesDropdown(): void {
     this.showExamplesDropdown = !this.showExamplesDropdown;
   }
-  
+
   closeDropdown(): void {
     this.showExamplesDropdown = false;
   }
