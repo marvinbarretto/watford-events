@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.0.13](https://github.com/marvinbarretto/watford-events/compare/v0.0.12...v0.0.13) (2025-07-14)
+
+
+### Bug Fixes
+
+* add server route ([686fded](https://github.com/marvinbarretto/watford-events/commit/686fded05f20884f4dc13b7da3164ecec2173c3e))
+
 ### [0.0.12](https://github.com/marvinbarretto/watford-events/compare/v0.0.11...v0.0.12) (2025-07-14)
 
 
