@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.0.12](https://github.com/marvinbarretto/watford-events/compare/v0.0.11...v0.0.12) (2025-07-14)
+
+
+### Features
+
+* [Home] Fix filter, and distance filters ([0f90b04](https://github.com/marvinbarretto/watford-events/commit/0f90b042b25b59197f3f83094d7d27746d37954e))
+* New PlatformDetectionService for capacitor usage ([6c10b94](https://github.com/marvinbarretto/watford-events/commit/6c10b948ffdfa8fce3f2439c786ad9b6c2cdea9d))
+
 ### [0.0.11](https://github.com/marvinbarretto/watford-events/compare/v0.0.10...v0.0.11) (2025-07-14)
 
 
