@@ -49,3 +49,17 @@ app-root {
 ::-webkit-scrollbar-thumb:hover {
   background: var(--text-muted);
 }
+
+// CDK Overlay styles (globally accessible)
+.overlay-backdrop {
+  background: var(--overlay);
+  backdrop-filter: blur(2px);
+}
+
+.overlay-panel {
+  background: var(--background-lighter);
+  border-radius: 8px;
+  box-shadow: var(--shadow);
+  max-height: 90vh;
+  overflow-y: auto;
+}
