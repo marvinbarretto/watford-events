@@ -2,6 +2,19 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.0.11](https://github.com/marvinbarretto/watford-events/compare/v0.0.10...v0.0.11) (2025-07-14)
+
+
+### Features
+
+* [Create Event] develop create event flow ([7aadee0](https://github.com/marvinbarretto/watford-events/commit/7aadee0f61fe8c56f575b7b94c34901a05677cb5))
+* [Login] Use modal for Login ([575a845](https://github.com/marvinbarretto/watford-events/commit/575a845ece8db5f22e174db7327ccee7be59c2bb))
+
+
+### Bug Fixes
+
+* [Overlay] ensure overlay service has global scss respected ([7708efb](https://github.com/marvinbarretto/watford-events/commit/7708efb4a20121b58d9d2e3d5cda193a5e25ff81))
+
 ### [0.0.10](https://github.com/marvinbarretto/watford-events/compare/v0.0.8...v0.0.10) (2025-07-13)
 
 
