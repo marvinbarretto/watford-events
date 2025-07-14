@@ -4,7 +4,10 @@
 
 import { inject, Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable, tap, catchError, of } from 'rxjs';
+import { Observable, tap, catchError, of, map } from 'rxjs';
+import { EventModel } from '@app/events/utils/event.model';
+import { EventDataTransformer, EventExtractionResult } from '../utils/event-data-transformer';
+import { SsrPlatformService } from '../utils/ssr/ssr-platform.service';
 
 export interface ScrapingRequest {
   url: string;
@@ -73,6 +76,7 @@ export interface CacheStats {
 })
 export class EthicalScraperService {
   private http = inject(HttpClient);
+  private platform = inject(SsrPlatformService);
   
   private readonly baseUrl = '/api/scrape';
 
@@ -81,6 +85,25 @@ export class EthicalScraperService {
    */
   scrapeUrl(request: ScrapingRequest): Observable<ScrapingResult> {
     console.log(`🕷️  [SCRAPER-SERVICE] Starting scrape for: ${request.url}`);
+    
+    // SSR Safety: Only make HTTP calls in browser
+    if (this.platform.isServer) {
+      console.warn(`🔧 [SCRAPER-SERVICE] Skipping scrape during SSR for: ${request.url}`);
+      return of({
+        url: request.url,
+        success: false,
+        data: {},
+        metadata: {
+          processingTime: 0,
+          actionsExecuted: 0,
+          extractorsRun: 0,
+          iframesProcessed: 0,
+          cacheUsed: false
+        },
+        errors: ['HTTP requests not available during SSR'],
+        extractedAt: new Date().toISOString()
+      } as ScrapingResult);
+    }
     
     return this.http.post<ScrapingResult>(this.baseUrl, request).pipe(
       tap(result => {
@@ -180,6 +203,12 @@ export class EthicalScraperService {
   getCacheStats(): Observable<CacheStats> {
     console.log(`📊 [SCRAPER-SERVICE] Getting cache statistics`);
     
+    // SSR Safety: Only make HTTP calls in browser
+    if (this.platform.isServer) {
+      console.warn(`🔧 [SCRAPER-SERVICE] Skipping cache stats during SSR`);
+      return of({ size: 0, urls: [] });
+    }
+    
     return this.http.get<CacheStats>(`${this.baseUrl}/cache/stats`).pipe(
       tap(stats => {
         console.log(`📊 [SCRAPER-SERVICE] Cache stats: ${stats.size} entries`);
@@ -196,6 +225,12 @@ export class EthicalScraperService {
    */
   clearCache(): Observable<{ message: string }> {
     console.log(`🗑️  [SCRAPER-SERVICE] Clearing server cache`);
+    
+    // SSR Safety: Only make HTTP calls in browser
+    if (this.platform.isServer) {
+      console.warn(`🔧 [SCRAPER-SERVICE] Skipping cache clear during SSR`);
+      return of({ message: 'Cache clear skipped during SSR' });
+    }
     
     return this.http.delete<{ message: string }>(`${this.baseUrl}/cache`).pipe(
       tap(result => {
@@ -338,6 +373,245 @@ export class EthicalScraperService {
         multiple: true,
         required: false
       }
+    ],
+
+    /**
+     * Event-specific extractors for event data
+     */
+    eventData: () => [
+      {
+        name: 'title',
+        selector: 'title, h1, .event-title, [class*="title"], [class*="name"], [property="og:title"]',
+        required: true,
+        transform: 'trim' as const
+      },
+      {
+        name: 'description',
+        selector: '[name="description"], [property="og:description"], .description, .event-description, .content, .details, .summary',
+        attribute: 'content',
+        required: false,
+        transform: 'trim' as const
+      },
+      {
+        name: 'date',
+        selector: '.date, .event-date, [class*="date"], time[datetime], [property="article:published_time"], [data-date]',
+        attribute: 'datetime',
+        required: false,
+        transform: 'trim' as const
+      },
+      {
+        name: 'start_time',
+        selector: '.time, .start-time, [class*="time"], [data-start-time], .when',
+        required: false,
+        transform: 'trim' as const
+      },
+      {
+        name: 'end_time',
+        selector: '.end-time, [class*="end"], [data-end-time], .until',
+        required: false,
+        transform: 'trim' as const
+      },
+      {
+        name: 'location',
+        selector: '.location, .venue, .address, [class*="location"], [class*="venue"], [class*="address"], .where',
+        required: false,
+        transform: 'trim' as const
+      },
+      {
+        name: 'organizer',
+        selector: '.organizer, .organiser, .host, .by, .author, [class*="organiz"], [class*="host"]',
+        required: false,
+        transform: 'trim' as const
+      },
+      {
+        name: 'price',
+        selector: '.price, .cost, .ticket-price, [class*="price"], [class*="cost"], .tickets',
+        required: false,
+        transform: 'trim' as const
+      },
+      {
+        name: 'website',
+        selector: 'a[href*="ticket"], a[href*="book"], a[href*="more"], .website, .link',
+        attribute: 'href',
+        required: false
+      },
+      {
+        name: 'contact',
+        selector: '.contact, .email, .phone, [class*="contact"], [href^="mailto:"], [href^="tel:"]',
+        required: false,
+        transform: 'trim' as const
+      }
+    ],
+
+    /**
+     * Event listing extractors for pages with multiple events
+     */
+    eventListing: () => [
+      {
+        name: 'events',
+        selector: '.event, .event-item, [class*="event"], article, .listing-item',
+        multiple: true,
+        required: false
+      },
+      {
+        name: 'event_titles',
+        selector: '.event h1, .event h2, .event h3, .event .title, .event-title',
+        multiple: true,
+        required: false,
+        transform: 'trim' as const
+      },
+      {
+        name: 'event_dates',
+        selector: '.event .date, .event time, .event [class*="date"]',
+        multiple: true,
+        required: false,
+        transform: 'trim' as const
+      },
+      {
+        name: 'event_locations',
+        selector: '.event .location, .event .venue, .event [class*="location"]',
+        multiple: true,
+        required: false,
+        transform: 'trim' as const
+      }
     ]
   };
+
+  /**
+   * Scrape a URL specifically for event data and return EventModel objects
+   */
+  scrapeForEvents(
+    url: string, 
+    options?: Partial<ScrapingRequest['options']>,
+    createdBy: string = 'scraper-system',
+    ownerId: string = 'scraper-system'
+  ): Observable<EventExtractionResult> {
+    console.log(`🎪 [EVENT-SCRAPER] Scraping for events: ${url}`);
+    
+    const request: ScrapingRequest = {
+      url,
+      extractors: this.createExtractors.eventData(),
+      options: {
+        includeIframes: true,
+        useCache: true,
+        cacheTTL: 300,
+        ...options
+      }
+    };
+
+    return this.scrapeUrl(request).pipe(
+      map(result => {
+        console.log(`🔄 [EVENT-SCRAPER] Transforming scraped data to events`);
+        return EventDataTransformer.transformScrapingResult(result, createdBy, ownerId);
+      }),
+      tap(extractionResult => {
+        if (extractionResult.events.length > 0) {
+          console.log(`✅ [EVENT-SCRAPER] Successfully extracted ${extractionResult.events.length} events`);
+          extractionResult.events.forEach((event, index) => {
+            console.log(`📅 [EVENT ${index + 1}] ${event.title} - ${event.date} - ${event.location || 'No location'}`);
+          });
+        } else {
+          console.warn(`⚠️  [EVENT-SCRAPER] No events extracted from ${url}`);
+          if (extractionResult.errors.length > 0) {
+            console.error(`❌ [EVENT-SCRAPER] Errors: ${extractionResult.errors.join(', ')}`);
+          }
+          if (extractionResult.warnings.length > 0) {
+            console.warn(`⚠️  [EVENT-SCRAPER] Warnings: ${extractionResult.warnings.join(', ')}`);
+          }
+        }
+      }),
+      catchError(error => {
+        console.error(`💥 [EVENT-SCRAPER] Error scraping events: ${error.message}`);
+        return of({
+          events: [],
+          errors: [error.message || 'Unknown error occurred'],
+          warnings: []
+        } as EventExtractionResult);
+      })
+    );
+  }
+
+  /**
+   * Scrape multiple event listing pages for events
+   */
+  scrapeEventListing(
+    url: string,
+    options?: Partial<ScrapingRequest['options']>,
+    createdBy: string = 'scraper-system',
+    ownerId: string = 'scraper-system'
+  ): Observable<EventExtractionResult> {
+    console.log(`📋 [EVENT-LISTING] Scraping event listing: ${url}`);
+    
+    const request: ScrapingRequest = {
+      url,
+      extractors: this.createExtractors.eventListing(),
+      options: {
+        includeIframes: true,
+        useCache: true,
+        cacheTTL: 300,
+        ...options
+      }
+    };
+
+    return this.scrapeUrl(request).pipe(
+      map(result => {
+        console.log(`🔄 [EVENT-LISTING] Transforming scraped listing data to events`);
+        return EventDataTransformer.transformScrapingResult(result, createdBy, ownerId);
+      }),
+      tap(extractionResult => {
+        if (extractionResult.events.length > 0) {
+          console.log(`✅ [EVENT-LISTING] Successfully extracted ${extractionResult.events.length} events from listing`);
+        } else {
+          console.warn(`⚠️  [EVENT-LISTING] No events extracted from listing ${url}`);
+        }
+      }),
+      catchError(error => {
+        console.error(`💥 [EVENT-LISTING] Error scraping event listing: ${error.message}`);
+        return of({
+          events: [],
+          errors: [error.message || 'Unknown error occurred'],
+          warnings: []
+        } as EventExtractionResult);
+      })
+    );
+  }
+
+  /**
+   * Convenient method to scrape for events with custom extractors
+   */
+  scrapeForEventsWithCustomExtractors(
+    url: string,
+    customExtractors: ScrapingRequest['extractors'],
+    options?: Partial<ScrapingRequest['options']>,
+    createdBy: string = 'scraper-system',
+    ownerId: string = 'scraper-system'
+  ): Observable<EventExtractionResult> {
+    console.log(`🎨 [CUSTOM-EVENT-SCRAPER] Scraping with custom extractors: ${url}`);
+    
+    const request: ScrapingRequest = {
+      url,
+      extractors: customExtractors,
+      options: {
+        includeIframes: true,
+        useCache: true,
+        cacheTTL: 300,
+        ...options
+      }
+    };
+
+    return this.scrapeUrl(request).pipe(
+      map(result => {
+        console.log(`🔄 [CUSTOM-EVENT-SCRAPER] Transforming custom scraped data to events`);
+        return EventDataTransformer.transformScrapingResult(result, createdBy, ownerId);
+      }),
+      catchError(error => {
+        console.error(`💥 [CUSTOM-EVENT-SCRAPER] Error: ${error.message}`);
+        return of({
+          events: [],
+          errors: [error.message || 'Unknown error occurred'],
+          warnings: []
+        } as EventExtractionResult);
+      })
+    );
+  }
 }

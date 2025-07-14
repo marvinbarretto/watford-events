@@ -21,6 +21,13 @@ export class FooterComponent {
 
   private isAdminUser(): boolean {
     const user = this.authStore.user();
+    console.log('[FooterComponent] Debug - User role check:', {
+      user: user,
+      role: user?.role,
+      isAdmin: user?.role === Roles.Admin,
+      rolesEnum: Roles,
+      environment: environment.production
+    });
     return user?.role === Roles.Admin;
   }
 }

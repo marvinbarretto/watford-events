@@ -121,11 +121,11 @@ import { FeatureFlagPipe } from '@shared/utils/feature-flag.pipe';
               </button>
               <button
                 class="unit-option"
-                [class.active]="preferencesStore.defaultSortOrder() === 'date-desc'"
-                (click)="updateSortOrder('date-desc')"
+                [class.active]="preferencesStore.defaultSortOrder() === 'date-asc'"
+                (click)="updateSortOrder('date-asc')"
               >
                 <span class="sort-icon">📅</span>
-                Latest
+                Soonest
               </button>
             </div>
           </div>

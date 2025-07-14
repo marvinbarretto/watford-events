@@ -140,13 +140,28 @@ export class AuthStore {
    * @returns Default role for the user
    */
   private getDefaultRole(firebaseUser: FirebaseUser): Roles {
-    // For now, assign authenticated role to all users
-    // In the future, you might want to check email domains or other criteria
+    // Check for admin emails
+    const adminEmails = [
+      'admin@watford-events.com',
+      'marvin@watford-events.com',
+      'marvin.barretto@gmail.com', // Add your actual email
+      // Add more admin emails as needed
+    ];
 
-    // TODO: Add admin email check or other admin assignment logic
-    // if (firebaseUser.email === 'admin@watford-events.com') {
-    //   return Roles.Admin;
-    // }
+    console.log('[AuthStore] Role assignment check:', {
+      userEmail: firebaseUser.email,
+      adminEmails,
+      isAdminEmail: firebaseUser.email && adminEmails.includes(firebaseUser.email.toLowerCase())
+    });
+
+    if (firebaseUser.email && adminEmails.includes(firebaseUser.email.toLowerCase())) {
+      return Roles.Admin;
+    }
+
+    // For development, you can also check email patterns
+    if (firebaseUser.email?.endsWith('@watford-events.com')) {
+      return Roles.Admin;
+    }
 
     return Roles.Authenticated;
   }

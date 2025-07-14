@@ -80,89 +80,23 @@ interface AdditionalEventDetails {
       </header>
 
       <main class="main-content">
-        <!-- Debug Info (temporary) -->
-        @if (isLoading()) {
-          <div class="debug-banner">
-            <div class="debug-icon">🔍</div>
-            <div class="debug-text">{{ debugInfo() }}</div>
-          </div>
-        }
-        
         @if (eventData()) {
-          <!-- LLM Extraction Results Overlay -->
-          @if (eventData()?.llmExtracted && !extractionBannerDismissed()) {
-            <section class="extraction-results-section">
-              <div class="extraction-banner">
-                <div class="banner-icon">🤖</div>
-                <div class="banner-content">
-                  <h3 class="banner-title">AI Extraction Results</h3>
-                  <p class="banner-subtitle">Here's what we detected from your flyer:</p>
-                </div>
-                <button class="banner-close" (click)="dismissExtractionBanner()" type="button">
-                  <app-icon name="close" size="sm" />
-                </button>
+          <!-- Event Preview -->
+          <section class="preview-section">
+            <details class="event-preview-disclosure" open>
+              <summary class="preview-summary">
+                <app-icon name="visibility" size="sm" />
+                <span>Preview Event</span>
+                <app-icon name="expand_more" size="sm" class="expand-icon" />
+              </summary>
+              <div class="preview-content">
+                <app-event-card
+                  [event]="previewEvent()"
+                  [currentUserId]="currentUserId()"
+                />
               </div>
-              
-              <div class="extraction-details">
-                <div class="extraction-grid">
-                  @if (getExtractionSummary().title) {
-                    <div class="extraction-item success">
-                      <span class="item-icon">✅</span>
-                      <span class="item-label">Title:</span>
-                      <span class="item-value">{{ getExtractionSummary().title }}</span>
-                    </div>
-                  }
-                  
-                  @if (getExtractionSummary().date) {
-                    <div class="extraction-item success">
-                      <span class="item-icon">✅</span>
-                      <span class="item-label">Date:</span>
-                      <span class="item-value">{{ getExtractionSummary().date }}</span>
-                    </div>
-                  }
-                  
-                  @if (getExtractionSummary().location) {
-                    <div class="extraction-item success">
-                      <span class="item-icon">✅</span>
-                      <span class="item-label">Location:</span>
-                      <span class="item-value">{{ getExtractionSummary().location }}</span>
-                    </div>
-                  }
-                  
-                  @if (getExtractionSummary().organizer) {
-                    <div class="extraction-item success">
-                      <span class="item-icon">✅</span>
-                      <span class="item-label">Organizer:</span>
-                      <span class="item-value">{{ getExtractionSummary().organizer }}</span>
-                    </div>
-                  }
-                  
-                  @if (getExtractionSummary().ticketInfo) {
-                    <div class="extraction-item success">
-                      <span class="item-icon">✅</span>
-                      <span class="item-label">Tickets:</span>
-                      <span class="item-value">{{ getExtractionSummary().ticketInfo }}</span>
-                    </div>
-                  }
-                  
-                  @if (getExtractionSummary().description) {
-                    <div class="extraction-item success full-width">
-                      <span class="item-icon">✅</span>
-                      <span class="item-label">Description:</span>
-                      <span class="item-value">{{ getExtractionSummary().description }}</span>
-                    </div>
-                  }
-                </div>
-                
-                <div class="extraction-footer">
-                  <small class="extraction-note">
-                    AI extracted these details with {{ getOverallConfidence() }}% confidence. 
-                    Please review and edit as needed below.
-                  </small>
-                </div>
-              </div>
-            </section>
-          }
+            </details>
+          </section>
 
           <!-- Event Details Section -->
           <section class="event-details-section">
@@ -177,6 +111,7 @@ interface AdditionalEventDetails {
                   type="text"
                   formControlName="title"
                   class="form-input"
+                  [class.llm-populated]="isLLMPopulated('title')"
                   placeholder="Event title"
                 />
                 @if (basicDetailsForm.get('title')?.invalid && basicDetailsForm.get('title')?.touched) {
@@ -192,6 +127,7 @@ interface AdditionalEventDetails {
                     type="date"
                     formControlName="date"
                     class="form-input"
+                    [class.llm-populated]="isLLMPopulated('date')"
                   />
                   @if (basicDetailsForm.get('date')?.invalid && basicDetailsForm.get('date')?.touched) {
                     <div class="error-message">Date is required</div>
@@ -219,6 +155,7 @@ interface AdditionalEventDetails {
                       type="time"
                       formControlName="startTime"
                       class="form-input"
+                      [class.llm-populated]="isLLMPopulated('startTime')"
                     />
                   </div>
                   
@@ -229,6 +166,7 @@ interface AdditionalEventDetails {
                       type="time"
                       formControlName="endTime"
                       class="form-input"
+                      [class.llm-populated]="isLLMPopulated('endTime')"
                     />
                   </div>
                 </div>
@@ -241,6 +179,7 @@ interface AdditionalEventDetails {
                   type="text"
                   formControlName="location"
                   class="form-input"
+                  [class.llm-populated]="isLLMPopulated('location')"
                   placeholder="Event location"
                 />
                 @if (basicDetailsForm.get('location')?.invalid && basicDetailsForm.get('location')?.touched) {
@@ -399,6 +338,7 @@ interface AdditionalEventDetails {
                   id="description"
                   formControlName="description"
                   class="form-textarea"
+                  [class.llm-populated]="isLLMPopulated('description')"
                   rows="4"
                   placeholder="Tell people about your event..."
                 ></textarea>
@@ -412,6 +352,7 @@ interface AdditionalEventDetails {
                     type="text"
                     formControlName="organizer"
                     class="form-input"
+                    [class.llm-populated]="isLLMPopulated('organizer')"
                     placeholder="Who's organizing this?"
                   />
                 </div>
@@ -423,6 +364,7 @@ interface AdditionalEventDetails {
                     type="text"
                     formControlName="ticketInfo"
                     class="form-input"
+                    [class.llm-populated]="isLLMPopulated('ticketInfo')"
                     placeholder="Free, £10, etc."
                   />
                 </div>
@@ -436,6 +378,7 @@ interface AdditionalEventDetails {
                     type="text"
                     formControlName="contactInfo"
                     class="form-input"
+                    [class.llm-populated]="isLLMPopulated('contactInfo')"
                     placeholder="Phone, email, etc."
                   />
                 </div>
@@ -447,6 +390,7 @@ interface AdditionalEventDetails {
                     type="url"
                     formControlName="website"
                     class="form-input"
+                    [class.llm-populated]="isLLMPopulated('website')"
                     placeholder="https://..."
                   />
                 </div>
@@ -487,6 +431,7 @@ interface AdditionalEventDetails {
                   type="text"
                   formControlName="tags"
                   class="form-input"
+                  [class.llm-populated]="isLLMPopulated('tags')"
                   placeholder="music, family-friendly, outdoor"
                 />
               </div>
@@ -503,23 +448,6 @@ interface AdditionalEventDetails {
                 />
               </div>
             </form>
-          </section>
-
-          <!-- Event Preview -->
-          <section class="preview-section">
-            <details class="event-preview-disclosure">
-              <summary class="preview-summary">
-                <app-icon name="visibility" size="sm" />
-                <span>Preview Event</span>
-                <app-icon name="expand_more" size="sm" class="expand-icon" />
-              </summary>
-              <div class="preview-content">
-                <app-event-card
-                  [event]="previewEvent()"
-                  [currentUserId]="currentUserId()"
-                />
-              </div>
-            </details>
           </section>
 
           <!-- Action Buttons -->
@@ -979,6 +907,55 @@ interface AdditionalEventDetails {
       opacity: 0.7;
     }
 
+    /* LLM Populated Fields Styling */
+    .form-input.llm-populated,
+    .form-textarea.llm-populated {
+      background: linear-gradient(135deg, rgba(147, 51, 234, 0.08), rgba(79, 70, 229, 0.08));
+      border-color: rgba(147, 51, 234, 0.3);
+      position: relative;
+      animation: llmGlow 0.6s ease-out;
+    }
+
+    .form-input.llm-populated::after,
+    .form-textarea.llm-populated::after {
+      content: '✨';
+      position: absolute;
+      right: 12px;
+      top: 50%;
+      transform: translateY(-50%);
+      font-size: 0.875rem;
+      opacity: 0.6;
+      pointer-events: none;
+      animation: fadeIn 0.4s ease-out;
+    }
+
+    .form-textarea.llm-populated::after {
+      top: 16px;
+      transform: none;
+    }
+
+    @keyframes llmGlow {
+      0% {
+        background: linear-gradient(135deg, rgba(147, 51, 234, 0.15), rgba(79, 70, 229, 0.15));
+        box-shadow: 0 0 0 0 rgba(147, 51, 234, 0.4);
+      }
+      100% {
+        background: linear-gradient(135deg, rgba(147, 51, 234, 0.08), rgba(79, 70, 229, 0.08));
+        box-shadow: 0 0 0 8px rgba(147, 51, 234, 0);
+      }
+    }
+
+    @keyframes fadeIn {
+      from { 
+        opacity: 0; 
+        transform: translateY(-50%) scale(0.8); 
+      }
+      to { 
+        opacity: 0.6; 
+        transform: translateY(-50%) scale(1); 
+      }
+    }
+
     .category-grid {
       display: grid;
       grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
@@ -1072,146 +1049,6 @@ interface AdditionalEventDetails {
       100% { transform: rotate(360deg); }
     }
 
-    /* Debug Banner */
-    .debug-banner {
-      display: flex;
-      align-items: center;
-      gap: 1rem;
-      padding: 1rem;
-      background: #f39c12;
-      color: white;
-      border-radius: 8px;
-      margin-bottom: 1rem;
-      font-weight: 600;
-    }
-
-    .debug-icon {
-      font-size: 1.5rem;
-    }
-
-    .debug-text {
-      font-size: 0.9rem;
-    }
-
-    /* Extraction Results Overlay */
-    .extraction-results-section {
-      margin-bottom: 2rem;
-      background: linear-gradient(135deg, var(--primary) 0%, var(--accent) 100%);
-      border-radius: 16px;
-      overflow: hidden;
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-      animation: slideIn 0.5s ease-out;
-    }
-
-    @keyframes slideIn {
-      from { opacity: 0; transform: translateY(-20px); }
-      to { opacity: 1; transform: translateY(0); }
-    }
-
-    .extraction-banner {
-      display: flex;
-      align-items: center;
-      gap: 1rem;
-      padding: 1.5rem;
-      background: rgba(255, 255, 255, 0.1);
-      backdrop-filter: blur(10px);
-    }
-
-    .banner-icon {
-      font-size: 2rem;
-      flex-shrink: 0;
-    }
-
-    .banner-content {
-      flex: 1;
-    }
-
-    .banner-title {
-      font-size: 1.25rem;
-      font-weight: 700;
-      color: var(--on-primary);
-      margin: 0 0 0.25rem 0;
-    }
-
-    .banner-subtitle {
-      font-size: 0.9rem;
-      color: rgba(255, 255, 255, 0.9);
-      margin: 0;
-    }
-
-    .banner-close {
-      background: rgba(255, 255, 255, 0.2);
-      border: none;
-      border-radius: 50%;
-      width: 32px;
-      height: 32px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      cursor: pointer;
-      color: var(--on-primary);
-      transition: background 0.2s;
-    }
-
-    .banner-close:hover {
-      background: rgba(255, 255, 255, 0.3);
-    }
-
-    .extraction-details {
-      padding: 1.5rem;
-      background: var(--background);
-    }
-
-    .extraction-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-      gap: 1rem;
-      margin-bottom: 1rem;
-    }
-
-    .extraction-item {
-      display: flex;
-      align-items: flex-start;
-      gap: 0.75rem;
-      padding: 1rem;
-      background: var(--background-lighter);
-      border-radius: 8px;
-      border-left: 4px solid var(--success);
-    }
-
-    .extraction-item.full-width {
-      grid-column: 1 / -1;
-    }
-
-    .item-icon {
-      font-size: 1rem;
-      flex-shrink: 0;
-      margin-top: 0.1rem;
-    }
-
-    .item-label {
-      font-weight: 600;
-      color: var(--text);
-      min-width: 80px;
-      flex-shrink: 0;
-    }
-
-    .item-value {
-      color: var(--text);
-      line-height: 1.4;
-      word-break: break-word;
-    }
-
-    .extraction-footer {
-      text-align: center;
-      padding-top: 1rem;
-      border-top: 1px solid var(--border);
-    }
-
-    .extraction-note {
-      color: var(--text-secondary);
-      font-style: italic;
-    }
 
     /* No Data */
     .no-data {
@@ -1318,6 +1155,9 @@ export class EventConfirmationComponent implements OnInit {
 
   // Event data from navigation state
   readonly eventData = signal<EventConfirmationData | null>(null);
+  
+  // Track which fields were populated by LLM
+  readonly llmPopulatedFields = signal<Set<string>>(new Set());
   
   // Unified Reactive Form
   readonly eventForm: FormGroup;
@@ -1433,9 +1273,6 @@ export class EventConfirmationComponent implements OnInit {
   // UI state
   readonly isCreating = signal(false);
   readonly showRecurrenceSection = computed(() => this.additionalDetailsForm.value.eventType === 'recurring');
-  readonly extractionBannerDismissed = signal(false);
-  readonly debugInfo = signal<string>('Initializing...');
-  readonly isLoading = signal(true);
   tagsInput = '';
 
   // Constants for templates
@@ -1453,14 +1290,12 @@ export class EventConfirmationComponent implements OnInit {
   readonly additionalDetailsValid = computed(() => this.additionalDetailsForm.valid);
 
   ngOnInit() {
-    this.debugInfo.set('Checking for event data...');
     
     // Get event data from router state
     const navigation = this.router.getCurrentNavigation();
     const state = navigation?.extras?.state || history.state;
 
     if (state?.eventData) {
-      this.debugInfo.set('Found event data! Setting up form...');
       this.eventData.set(state.eventData);
       // Initialize forms from eventData
       const data = state.eventData;
@@ -1474,6 +1309,16 @@ export class EventConfirmationComponent implements OnInit {
         location: data.location || ''
       });
 
+      // Track which basic fields were populated by LLM
+      const llmFields = new Set<string>();
+      if (data.llmExtracted) {
+        if (data.title) llmFields.add('title');
+        if (data.date) llmFields.add('date');
+        if (data.startTime) llmFields.add('startTime');
+        if (data.endTime) llmFields.add('endTime');
+        if (data.location) llmFields.add('location');
+      }
+
       // Set categories
       if (data.categories?.length) {
         this.setCategoriesFromData(data.categories);
@@ -1481,7 +1326,6 @@ export class EventConfirmationComponent implements OnInit {
 
       // Populate additional details if they were extracted by LLM
       if (data.llmExtracted) {
-        this.debugInfo.set('Pre-filling LLM extracted data...');
         this.additionalDetailsForm.patchValue({
           description: data.description || '',
           organizer: data.organizer || '',
@@ -1490,22 +1334,31 @@ export class EventConfirmationComponent implements OnInit {
           website: data.website || '',
           tags: data.tags ? data.tags.join(', ') : ''
         });
+
+        // Track additional fields populated by LLM
+        if (data.description) llmFields.add('description');
+        if (data.organizer) llmFields.add('organizer');
+        if (data.ticketInfo) llmFields.add('ticketInfo');
+        if (data.contactInfo) llmFields.add('contactInfo');
+        if (data.website) llmFields.add('website');
+        if (data.tags?.length) llmFields.add('tags');
       }
+
+      // Set the LLM populated fields
+      this.llmPopulatedFields.set(llmFields);
+      
+      // Set up form listeners to remove highlighting when user interacts
+      this.setupFormListeners();
       
       // Hide debug banner after successful setup
-      setTimeout(() => {
-        this.isLoading.set(false);
-      }, 500);
+      // Event data loaded successfully
     } else {
-      this.debugInfo.set('No event data found, retrying...');
       // Wait a bit in case state is still loading, then redirect
       setTimeout(() => {
         const retryState = history.state;
         if (retryState?.eventData) {
-          this.debugInfo.set('Found data on retry!');
           this.ngOnInit(); // Retry initialization
         } else {
-          this.debugInfo.set('No data found, redirecting...');
           setTimeout(() => {
             this.goToCreator();
           }, 1000);
@@ -1760,10 +1613,44 @@ export class EventConfirmationComponent implements OnInit {
     }
   }
 
-  // Extraction overlay methods
-  dismissExtractionBanner() {
-    this.extractionBannerDismissed.set(true);
+  // Setup form listeners to remove LLM highlighting when user interacts
+  private setupFormListeners() {
+    // Listen to basic details form changes
+    Object.keys(this.basicDetailsForm.controls).forEach(fieldName => {
+      const control = this.basicDetailsForm.get(fieldName);
+      if (control) {
+        control.valueChanges.subscribe(() => {
+          this.removeLLMHighlight(fieldName);
+        });
+      }
+    });
+
+    // Listen to additional details form changes
+    Object.keys(this.additionalDetailsForm.controls).forEach(fieldName => {
+      const control = this.additionalDetailsForm.get(fieldName);
+      if (control) {
+        control.valueChanges.subscribe(() => {
+          this.removeLLMHighlight(fieldName);
+        });
+      }
+    });
   }
+
+  private removeLLMHighlight(fieldName: string) {
+    const currentFields = this.llmPopulatedFields();
+    if (currentFields.has(fieldName)) {
+      const newFields = new Set(currentFields);
+      newFields.delete(fieldName);
+      this.llmPopulatedFields.set(newFields);
+    }
+  }
+
+  // Helper method to check if a field is LLM populated
+  isLLMPopulated(fieldName: string): boolean {
+    return this.llmPopulatedFields().has(fieldName);
+  }
+
+  // Extraction overlay methods
 
   getExtractionSummary() {
     const data = this.eventData();

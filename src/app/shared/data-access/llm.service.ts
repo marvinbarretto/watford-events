@@ -6,6 +6,7 @@ import { EventExtractionResult, EventData, EventConfidence } from '../utils/even
 import { EVENT_CATEGORIES } from '../../events/utils/event.model';
 import { VenueService } from '../../venues/data-access/venue.service';
 import { Venue } from '../../venues/utils/venue.model';
+import { processExtractedEventData, ProcessedEventData } from '../utils/llm-data-processing.utils';
 
 @Injectable({
   providedIn: 'root'
@@ -101,7 +102,7 @@ export class LLMService {
       console.log('[LLMService] Raw LLM response:', response);
 
       // Parse the JSON response
-      const extractionResult = this.parseEventExtractionResponse(response);
+      const extractionResult = await this.parseEventExtractionResponse(response);
       
       // Try to match location to known venues
       if (extractionResult.eventData && extractionResult.eventData.location) {
@@ -283,9 +284,9 @@ Be thorough but concise. If text is unclear or partially obscured, still provide
   }
 
   /**
-   * Parse LLM response into structured event data
+   * Parse LLM response into structured event data with enhanced processing
    */
-  private parseEventExtractionResponse(response: string): EventExtractionResult {
+  private async parseEventExtractionResponse(response: string): Promise<EventExtractionResult> {
     try {
       // Clean up the response - remove markdown code blocks if present
       const cleanedResponse = response.replace(/```json\n?|\n?```/g, '').trim();
@@ -297,42 +298,55 @@ Be thorough but concise. If text is unclear or partially obscured, still provide
         throw new Error('Invalid response structure');
       }
 
-      // Validate and fix confidence scores
-      // If value is "Not found" or empty, confidence should be 0
-      const correctedConfidence: any = {};
-      for (const field in parsed.eventData) {
-        const value = parsed.eventData[field];
-        const confidence = parsed.confidence[field] || 0;
-        
-        // Special handling for array fields (categories, tags)
-        if (Array.isArray(value)) {
-          if (!value || value.length === 0) {
-            correctedConfidence[field] = 0;
-            console.log(`[LLMService] Corrected confidence for ${field}: ${confidence} → 0 (empty array)`);
-          } else {
-            correctedConfidence[field] = confidence;
-          }
-        } else if (!value || value === 'Not found' || value.trim() === '') {
-          // Force confidence to 0 if no valid value
-          correctedConfidence[field] = 0;
-          console.log(`[LLMService] Corrected confidence for ${field}: ${confidence} → 0 (value was "${value}")`);
-        } else {
-          correctedConfidence[field] = confidence;
-        }
-      }
+      // Get venues for matching
+      const venues = await this._venueService.getPublishedVenues();
 
-      // Calculate overall confidence using corrected values
-      const confidenceValues = Object.values(correctedConfidence) as number[];
-      const overall = Math.round(confidenceValues.reduce((sum, val) => sum + val, 0) / confidenceValues.length);
+      // Process the raw LLM data using our utilities
+      const processedData = processExtractedEventData(parsed.eventData, {
+        venues,
+        venueMatchThreshold: 70,
+        normalizeText: true
+      });
+
+      console.log('[LLMService] Raw LLM data:', parsed.eventData);
+      console.log('[LLMService] Processed data:', processedData);
+      console.log('[LLMService] Processing notes:', processedData.processingNotes);
+
+      // Create enhanced event data combining original and processed information
+      const enhancedEventData: EventData = {
+        // Use processed/normalized data where available
+        title: processedData.title || parsed.eventData.title,
+        description: processedData.description || parsed.eventData.description,
+        date: this.reconstructDateTimeString(processedData) || parsed.eventData.date,
+        location: processedData.location || parsed.eventData.location,
+        organizer: processedData.organizer || parsed.eventData.organizer,
+        ticketInfo: processedData.ticketInfo || parsed.eventData.ticketInfo,
+        contactInfo: processedData.contactInfo || parsed.eventData.contactInfo,
+        website: processedData.website || parsed.eventData.website,
+        categories: processedData.categories || parsed.eventData.categories || [],
+        tags: processedData.tags || parsed.eventData.tags || [],
+        
+        // Add venue ID if we found a match
+        venueId: processedData.venueId || parsed.eventData.venueId,
+        
+        // Include structured date/time data for easy form population
+        parsedDate: processedData.date,
+        parsedStartTime: processedData.startTime,
+        parsedEndTime: processedData.endTime,
+        parsedIsAllDay: processedData.isAllDay
+      };
+
+      // Update confidence scores based on processing
+      const confidence = this.calculateEnhancedConfidence(parsed.confidence, processedData);
 
       return {
         success: true,
-        eventData: parsed.eventData,
-        confidence: {
-          overall,
-          ...correctedConfidence
-        },
-        rawText: response
+        eventData: enhancedEventData,
+        confidence,
+        rawText: response,
+        // Add processing metadata
+        processingNotes: processedData.processingNotes,
+        matchedVenue: processedData.matchedVenue
       };
 
     } catch (error) {
@@ -432,6 +446,54 @@ Be thorough but concise. If text is unclear or partially obscured, still provide
   clearCache() {
     this._cache.clear();
     console.log('[LLMService] Cache cleared');
+  }
+
+  /**
+   * Reconstructs date/time string from processed data for form compatibility
+   */
+  private reconstructDateTimeString(processedData: ProcessedEventData): string | null {
+    if (!processedData.date) return null;
+
+    let dateTimeString = processedData.date;
+    
+    if (processedData.startTime && !processedData.isAllDay) {
+      // Convert 24-hour time to more natural format
+      const [hours, minutes] = processedData.startTime.split(':');
+      const hour24 = parseInt(hours);
+      const hour12 = hour24 === 0 ? 12 : hour24 > 12 ? hour24 - 12 : hour24;
+      const ampm = hour24 >= 12 ? 'PM' : 'AM';
+      
+      dateTimeString += ` - ${hour12}${minutes !== '00' ? ':' + minutes : ''}${ampm}`;
+    }
+
+    return dateTimeString;
+  }
+
+  /**
+   * Calculates enhanced confidence scores based on processing results
+   */
+  private calculateEnhancedConfidence(originalConfidence: any, processedData: ProcessedEventData): EventConfidence {
+    const enhanced = { ...originalConfidence };
+
+    // Boost confidence for successfully processed fields
+    if (processedData.date && processedData.originalData.date) {
+      enhanced.date = Math.min(100, enhanced.date + 10);
+    }
+
+    if (processedData.venueId && processedData.venueMatchScore > 80) {
+      enhanced.location = Math.min(100, enhanced.location + 15);
+    }
+
+    // Boost confidence for normalized text
+    if (processedData.title !== processedData.originalData.title) {
+      enhanced.title = Math.min(100, enhanced.title + 5);
+    }
+
+    // Recalculate overall confidence
+    const confidenceValues = Object.values(enhanced).filter(val => typeof val === 'number') as number[];
+    enhanced.overall = Math.round(confidenceValues.reduce((sum, val) => sum + val, 0) / confidenceValues.length);
+
+    return enhanced;
   }
 
 }

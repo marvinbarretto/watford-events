@@ -1,0 +1,100 @@
+// -----------------------------------------------------------------------------
+// Mobile Ionic Shell Styles
+// Imports Ionic CSS bundle and bridges with existing theme system
+// -----------------------------------------------------------------------------
+
+// Import Ionic CSS bundle (scoped to this component)
+@import '@ionic/angular/css/core.css';
+@import '@ionic/angular/css/typography.css';
+
+// Optional Ionic utilities (can be removed if using custom utilities)
+@import '@ionic/angular/css/padding.css';
+@import '@ionic/angular/css/float-elements.css';
+@import '@ionic/angular/css/text-transformation.css';
+@import '@ionic/angular/css/flex-utils.css';
+
+// Theme bridge: Map existing CSS variables to Ionic variables
+:host {
+  // Primary theme colors
+  --ion-color-primary: var(--primary);
+  --ion-color-primary-rgb: var(--primary-rgb, 59, 130, 246);
+  --ion-color-primary-contrast: var(--primary-contrast, #ffffff);
+  --ion-color-primary-contrast-rgb: 255, 255, 255;
+  --ion-color-primary-shade: var(--primary-dark, #2563eb);
+  --ion-color-primary-tint: var(--primary-light, #60a5fa);
+
+  // Secondary theme colors
+  --ion-color-secondary: var(--secondary);
+  --ion-color-secondary-rgb: var(--secondary-rgb, 16, 185, 129);
+  --ion-color-secondary-contrast: var(--secondary-contrast, #ffffff);
+  --ion-color-secondary-contrast-rgb: 255, 255, 255;
+  --ion-color-secondary-shade: var(--secondary-dark, #059669);
+  --ion-color-secondary-tint: var(--secondary-light, #34d399);
+
+  // Background colors
+  --ion-background-color: var(--background);
+  --ion-background-color-rgb: var(--background-rgb, 255, 255, 255);
+  
+  // Text colors
+  --ion-text-color: var(--text);
+  --ion-text-color-rgb: var(--text-rgb, 17, 24, 39);
+  
+  // Border and separator colors
+  --ion-border-color: var(--border);
+  --ion-item-border-color: var(--border);
+  
+  // Tab bar styling
+  --ion-tab-bar-background: var(--background-lighter);
+  --ion-tab-bar-color: var(--text-muted);
+  --ion-tab-bar-color-selected: var(--primary);
+  
+  // Status bar - native app optimizations
+  --ion-statusbar-padding: 0px;
+  --ion-safe-area-top: env(safe-area-inset-top);
+  --ion-safe-area-bottom: env(safe-area-inset-bottom);
+  --ion-safe-area-left: env(safe-area-inset-left);
+  --ion-safe-area-right: env(safe-area-inset-right);
+}
+
+// Native app specific optimizations
+ion-app {
+  // Ensure proper safe area handling
+  padding-top: var(--ion-safe-area-top);
+  padding-bottom: var(--ion-safe-area-bottom);
+  padding-left: var(--ion-safe-area-left);
+  padding-right: var(--ion-safe-area-right);
+}
+
+// Tab bar enhancements for native feel
+ion-tab-bar {
+  // Native-style tab bar
+  --border: 1px solid var(--border);
+  
+  ion-tab-button {
+    // Better touch targets
+    --padding-top: 8px;
+    --padding-bottom: 8px;
+    
+    // Icon sizing
+    ion-icon {
+      font-size: 24px;
+    }
+    
+    // Active state
+    &.tab-selected {
+      --color: var(--primary);
+      --color-selected: var(--primary);
+    }
+  }
+}
+
+// Content area optimizations
+ion-content {
+  // Ensure proper scrolling behavior
+  --background: var(--background);
+  --color: var(--text);
+  
+  // Native scroll optimizations
+  --scroll-padding-top: 0px;
+  --scroll-padding-bottom: 0px;
+}

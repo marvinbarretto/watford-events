@@ -21,6 +21,17 @@ export abstract class FirestoreCrudService<T extends { id: string }> extends Fir
   }
 
   /**
+   * Get all documents from server (bypassing cache)
+   */
+  getAllFromServer(): Promise<T[]> {
+    if (!this.path) {
+      throw new Error('[FirestoreCrudService] "path" is not set in subclass');
+    }
+    console.log(`[FirestoreCrudService] 🌐 Force fetching from server: ${this.path}`);
+    return this.getDocsWhereFromServer<T>(this.path);
+  }
+
+  /**
    * Get a single document by ID
    */
   async getById(id: string): Promise<T | null> {

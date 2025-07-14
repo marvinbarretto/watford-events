@@ -6,6 +6,11 @@ import { SiteMatcher } from './types';
 
 export class SiteMatcherService {
   private matchers: SiteMatcher[] = [
+    // Event sites
+    { pattern: '*watfringe.co.uk/events/*', configName: 'watford-fringe', priority: 15 },
+    { pattern: '*watfringe.co.uk/events', configName: 'watford-fringe', priority: 15 },
+    { pattern: '*watfordactually.com/*events*', configName: 'watford-actually', priority: 12 },
+    
     // News sites
     { pattern: '*.bbc.co.uk/news/*', configName: 'bbc-news', priority: 10 },
     { pattern: '*.bbc.com/news/*', configName: 'bbc-news', priority: 10 },
@@ -22,6 +27,7 @@ export class SiteMatcherService {
     { pattern: '*.amazon.co.uk/*/dp/*', configName: 'amazon-product', priority: 6 },
     
     // Generic fallbacks (lowest priority)
+    { pattern: '*', configName: 'generic-event', priority: 2 },
     { pattern: '*', configName: 'generic-article', priority: 1 },
   ];
 

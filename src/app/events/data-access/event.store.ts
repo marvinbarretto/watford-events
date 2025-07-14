@@ -145,6 +145,29 @@ export class EventStore {
     await this.loadPublishedEvents();
   }
 
+  /**
+   * Force refresh events from server (bypassing cache)
+   */
+  async refreshFromServer(): Promise<void> {
+    console.log('[EventStore] 🌐 Force refreshing events from server');
+    
+    this._loading.set(true);
+    this._error.set(null);
+
+    try {
+      // Force server fetch by using a different method or parameter
+      const events = await this.eventService.getPublishedEventsFromServer();
+      this._userEvents.set(events || []);
+      console.log('[EventStore] ✅ Events refreshed from server:', events?.length || 0);
+    } catch (error: any) {
+      this._error.set(error?.message || 'Failed to refresh events from server');
+      console.error('[EventStore] ❌ Server refresh failed:', error);
+      throw error; // Re-throw for dev-debug component to handle
+    } finally {
+      this._loading.set(false);
+    }
+  }
+
   // ===================================
   // EVENT CRUD OPERATIONS
   // ===================================

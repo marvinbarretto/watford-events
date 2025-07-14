@@ -223,7 +223,7 @@ export class UserStore {
             displayName: authUser.displayName,
             emailVerified: authUser.emailVerified,
             joinedAt: new Date().toISOString(),
-            role: Roles.Authenticated,
+            role: authUser.role, // ✅ Preserve role from AuthStore
           };
 
           // ✅ Create the document in Firestore

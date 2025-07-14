@@ -7,6 +7,7 @@ import { LLMService } from '@shared/data-access/llm.service';
 import { EventInferenceService } from '../data-access/event-inference.service';
 import { VenueLookupService } from '@shared/data-access/venue-lookup.service';
 import { TypeaheadComponent, TypeaheadOption } from '@shared/ui/typeahead/typeahead.component';
+import { VenueSelectComponent } from '@shared/ui/venue-select/venue-select.component';
 import { EventData, EventExtractionResult } from '@shared/utils/event-extraction-types';
 import { EventModel, EventCategory, createEventDefaults } from '../utils/event.model';
 import { Venue } from '../../venues/utils/venue.model';
@@ -26,7 +27,7 @@ interface SimpleEventForm {
 
 @Component({
   selector: 'app-event-creator',
-  imports: [CommonModule, ReactiveFormsModule, RouterModule, TypeaheadComponent, IconComponent],
+  imports: [CommonModule, ReactiveFormsModule, RouterModule, VenueSelectComponent, IconComponent],
   template: `
     <div class="event-creator">
       <!-- Header -->
@@ -37,7 +38,7 @@ interface SimpleEventForm {
         </button>
 
         <div class="header-info">
-          <h1 class="page-title">Create Event</h1>
+          <h1 class="page-title">{{ pageTitle() }}</h1>
           <p class="page-subtitle">Quick and simple event creation</p>
         </div>
       </header>
@@ -89,6 +90,7 @@ interface SimpleEventForm {
               <label class="field-label">What's it called?</label>
               <input class="field-input"
                      [class.field-error]="titleError"
+                     [class.llm-populated]="llmPopulatedFields().has('title')"
                      type="text"
                      formControlName="title"
                      placeholder="e.g., Jazz Night at The Globe">
@@ -106,47 +108,14 @@ interface SimpleEventForm {
             <div class="form-field">
               <label class="field-label">Where is it?</label>
 
-              <!-- Show typeahead when no venue selected -->
-              @if (!selectedVenue()) {
-                <app-typeahead
-                  class="venue-typeahead"
-                  [class.field-error]="locationError"
-                  [placeholder]="'e.g., The Globe Theatre, Watford'"
-                  [searchFunction]="venueSearchFunction"
-                  [displayFunction]="venueDisplayFunction"
-                  [compareFunction]="venueCompareFunction"
-                  [debounceTime]="300"
-                  [minSearchLength]="2"
-                  [ariaLabel]="'Search for venue or enter custom location'"
-                  (selectedOption)="onVenueSelected($event)"
-                  (searchChanged)="onLocationSearchChanged($event)"
-                  inputClass="field-input"
-                  name="location"
-                  #venueTypeahead
-                ></app-typeahead>
-              }
-
-              <!-- Show venue tag when venue selected -->
-              @if (selectedVenue()) {
-                <div class="venue-tag">
-                  <span class="venue-icon">📍</span>
-                  <span class="venue-details">
-                    <span class="venue-name">{{ selectedVenue()!.name }}</span>
-                    <span class="venue-address">{{ selectedVenue()!.address }}</span>
-                  </span>
-                  <button class="remove-venue-btn" (click)="clearVenue()" type="button" aria-label="Clear venue">
-                    <app-icon name="close" size="xs" />
-                  </button>
-                </div>
-              }
-
-
-              @if (showVenueInference()) {
-                <div class="inference-hint">
-                  <span class="hint-icon">{{ getVenueInferenceIcon() }}</span>
-                  <span class="hint-text">{{ venueInferenceMessage() }}</span>
-                </div>
-              }
+              <app-venue-select
+                formControlName="venue"
+                [hasError]="locationError"
+                [isLlmPopulated]="llmPopulatedFields().has('location')"
+                (venueSelected)="onVenueSelectedFromComponent($event)"
+                (locationChanged)="onLocationChanged($event)"
+                (venueCleared)="onVenueCleared()"
+              ></app-venue-select>
             </div>
 
             <!-- Question 3: When is it? -->
@@ -154,6 +123,7 @@ interface SimpleEventForm {
               <label class="field-label">When is it?</label>
               <input class="field-input"
                      [class.field-error]="dateError"
+                     [class.llm-populated]="llmPopulatedFields().has('date')"
                      type="date"
                      formControlName="date">
 
@@ -185,13 +155,15 @@ interface SimpleEventForm {
               }
 
               @if (eventForm.get('date')?.value) {
-                <div class="time-row">
-                  <!-- Left slot: Start time button or input -->
+                <div class="time-selection-group">
+                  <label class="time-group-label">What time?</label>
+                  <div class="time-row">
                   <div class="time-slot-container">
                     @if (showStartTimeInput()) {
                       <label class="time-slot-label">Start time</label>
                       <input class="time-slot time-input"
                              [class.field-error]="timeError"
+                             [class.llm-populated]="llmPopulatedFields().has('startTime')"
                              type="time"
                              formControlName="startTime"
                              placeholder="Start time"
@@ -235,6 +207,7 @@ interface SimpleEventForm {
                       </button>
                     }
                   </div>
+                </div>
                 </div>
 
               }
@@ -432,9 +405,10 @@ interface SimpleEventForm {
       font-size: 1rem;
       background: var(--background);
       color: var(--text);
-      transition: border-color 0.2s;
+      transition: border-color 0.2s, background 0.3s;
       min-height: 56px; /* Ensures 44px minimum touch target */
       box-sizing: border-box;
+      position: relative;
     }
 
     .field-input:focus {
@@ -475,6 +449,43 @@ interface SimpleEventForm {
 
     /* Error styling is handled by .field-error class on inputs */
 
+    /* LLM Populated Fields */
+    .field-input.llm-populated,
+    .time-input.llm-populated {
+      background: var(--primary-lighter, rgba(99, 102, 241, 0.08));
+      border-color: var(--primary);
+      position: relative;
+      animation: llmGlow 0.5s ease-out;
+    }
+
+    @keyframes llmGlow {
+      0% {
+        background: var(--primary-lighter, rgba(99, 102, 241, 0.15));
+        box-shadow: 0 0 0 0 rgba(99, 102, 241, 0.4);
+      }
+      100% {
+        background: var(--primary-lighter, rgba(99, 102, 241, 0.08));
+        box-shadow: 0 0 0 8px rgba(99, 102, 241, 0);
+      }
+    }
+
+    .field-input.llm-populated::after,
+    .time-input.llm-populated::after {
+      content: '✨';
+      position: absolute;
+      right: 12px;
+      top: 50%;
+      transform: translateY(-50%);
+      font-size: 0.875rem;
+      opacity: 0.7;
+      animation: fadeIn 0.3s ease-out;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(-50%) scale(0.8); }
+      to { opacity: 0.7; transform: translateY(-50%) scale(1); }
+    }
+
     /* Date Suggestions */
     .date-suggestions {
       display: flex;
@@ -504,112 +515,32 @@ interface SimpleEventForm {
       transform: translateY(-1px);
     }
 
-    /* Venue Typeahead Integration */
-    .venue-typeahead {
-      width: 100%;
-    }
+    /* Venue Select Component Styles (component handles its own styling) */
 
-    .venue-typeahead input {
-      width: 100%;
-      padding: 1rem 1.25rem;
-      border: 2px solid var(--border);
-      border-radius: 12px;
-      font-size: 1rem;
+    /* Time Selection Group */
+    .time-selection-group {
+      margin-top: 1rem;
+      padding: 1rem;
       background: var(--background);
-      color: var(--text);
-      transition: border-color 0.2s;
-      min-height: 56px;
-      box-sizing: border-box;
-    }
-
-    .venue-typeahead input:focus {
-      outline: none;
-      border-color: var(--primary);
-    }
-
-    .venue-typeahead input::placeholder {
-      color: var(--text-secondary);
-    }
-
-    .venue-typeahead.field-error input {
-      border-color: var(--error);
-    }
-
-    .venue-typeahead.field-error input:focus {
-      border-color: var(--error);
-      box-shadow: 0 0 0 2px rgba(var(--error-rgb), 0.2);
-    }
-
-    /* Selected Venue Display - replaces input field */
-    .venue-tag {
-      display: flex;
-      align-items: center;
-      gap: 0.75rem;
-      padding: 1rem 1.25rem;
-      background: var(--primary);
-      color: var(--on-primary);
       border-radius: 12px;
-      border: 2px solid var(--primary);
-      min-height: 56px;
-      box-sizing: border-box;
-      position: relative;
+      border: 1px solid var(--border);
       transition: all 0.2s;
     }
 
-    .venue-tag:hover {
-      background: var(--primary-hover);
-      border-color: var(--primary-hover);
+    .time-selection-group:hover {
+      border-color: var(--primary-lighter, rgba(99, 102, 241, 0.3));
     }
 
-    .venue-icon {
-      font-size: 1rem;
-      flex-shrink: 0;
-    }
-
-    .venue-details {
-      flex: 1;
-      display: flex;
-      flex-direction: column;
-      gap: 0.25rem;
-    }
-
-    .venue-name {
-      font-weight: 600;
+    .time-group-label {
+      display: block;
       font-size: 0.875rem;
-      line-height: 1.2;
-    }
-
-    .venue-address {
-      font-size: 0.75rem;
-      opacity: 0.9;
-      line-height: 1.2;
-    }
-
-    .remove-venue-btn {
-      background: none;
-      border: none;
-      color: var(--on-primary);
-      font-size: 1.25rem;
-      cursor: pointer;
-      padding: 0.25rem;
-      border-radius: 4px;
-      transition: all 0.2s;
-      line-height: 1;
-      width: 24px;
-      height: 24px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      flex-shrink: 0;
-    }
-
-    .remove-venue-btn:hover {
-      background: rgba(255, 255, 255, 0.2);
+      font-weight: 600;
+      color: var(--text-secondary);
+      margin-bottom: 0.75rem;
     }
 
     /* Time Row - 2 Column Layout */
     .time-row {
-      margin-top: 0.75rem;
       display: grid;
       grid-template-columns: 1fr 1fr;
       gap: 0.75rem;
@@ -654,7 +585,7 @@ interface SimpleEventForm {
 
     /* Time Slot Buttons */
     .time-slot-btn {
-      background: var(--background);
+      background: var(--background-lighter);
       border: 2px solid var(--border);
       cursor: pointer;
       font-size: 0.875rem;
@@ -663,6 +594,7 @@ interface SimpleEventForm {
       padding: 0.875rem 1rem;
       width: 100%;
       height: 56px; /* Fixed height */
+      transition: all 0.2s;
     }
 
     .time-slot-btn:hover {
@@ -713,11 +645,17 @@ interface SimpleEventForm {
 
     /* All Day Indicator */
     .all-day-indicator {
-      background: var(--success);
-      border: 2px solid var(--success);
-      color: var(--background);
+      background: var(--primary);
+      border: 2px solid var(--primary);
+      color: var(--on-primary);
       width: 100%;
       height: 56px; /* Fixed height to match other elements */
+      transition: all 0.2s;
+    }
+
+    .all-day-indicator:hover {
+      background: var(--primary-hover);
+      border-color: var(--primary-hover);
     }
 
     .all-day-text {
@@ -853,6 +791,7 @@ export class EventCreatorComponent extends BaseComponent implements OnDestroy {
   readonly showStartTimeInput = signal(false);
   readonly showEndTimeInput = signal(false);
   readonly submitAttempted = signal(false);
+  readonly llmPopulatedFields = signal<Set<string>>(new Set());
 
 
   // Venue typeahead functions
@@ -871,6 +810,17 @@ export class EventCreatorComponent extends BaseComponent implements OnDestroy {
     return !!(this.venueInferenceType() && this.venueInferenceMessage() && !this.selectedVenue());
   });
 
+  // Dynamic page title based on event name
+  readonly pageTitle = computed(() => {
+    const title = this.eventForm?.get('title')?.value;
+    if (title && title.trim()) {
+      // Truncate long titles
+      const truncated = title.length > 30 ? title.substring(0, 27) + '...' : title;
+      return `Creating: ${truncated}`;
+    }
+    return 'Create Event';
+  });
+
   // Reactive form error getters
   get titleError() {
     const control = this.eventForm.get('title');
@@ -884,9 +834,9 @@ export class EventCreatorComponent extends BaseComponent implements OnDestroy {
     return '';
   }
 
-  get locationError() {
+  get locationError(): boolean {
     const control = this.eventForm.get('location');
-    return control?.invalid && (control?.dirty || this.submitAttempted());
+    return !!(control?.invalid && (control?.dirty || this.submitAttempted()));
   }
 
   get locationErrorMessage() {
@@ -971,6 +921,7 @@ export class EventCreatorComponent extends BaseComponent implements OnDestroy {
       title: ['', [Validators.required, Validators.minLength(3)]],
       location: ['', Validators.required],
       venueId: [''],
+      venue: [null], // New venue control for VenueSelectComponent
       date: ['', [Validators.required, this.dateNotInPastValidator]],
       isAllDay: [false],
       startTime: [''],
@@ -1065,19 +1016,77 @@ export class EventCreatorComponent extends BaseComponent implements OnDestroy {
       if (result.success && result.eventData) {
         const data = result.eventData;
 
-        // Fill in the form
-        const extractedTime = this.extractTimeFromString(data.date);
-        this.eventForm.patchValue({
+        console.log('🔍 LLM Extracted Data:', {
+          title: data.title,
+          location: data.location,
+          originalDate: data.date,
+          parsedDate: data.parsedDate,
+          parsedStartTime: data.parsedStartTime,
+          parsedEndTime: data.parsedEndTime,
+          parsedIsAllDay: data.parsedIsAllDay,
+          venueId: data.venueId,
+          rawResult: result
+        });
+
+        const patchValues = {
           title: data.title || '',
           location: data.location || '',
-          date: this.extractDateFromString(data.date),
-          isAllDay: false,
-          startTime: extractedTime,
-          endTime: ''
+          venueId: data.venueId || '',
+          date: data.parsedDate || '',
+          isAllDay: data.parsedIsAllDay || false,
+          startTime: data.parsedStartTime || '',
+          endTime: data.parsedEndTime || ''
+        };
+
+        console.log('📝 Patching form with values:', patchValues);
+        
+        // Patch the form
+        this.eventForm.patchValue(patchValues);
+
+        // If we have a venue ID, we need to set the venue control with the proper object
+        if (data.venueId && result.matchedVenue) {
+          this.selectedVenue.set(result.matchedVenue);
+          this.eventForm.patchValue({
+            venue: {
+              venue: result.matchedVenue,
+              location: result.matchedVenue.name,
+              venueId: result.matchedVenue.id
+            }
+          });
+        }
+
+        // Track which fields were populated by LLM
+        const populatedFields = new Set<string>();
+        if (patchValues.title) populatedFields.add('title');
+        if (patchValues.location) populatedFields.add('location');
+        if (patchValues.date) populatedFields.add('date');
+        if (patchValues.startTime) populatedFields.add('startTime');
+        if (patchValues.endTime) populatedFields.add('endTime');
+        this.llmPopulatedFields.set(populatedFields);
+
+        // Clear LLM populated fields after animation
+        setTimeout(() => {
+          this.llmPopulatedFields.set(new Set());
+        }, 2000);
+
+        console.log('📋 Form values after patch:', this.eventForm.value);
+        console.log('✅ Form valid?', this.eventForm.valid);
+        console.log('❌ Form errors:', this.eventForm.errors);
+        
+        // Log individual field states
+        Object.keys(this.eventForm.controls).forEach(key => {
+          const control = this.eventForm.get(key);
+          console.log(`📌 Field "${key}":`, {
+            value: control?.value,
+            valid: control?.valid,
+            errors: control?.errors,
+            touched: control?.touched,
+            dirty: control?.dirty
+          });
         });
 
         // Show start time if we extracted a time
-        if (extractedTime) {
+        if (data.parsedStartTime) {
           this.showStartTimeInput.set(true);
         }
 
@@ -1085,12 +1094,9 @@ export class EventCreatorComponent extends BaseComponent implements OnDestroy {
         this.runInference(data.title);
 
         // Always proceed to confirmation with extraction results
-        this.showSuccess('Flyer processed! Proceeding to confirmation...');
-        
-        // Brief delay to show user the form being filled
-        setTimeout(() => {
-          this.proceedToConfirmationWithLLMData(result);
-        }, 1000);
+        // Proceed immediately to confirmation
+        console.log('⏰ Proceeding to confirmation with LLM data');
+        this.proceedToConfirmationWithLLMData(result);
       }
     } catch (error) {
       console.error('Error processing flyer:', error);
@@ -1114,6 +1120,37 @@ export class EventCreatorComponent extends BaseComponent implements OnDestroy {
   }
 
 
+  // New methods for VenueSelectComponent
+  onVenueSelectedFromComponent(venue: Venue) {
+    console.log('🏢 Venue selected from component:', venue);
+    
+    this.selectedVenue.set(venue);
+    this.eventForm.patchValue({
+      location: venue.name,
+      venueId: venue.id
+    });
+  }
+
+  onLocationChanged(location: string) {
+    console.log('🔍 Location changed:', location);
+    
+    this.eventForm.patchValue({
+      location: location,
+      venueId: this.selectedVenue()?.id || undefined
+    });
+  }
+
+  onVenueCleared() {
+    console.log('🗑️ Venue cleared');
+    
+    this.selectedVenue.set(null);
+    this.eventForm.patchValue({
+      location: '',
+      venueId: undefined
+    });
+  }
+
+  // Keep the old methods for backward compatibility
   onVenueSelected(option: TypeaheadOption<Venue>) {
     console.log('🏢 Venue selected:', option);
 
@@ -1258,6 +1295,12 @@ export class EventCreatorComponent extends BaseComponent implements OnDestroy {
 
   // Navigate to confirmation page
   proceedToConfirmation() {
+    console.log('🎯 proceedToConfirmation called (regular submission)');
+    console.log('📊 Form state before validation:', {
+      value: this.eventForm.value,
+      valid: this.eventForm.valid
+    });
+
     // Set submit attempted flag to show validation errors
     this.submitAttempted.set(true);
 
@@ -1265,15 +1308,21 @@ export class EventCreatorComponent extends BaseComponent implements OnDestroy {
     const isAllDay = this.eventForm.get('isAllDay')?.value;
     const startTime = this.eventForm.get('startTime')?.value;
 
+    console.log('⏰ Time validation:', { isAllDay, startTime, willFailTimeCheck: !isAllDay && !startTime });
+
     if (!isAllDay && !startTime) {
+      console.log('❌ Failed time validation - no start time and not all day');
       // Time validation error will be shown via submitAttempted flag
       return;
     }
 
     // Only proceed if form is valid
     if (!this.eventForm.valid) {
+      console.log('❌ Form invalid, not proceeding');
       return;
     }
+
+    console.log('✅ All validation passed, proceeding to confirmation');
 
     const formData = this.eventForm.value;
 
@@ -1362,23 +1411,37 @@ export class EventCreatorComponent extends BaseComponent implements OnDestroy {
   // Venue selection utilities removed - now handled by TypeaheadComponent and VenueLookupService
 
   extractDateFromString(dateString: string): string {
-    if (!dateString) return '';
+    console.log('📅 extractDateFromString called with:', dateString);
+    if (!dateString) {
+      console.log('  ❌ Empty dateString, returning empty string');
+      return '';
+    }
     try {
       const date = new Date(dateString);
-      return date.toISOString().split('T')[0];
-    } catch {
+      const result = date.toISOString().split('T')[0];
+      console.log('  ✅ Extracted date:', result);
+      return result;
+    } catch (error) {
+      console.log('  ❌ Error parsing date:', error);
       return '';
     }
   }
 
   extractTimeFromString(dateString: string): string {
-    if (!dateString) return '';
+    console.log('⏰ extractTimeFromString called with:', dateString);
+    if (!dateString) {
+      console.log('  ❌ Empty dateString, returning empty string');
+      return '';
+    }
     try {
       const date = new Date(dateString);
       const hours = date.getHours().toString().padStart(2, '0');
       const minutes = date.getMinutes().toString().padStart(2, '0');
-      return `${hours}:${minutes}`;
-    } catch {
+      const result = `${hours}:${minutes}`;
+      console.log('  ✅ Extracted time:', result);
+      return result;
+    } catch (error) {
+      console.log('  ❌ Error parsing time:', error);
       return '';
     }
   }
@@ -1445,11 +1508,106 @@ export class EventCreatorComponent extends BaseComponent implements OnDestroy {
     return isThisWeek ? day.charAt(0).toUpperCase() + day.slice(1) : `${day.charAt(0).toUpperCase() + day.slice(1)}`;
   }
 
+  // Helper method to get human-readable error messages for a field
+  private getFieldErrorMessages(fieldName: string, control: AbstractControl): string[] {
+    const messages: string[] = [];
+    const errors = control.errors;
+    
+    if (!errors) return messages;
+
+    switch (fieldName) {
+      case 'title':
+        if (errors['required']) messages.push('Title is required');
+        if (errors['minlength']) messages.push(`Title must be at least ${errors['minlength'].requiredLength} characters`);
+        break;
+      case 'location':
+        if (errors['required']) messages.push('Location is required');
+        break;
+      case 'date':
+        if (errors['required']) messages.push('Date is required');
+        if (errors['dateInPast']) messages.push('Date cannot be in the past');
+        break;
+      case 'startTime':
+        if (errors['required']) messages.push('Start time is required');
+        break;
+      case 'endTime':
+        if (errors['endTimeBeforeStart']) messages.push('End time must be after start time');
+        break;
+      default:
+        messages.push(`${fieldName} is invalid`);
+    }
+
+    return messages;
+  }
+
   // Auto-proceed helper methods
   private proceedToConfirmationWithLLMData(extractionResult: EventExtractionResult) {
+    console.log('🚀 proceedToConfirmationWithLLMData called');
+    console.log('📊 Current form state:', {
+      value: this.eventForm.value,
+      valid: this.eventForm.valid,
+      errors: this.eventForm.errors
+    });
+
+    // Log individual field validation states
+    console.log('🔍 Field validation states:');
+    Object.keys(this.eventForm.controls).forEach(key => {
+      const control = this.eventForm.get(key);
+      console.log(`  ${key}:`, {
+        value: control?.value,
+        valid: control?.valid,
+        errors: control?.errors,
+        validators: control?.hasError('required') ? 'has required error' : 'no required error'
+      });
+    });
+
+    // Check time validation separately
+    const isAllDay = this.eventForm.get('isAllDay')?.value;
+    const startTime = this.eventForm.get('startTime')?.value;
+    console.log('⏰ Time validation check:', { isAllDay, startTime, needsTime: !isAllDay && !startTime });
+
     // Validate form first
     if (!this.eventForm.valid) {
-      console.log('Form not valid, not auto-proceeding');
+      console.log('❌ Form not valid, not auto-proceeding');
+      
+      // Detailed validation error breakdown
+      const invalidFields: string[] = [];
+      const fieldErrors: Record<string, any> = {};
+      
+      Object.keys(this.eventForm.controls).forEach(fieldName => {
+        const control = this.eventForm.get(fieldName);
+        if (control && control.invalid) {
+          invalidFields.push(fieldName);
+          fieldErrors[fieldName] = {
+            errors: control.errors,
+            value: control.value,
+            errorMessages: this.getFieldErrorMessages(fieldName, control)
+          };
+        }
+      });
+
+      // Check time validation separately (custom validation)
+      if (!isAllDay && !startTime) {
+        invalidFields.push('time');
+        fieldErrors['time'] = {
+          error: 'timeRequired',
+          message: 'Either select a start time or mark as all day event'
+        };
+      }
+
+      console.log('📝 Form validation details:', {
+        invalidFieldCount: invalidFields.length,
+        invalidFields: invalidFields,
+        fieldErrors: fieldErrors,
+        formErrors: this.eventForm.errors,
+        isValid: this.eventForm.valid
+      });
+
+      console.log('❗ Validation failures:');
+      invalidFields.forEach(field => {
+        console.log(`  - ${field}: ${JSON.stringify(fieldErrors[field])}`);
+      });
+
       return;
     }
 
@@ -1458,9 +1616,11 @@ export class EventCreatorComponent extends BaseComponent implements OnDestroy {
 
     // Guard against null data
     if (!data) {
-      console.log('No event data extracted, not auto-proceeding');
+      console.log('❌ No event data extracted, not auto-proceeding');
       return;
     }
+
+    console.log('✅ Form is valid, proceeding with navigation');
 
     // Prepare enhanced event data with LLM extraction results
     const eventData = {

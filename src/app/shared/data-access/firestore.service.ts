@@ -266,6 +266,24 @@ export class FirestoreService {
     });
   }
 
+  /**
+   * Force fetch documents from server, bypassing cache
+   */
+  public async getDocsWhereFromServer<T>(
+    path: string,
+    ...conditions: QueryConstraint[]
+  ): Promise<(T & { id: string })[]> {
+    return runInInjectionContext(this.injector, async () => {
+      const ref = collection(this.firestore, path);
+      const q = query(ref, ...conditions);
+      
+      console.log(`[Firestore] 🌐 Force fetching from server: ${path}`);
+      this.metricsService.trackCall('read', path, 'getDocsWhereFromServer', 'firebase');
+      const serverSnapshot = await getDocsFromServer(q);
+      return this.mapSnapshotWithId<T>(serverSnapshot);
+    });
+  }
+
   public async exists(path: string): Promise<boolean> {
     return runInInjectionContext(this.injector, async () => {
       const ref = doc(this.firestore, path);

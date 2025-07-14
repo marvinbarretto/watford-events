@@ -48,10 +48,37 @@ export class EventService extends FirestoreCrudService<EventModel> {
   }
 
   /**
+   * Find event by title and date (for duplicate detection)
+   */
+  async findEventByTitleAndDate(title: string, date: string): Promise<EventModel | null> {
+    const allEvents = await this.getAll();
+    
+    // Normalize title for comparison
+    const normalizedTitle = title.toLowerCase().trim();
+    
+    const duplicate = allEvents.find(event => {
+      const eventTitle = event.title.toLowerCase().trim();
+      return eventTitle === normalizedTitle && event.date === date;
+    });
+
+    return duplicate || null;
+  }
+
+  /**
    * Get all published events (public feed)
    */
   async getPublishedEvents(): Promise<EventModel[]> {
     const allEvents = await this.getAll();
+    return allEvents.filter(event => event.status === 'published')
+                   .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+  }
+
+  /**
+   * Get all published events from server (bypassing cache)
+   */
+  async getPublishedEventsFromServer(): Promise<EventModel[]> {
+    console.log('[EventService] 🌐 Fetching published events from server');
+    const allEvents = await this.getAllFromServer();
     return allEvents.filter(event => event.status === 'published')
                    .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
   }

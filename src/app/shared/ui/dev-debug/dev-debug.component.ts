@@ -167,7 +167,18 @@ import { createMockEvent, createMockEvents, createMixedEvents } from '../../../.
               <button
                 class="btn btn--secondary"
                 (click)="reloadEvents()">
-                🔄 Reload Events
+                🔄 Reload Events (Cache)
+              </button>
+
+              <button
+                class="btn btn--warning"
+                (click)="refreshEventsFromServer()"
+                [disabled]="refreshing()">
+                @if (refreshing()) {
+                  <span class="spinner"></span> Refreshing...
+                } @else {
+                  🌐 Force Server Refresh
+                }
               </button>
 
               <button
@@ -498,6 +509,7 @@ export class DevDebugComponent {
   protected readonly generating = signal(false);
   protected readonly cleaningUsers = signal(false);
   protected readonly showOnlyMockEvents = signal(false);
+  protected readonly refreshing = signal(false);
 
   // Computed properties for event statistics
   protected readonly eventStats = computed(() => {
@@ -611,12 +623,29 @@ export class DevDebugComponent {
   }
 
   protected async reloadEvents(): Promise<void> {
-    this.debugService.standard('[DevDebug] Manually reloading events');
+    this.debugService.standard('[DevDebug] Manually reloading events (cache)');
     try {
       await this.eventStore.reload();
-      this.debugService.success('[DevDebug] Events reloaded successfully');
+      this.debugService.success('[DevDebug] Events reloaded successfully from cache');
     } catch (error) {
       this.debugService.error('[DevDebug] Failed to reload events', error);
+    }
+  }
+
+  protected async refreshEventsFromServer(): Promise<void> {
+    this.debugService.standard('[DevDebug] Force refreshing events from server');
+    this.refreshing.set(true);
+    
+    try {
+      // Force server fetch by bypassing cache
+      await this.eventStore.refreshFromServer();
+      this.debugService.success('[DevDebug] Events refreshed successfully from server');
+      alert('✅ Events refreshed from server!\n\nNew events should now be visible.');
+    } catch (error) {
+      this.debugService.error('[DevDebug] Failed to refresh events from server', error);
+      alert('❌ Failed to refresh events from server. Check console for details.');
+    } finally {
+      this.refreshing.set(false);
     }
   }
 

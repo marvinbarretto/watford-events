@@ -1,5 +1,4 @@
 import { Component, input, output, computed } from '@angular/core';
-import { DatePipe } from '@angular/common';
 import { EventModel, EVENT_CATEGORIES } from '../../utils/event.model';
 import { convertToDate, getRelativeTime } from '../../../shared/utils/date-utils';
 import { ChipComponent } from '../../../shared/ui/chip/chip.component';
@@ -12,7 +11,7 @@ import { Venue } from '../../../venues/utils/venue.model';
 
 @Component({
   selector: 'app-event-item',
-  imports: [DatePipe, ChipComponent, IconComponent, HighlightPipe, DateBoxComponent],
+  imports: [ChipComponent, IconComponent, HighlightPipe, DateBoxComponent],
   styleUrl: './event-item.component.scss',
   template: `
     <article

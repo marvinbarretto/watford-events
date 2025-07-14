@@ -1,0 +1,158 @@
+{
+  "domain": "*",
+  "enabled": true,
+  "name": "Generic Event Extractor",
+  "description": "Universal event extraction configuration that works across most event websites",
+  "instructions": [
+    {
+      "step": 1,
+      "action": "navigate",
+      "target": "",
+      "description": "Navigate to the target URL",
+      "timeout": 10000,
+      "waitFor": "networkidle"
+    },
+    {
+      "step": 2,
+      "action": "click",
+      "target": "[data-testid*=\"cookie\"], [class*=\"cookie\"], [id*=\"cookie\"], .gdpr-banner, .consent-banner, .cookie-accept, .accept-cookies",
+      "description": "Accept cookie banner if present",
+      "timeout": 3000,
+      "optional": true
+    },
+    {
+      "step": 3,
+      "action": "wait",
+      "waitFor": "selector",
+      "target": "main, article, .content, .events, .event, body",
+      "timeout": 5000,
+      "description": "Wait for main content to load"
+    },
+    {
+      "step": 4,
+      "action": "scroll",
+      "description": "Scroll to load any lazy-loaded content",
+      "timeout": 2000,
+      "optional": true
+    }
+  ],
+  "selectors": {
+    "cookieBanner": "[data-testid*=\"cookie\"], [class*=\"cookie\"], [id*=\"cookie\"], .gdpr-banner, .consent-banner",
+    "loadingSpinner": ".loading, .spinner, .loader, [class*=\"loading\"], [class*=\"spinner\"]",
+    "mainContent": "main, article, .content, .events, .event-container, .event-list",
+    "pagination": ".pagination, .pager, .next, .load-more",
+    "errorMessage": ".error, .alert, .warning, [class*=\"error\"], [class*=\"alert\"]"
+  },
+  "extractors": [
+    {
+      "name": "title",
+      "selector": "title, h1, .event-title, [class*=\"title\"], [class*=\"name\"], [property=\"og:title\"], .event h1, .event h2",
+      "required": true,
+      "transform": "trim"
+    },
+    {
+      "name": "description",
+      "selector": "[name=\"description\"], [property=\"og:description\"], .description, .event-description, .content, .details, .summary, .about, .event-details",
+      "attribute": "content",
+      "required": false,
+      "transform": "trim"
+    },
+    {
+      "name": "event_date",
+      "selector": ".date, .event-date, [class*=\"date\"], time[datetime], [property=\"article:published_time\"], [data-date], .when, .datetime",
+      "attribute": "datetime",
+      "required": false,
+      "transform": "trim"
+    },
+    {
+      "name": "start_time",
+      "selector": ".time, .start-time, [class*=\"time\"], [data-start-time], .when, .event-time, .start",
+      "required": false,
+      "transform": "trim"
+    },
+    {
+      "name": "end_time",
+      "selector": ".end-time, [class*=\"end\"], [data-end-time], .until, .finish",
+      "required": false,
+      "transform": "trim"
+    },
+    {
+      "name": "location",
+      "selector": ".location, .venue, .address, [class*=\"location\"], [class*=\"venue\"], [class*=\"address\"], .where, .place",
+      "required": false,
+      "transform": "trim"
+    },
+    {
+      "name": "organizer",
+      "selector": ".organizer, .organiser, .host, .by, .author, [class*=\"organiz\"], [class*=\"host\"], .presenter",
+      "required": false,
+      "transform": "trim"
+    },
+    {
+      "name": "price",
+      "selector": ".price, .cost, .ticket-price, [class*=\"price\"], [class*=\"cost\"], .tickets, .admission, .fee",
+      "required": false,
+      "transform": "trim"
+    },
+    {
+      "name": "website",
+      "selector": "a[href*=\"ticket\"], a[href*=\"book\"], a[href*=\"more\"], .website, .link, .more-info, .details-link",
+      "attribute": "href",
+      "required": false
+    },
+    {
+      "name": "contact",
+      "selector": ".contact, .email, .phone, [class*=\"contact\"], [href^=\"mailto:\"], [href^=\"tel:\"], .contact-info",
+      "required": false,
+      "transform": "trim"
+    },
+    {
+      "name": "image",
+      "selector": ".event-image img, .hero-image img, .featured-image img, .poster img, img[class*=\"event\"]",
+      "attribute": "src",
+      "required": false
+    },
+    {
+      "name": "category",
+      "selector": ".category, .tag, .type, [class*=\"category\"], [class*=\"tag\"], .event-type",
+      "required": false,
+      "transform": "trim"
+    },
+    {
+      "name": "tickets_url",
+      "selector": "a[href*=\"eventbrite\"], a[href*=\"ticketmaster\"], a[href*=\"book\"], a[href*=\"buy\"], .buy-tickets, .book-now",
+      "attribute": "href",
+      "required": false
+    },
+    {
+      "name": "event_links",
+      "selector": ".event a[href], .event-item a[href]",
+      "attribute": "href", 
+      "multiple": true,
+      "required": false
+    },
+    {
+      "name": "all_events",
+      "selector": ".event, .event-item, [class*=\"event\"], article, .listing-item, .calendar-event",
+      "multiple": true,
+      "required": false
+    }
+  ],
+  "options": {
+    "headless": true,
+    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36 EventBot/1.0",
+    "viewport": {
+      "width": 1280,
+      "height": 720
+    },
+    "waitForNetworkIdle": true,
+    "screenshotOnError": true,
+    "respectRobotsTxt": true,
+    "politenessDelay": 1000,
+    "maxRetries": 2,
+    "includeIframes": true,
+    "screenshot": false
+  },
+  "lastUpdated": "2025-01-14T12:00:00.000Z",
+  "version": "1.0.0"
+}

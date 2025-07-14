@@ -72,3 +72,5 @@ ios/build/
 test-output.log
 # scripts/seed-events.ts
 scripts/README.md
+scripts/import-watford-fringe.ts
+src/scraping-configs/sites/watford-fringe.json

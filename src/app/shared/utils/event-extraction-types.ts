@@ -4,6 +4,8 @@ export type EventExtractionResult = {
   confidence: EventConfidence;
   error?: string;
   rawText?: string;
+  processingNotes?: string[];
+  matchedVenue?: any;
 };
 
 export type EventData = {
@@ -19,6 +21,12 @@ export type EventData = {
   categories?: string[];
   tags?: string[];
   imageUrl?: string;
+  
+  // Structured date/time data from processing utilities
+  parsedDate?: string | null;      // ISO date: YYYY-MM-DD
+  parsedStartTime?: string | null; // 24-hour time: HH:MM
+  parsedEndTime?: string | null;   // 24-hour time: HH:MM  
+  parsedIsAllDay?: boolean;        // Whether event is all day
 };
 
 export type EventConfidence = {

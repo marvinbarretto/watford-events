@@ -1,16 +1,20 @@
 import { Component, computed, inject, signal } from '@angular/core';
 import { RouterOutlet, ActivatedRoute, NavigationEnd, Router } from '@angular/router';
 import { Platform } from '@ionic/angular';
+import { Capacitor } from '@capacitor/core';
 import { filter } from 'rxjs/operators';
 import { SsrPlatformService } from './shared/utils/ssr/ssr-platform.service';
+import { PlatformDetectionService } from './shared/utils/platform-detection.service';
 import { WebMainShell } from './shared/ui/shells/web-main-shell.component';
 import { MobileMainShell } from './shared/ui/shells/mobile-main-shell.component';
+import { MobileIonicShell } from './shared/ui/shells/mobile-ionic-shell.component';
 import { FullScreenShell } from './shared/ui/shells/fullscreen-shell.component';
 import { FlyerParserShell } from './shared/ui/shells/flyer-parser-shell.component';
 
 type ShellType =
   | 'web-main'           // Desktop web layout
   | 'mobile-main'        // Mobile with Ionic components
+  | 'mobile-ionic'       // Native mobile with full Ionic optimization
   | 'fullscreen'         // Login, onboarding (no nav)
   | 'flyer-parser';      // Special layout for flyer scanning
 
@@ -19,6 +23,7 @@ type ShellType =
     RouterOutlet,
     WebMainShell,
     MobileMainShell,
+    MobileIonicShell,
     FullScreenShell,
     FlyerParserShell
   ],
@@ -30,6 +35,9 @@ type ShellType =
         }
         @case ('mobile-main') {
           <app-mobile-main-shell />
+        }
+        @case ('mobile-ionic') {
+          <app-mobile-ionic-shell />
         }
         @case ('fullscreen') {
           <app-fullscreen-shell />
@@ -49,6 +57,7 @@ export class App {
   private readonly router = inject(Router);
   private readonly activatedRoute = inject(ActivatedRoute);
   private readonly ssrPlatform = inject(SsrPlatformService);
+  private readonly platformDetection = inject(PlatformDetectionService);
 
   private readonly navigationSignal = signal(0);
 
@@ -97,8 +106,21 @@ export class App {
 
     // Main shells vary by platform - safe platform detection for SSR
     if (routeShell === 'main' || !routeShell) {
-      const isMobile = this.ssrPlatform.onlyOnBrowser(() => this.platform.is('capacitor')) || false;
-      return isMobile ? 'mobile-main' : 'web-main';
+      // Check for Capacitor native platform first
+      const isCapacitorNative = this.ssrPlatform.onlyOnBrowser(() => 
+        Capacitor.isNativePlatform() || this.platformDetection.isCapacitorNative
+      ) || false;
+      
+      if (isCapacitorNative) {
+        return 'mobile-ionic';
+      }
+      
+      // Fallback to existing mobile detection for mobile web
+      const isMobileWeb = this.ssrPlatform.onlyOnBrowser(() => 
+        this.platformDetection.isMobileWeb
+      ) || false;
+      
+      return isMobileWeb ? 'mobile-main' : 'web-main';
     }
 
     return 'web-main'; // Fallback

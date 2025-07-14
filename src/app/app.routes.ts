@@ -84,17 +84,26 @@ export const routes: Routes = [
   {
     path: 'admin',
     data: { shell: 'main' },
+    // canActivate: [authGuard, roleGuard([Roles.Admin])],
     loadComponent: () => import('./admin/feature/admin-dashboard/admin-dashboard').then(m => m.AdminDashboard)
   },
   {
     path: 'admin/events',
     data: { shell: 'main' },
+    canActivate: [authGuard, roleGuard([Roles.Admin])],
     loadComponent: () => import('./admin/feature/admin-event-management/admin-event-management').then(m => m.AdminEventManagement)
   },
   {
     path: 'admin/venues',
     data: { shell: 'main' },
+    canActivate: [authGuard, roleGuard([Roles.Admin])],
     loadComponent: () => import('./admin/feature/admin-venue-management/admin-venue-management').then(m => m.AdminVenueManagement)
+  },
+  {
+    path: 'admin/scraping',
+    data: { shell: 'main' },
+    // canActivate: [authGuard, roleGuard([Roles.Admin])],
+    loadComponent: () => import('./admin/feature/admin-scraping/admin-scraping').then(m => m.AdminScraping)
   },
   {
     path: 'admin/venues/new',
