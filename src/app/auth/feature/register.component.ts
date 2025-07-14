@@ -4,11 +4,12 @@ import { RouterModule, Router } from '@angular/router';
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 
 import { AuthStore } from '../data-access/auth.store';
+import { IconComponent } from '@shared/ui/icon/icon.component';
 
 @Component({
   selector: 'app-register',
   standalone: true,
-  imports: [CommonModule, RouterModule, ReactiveFormsModule],
+  imports: [CommonModule, RouterModule, ReactiveFormsModule, IconComponent],
   template: `
     <div class="register-container">
       <div class="register-card">
@@ -99,7 +100,9 @@ import { AuthStore } from '../data-access/auth.store';
           <div class="error-banner">
             <span class="error-icon">⚠️</span>
             <span>{{ error() }}</span>
-            <button class="dismiss-error" (click)="clearError()">×</button>
+            <button class="dismiss-error" (click)="clearError()" aria-label="Dismiss error">
+              <app-icon name="close" size="xs" />
+            </button>
           </div>
         }
 

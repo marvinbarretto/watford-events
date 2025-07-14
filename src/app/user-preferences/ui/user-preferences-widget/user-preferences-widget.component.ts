@@ -21,11 +21,12 @@ import {
   EventSortOrder,
   EventCategoryPreferences
 } from '../../utils/user-preferences.types';
+import { IconComponent } from '@shared/ui/icon/icon.component';
 
 @Component({
   selector: 'app-user-preferences-widget',
   standalone: true,
-  imports: [FormsModule],
+  imports: [FormsModule, IconComponent],
   template: `
     <div class="preferences-widget" [class.collapsed]="isCollapsed()">
       <div class="widget-header" (click)="toggleCollapsed()">
@@ -147,7 +148,9 @@ import {
       @if (preferencesStore.error()) {
         <div class="error-message">
           ⚠️ {{ preferencesStore.error() }}
-          <button class="error-dismiss" (click)="preferencesStore.clearError()">×</button>
+          <button class="error-dismiss" (click)="preferencesStore.clearError()" aria-label="Dismiss error">
+            <app-icon name="close" size="xs" />
+          </button>
         </div>
       }
     </div>

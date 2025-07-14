@@ -11,6 +11,7 @@ import { EventModel, EventCategory, createEventDefaults } from '../utils/event.m
 import { Venue } from '../../venues/utils/venue.model';
 import { AuthService } from '../../auth/data-access/auth.service';
 import { EventStore } from '../data-access/event.store';
+import { IconComponent } from '@shared/ui/icon/icon.component';
 
 interface SimpleEventForm {
   title: string;
@@ -25,7 +26,7 @@ interface SimpleEventForm {
 @Component({
   selector: 'app-event-creator',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterModule, TypeaheadComponent],
+  imports: [CommonModule, FormsModule, RouterModule, TypeaheadComponent, IconComponent],
   template: `
     <div class="event-creator">
       <!-- Header -->
@@ -65,7 +66,9 @@ interface SimpleEventForm {
           @if (uploadedFlyer()) {
             <div class="flyer-preview">
               <img [src]="uploadedFlyer()" alt="Uploaded flyer">
-              <button class="remove-flyer-btn" (click)="removeFlyer()" type="button">×</button>
+              <button class="remove-flyer-btn" (click)="removeFlyer()" type="button" aria-label="Remove flyer">
+                <app-icon name="close" size="sm" />
+              </button>
             </div>
           }
           
@@ -79,7 +82,7 @@ interface SimpleEventForm {
 
         <!-- Event Form -->
         <section class="event-form-section">
-          <form class="event-form" (ngSubmit)="createEvent()">
+          <form class="event-form" (ngSubmit)="proceedToConfirmation()">
             
             <!-- Question 1: What's it called? -->
             <div class="form-field">
@@ -131,7 +134,9 @@ interface SimpleEventForm {
                     <span class="venue-name">{{ selectedVenue()!.name }}</span>
                     <span class="venue-address">{{ selectedVenue()!.address }}</span>
                   </span>
-                  <button class="remove-venue-btn" (click)="clearVenue()" type="button">×</button>
+                  <button class="remove-venue-btn" (click)="clearVenue()" type="button" aria-label="Clear venue">
+                    <app-icon name="close" size="xs" />
+                  </button>
                 </div>
               }
             </div>
@@ -228,11 +233,11 @@ interface SimpleEventForm {
               }
             </div>
 
-            <!-- Create Button -->
+            <!-- Continue Button -->
             <button class="create-event-btn" 
                     [disabled]="!canCreateEvent()"
                     type="submit">
-              Create Event
+              Continue
             </button>
             
           </form>
@@ -1127,61 +1132,41 @@ export class EventCreatorComponent {
     this.inferredCategories.set(inference.categories);
   }
 
-  // Event creation
-  async createEvent() {
+  // Navigate to confirmation page
+  proceedToConfirmation() {
     if (!this.canCreateEvent()) return;
     
     const formData = this.formData();
     
-    try {
-      // Create event data for EventStore
-      const eventData = {
-        // From form
-        title: formData.title.trim(),
-        date: formData.date,
-        startTime: formData.startTime || undefined,
-        endTime: formData.endTime || undefined,
-        isAllDay: formData.isAllDay,
-        location: formData.location.trim(),
-        venueId: formData.venueId,
-        
-        // From inference
-        categories: this.inferredCategories(),
-        
-        // Merge with defaults
-        ...createEventDefaults(),
-        
-        // Ensure required fields are properly set
-        attendeeIds: [],
-        eventType: 'single' as const,
-        
-        // Smart defaults
-        status: 'draft' as const // Create as draft, enhance and publish from next page
-      };
+    // Prepare event data for confirmation page
+    const eventData = {
+      // From form
+      title: formData.title.trim(),
+      date: formData.date,
+      // Only include time fields if they have values (avoid undefined)
+      ...(formData.startTime && { startTime: formData.startTime }),
+      ...(formData.endTime && { endTime: formData.endTime }),
+      isAllDay: formData.isAllDay,
+      location: formData.location.trim(),
+      // Only include venueId if it has a value
+      ...(formData.venueId && { venueId: formData.venueId }),
       
-      console.log('Creating event:', eventData);
+      // From inference
+      categories: this.inferredCategories(),
       
-      // Create event using EventStore (handles auth, timestamps, and optimistic updates)
-      const createdEvent = await this.eventStore.createEvent(eventData);
-      
-      if (createdEvent) {
-        console.log('Draft event created:', createdEvent.id);
-        // Navigate to enhancement page
-        this.router.navigate(['/events', createdEvent.id, 'enhance']);
-      } else {
-        throw new Error('Failed to create event - no event returned');
-      }
-      
-    } catch (error) {
-      console.error('Error creating event:', error);
-      
-      // Show user-friendly error message
-      if (error instanceof Error && error.message.includes('authenticated')) {
-        alert('Please log in to create events');
-      } else {
-        alert('Failed to create event. Please try again.');
-      }
-    }
+      // Additional context for confirmation page
+      selectedVenue: this.selectedVenue(),
+      uploadedFlyer: this.uploadedFlyer(),
+      inferredEventType: this.inferredEventType(),
+      inferredDuration: this.inferredDuration()
+    };
+    
+    console.log('Proceeding to confirmation with data:', eventData);
+    
+    // Navigate to confirmation page with event data
+    this.router.navigate(['/events/create/confirm'], {
+      state: { eventData }
+    });
   }
 
   // Utility methods

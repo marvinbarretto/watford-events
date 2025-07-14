@@ -5,10 +5,11 @@ import { RouterModule, Router } from '@angular/router';
 import { AdminStore } from '../../data-access/admin.store';
 import { VenueService } from '@app/venues/data-access/venue.service';
 import { Venue } from '@app/venues/utils/venue.model';
+import { IconComponent } from '@shared/ui/icon/icon.component';
 
 @Component({
   selector: 'app-admin-venue-management',
-  imports: [CommonModule, FormsModule, RouterModule],
+  imports: [CommonModule, FormsModule, RouterModule, IconComponent],
   templateUrl: './admin-venue-management.html',
   styleUrl: './admin-venue-management.scss'
 })

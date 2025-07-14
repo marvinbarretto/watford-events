@@ -5,6 +5,7 @@ import { RouterModule, ActivatedRoute, Router } from '@angular/router';
 import { EventModel, EventCategory, EVENT_CATEGORIES } from '../utils/event.model';
 import { AuthService } from '../../auth/data-access/auth.service';
 import { EventStore } from '../data-access/event.store';
+import { IconComponent } from '@shared/ui/icon/icon.component';
 
 interface EventEnhancementForm {
   description: string;
@@ -19,7 +20,7 @@ interface EventEnhancementForm {
 @Component({
   selector: 'app-event-enhancement',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterModule],
+  imports: [CommonModule, FormsModule, RouterModule, IconComponent],
   template: `
     <div class="event-enhancement">
       <!-- Header -->
@@ -189,7 +190,9 @@ interface EventEnhancementForm {
                     @for (tag of enhancementForm().tags; track tag) {
                       <span class="tag-chip">
                         {{ tag }}
-                        <button class="remove-tag" (click)="removeTag(tag)" type="button">×</button>
+                        <button class="remove-tag" (click)="removeTag(tag)" type="button" aria-label="Remove tag">
+                          <app-icon name="close" size="xs" />
+                        </button>
                       </span>
                     }
                   </div>

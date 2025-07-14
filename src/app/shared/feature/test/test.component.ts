@@ -4,6 +4,7 @@ import { SsrPlatformService } from '../../utils/ssr/ssr-platform.service';
 import { BaseStore } from '../../data-access/base.store';
 import { ToastService } from '../../data-access/toast.service';
 import { AuthStore } from '@auth/data-access/auth.store';
+import { IconComponent } from '../../ui/icon/icon.component';
 
 @Injectable({ providedIn: 'root' })
 export class TestStore extends BaseStore<TestItem> {
@@ -26,7 +27,7 @@ interface TestItem {
 @Component({
   selector: 'app-test',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, IconComponent],
   templateUrl: './test.component.html',
   styleUrl: './test.component.scss'
 })

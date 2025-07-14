@@ -23,11 +23,12 @@ import {
   ThemePreference, 
   LanguageCode 
 } from '../utils/user-preferences.types';
+import { IconComponent } from '@shared/ui/icon/icon.component';
 
 @Component({
   selector: 'app-settings',
   standalone: true,
-  imports: [FormsModule],
+  imports: [FormsModule, IconComponent],
   template: `
     <div class="settings-container">
       <header class="settings-header">
@@ -46,7 +47,9 @@ import {
       @if (preferencesStore.error()) {
         <div class="error-banner">
           ⚠️ {{ preferencesStore.error() }}
-          <button class="error-dismiss" (click)="preferencesStore.clearError()">×</button>
+          <button class="error-dismiss" (click)="preferencesStore.clearError()" aria-label="Dismiss error">
+            <app-icon name="close" size="xs" />
+          </button>
         </div>
       }
 

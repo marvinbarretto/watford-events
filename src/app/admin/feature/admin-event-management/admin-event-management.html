@@ -103,7 +103,9 @@
         <div class="event-details-panel">
           <div class="panel-header">
             <h2>Event Details</h2>
-            <button class="close-btn" (click)="clearSelection()">×</button>
+            <button class="close-btn" (click)="clearSelection()" aria-label="Close event details">
+              <app-icon name="close" size="sm" />
+            </button>
           </div>
           
           <div class="panel-content">

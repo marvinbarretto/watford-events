@@ -51,7 +51,9 @@
         <h4>Active Toasts:</h4>
         <div *ngFor="let toast of toastService.toasts$$Readonly()" class="toast-item" [class]="'toast-' + toast.type">
           <span>{{ toast.message }}</span>
-          <button (click)="toastService.dismiss(toast.id)">×</button>
+          <button (click)="toastService.dismiss(toast.id)" aria-label="Dismiss toast">
+            <app-icon name="close" size="xs" />
+          </button>
         </div>
       </div>
     </section>

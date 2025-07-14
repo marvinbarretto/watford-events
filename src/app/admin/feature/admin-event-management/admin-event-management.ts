@@ -5,10 +5,11 @@ import { RouterModule } from '@angular/router';
 import { AdminStore } from '../../data-access/admin.store';
 import { EventService } from '@app/events/data-access/event.service';
 import { EventModel } from '@app/events/utils/event.model';
+import { IconComponent } from '@shared/ui/icon/icon.component';
 
 @Component({
   selector: 'app-admin-event-management',
-  imports: [CommonModule, FormsModule, RouterModule],
+  imports: [CommonModule, FormsModule, RouterModule, IconComponent],
   templateUrl: './admin-event-management.html',
   styleUrl: './admin-event-management.scss'
 })

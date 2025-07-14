@@ -150,7 +150,9 @@
         <div class="venue-details-panel">
           <div class="panel-header">
             <h2>Venue Details</h2>
-            <button class="close-btn" (click)="clearSelection()">×</button>
+            <button class="close-btn" (click)="clearSelection()" aria-label="Close venue details">
+              <app-icon name="close" size="sm" />
+            </button>
           </div>
           
           <div class="panel-content">
