@@ -6,7 +6,6 @@ import { HeartButtonComponent } from '../../../shared/ui/heart-button/heart-butt
 
 @Component({
   selector: 'app-event-card',
-  standalone: true,
   imports: [ChipComponent, HeartButtonComponent],
   template: `
     <div class="event-card" (click)="handleClick()">
@@ -43,10 +42,10 @@ import { HeartButtonComponent } from '../../../shared/ui/heart-button/heart-butt
       <div class="event-content">
         <div class="event-header">
           <h3 class="event-title">{{ event().title }}</h3>
-          <app-chip 
-            [text]="statusLabel()" 
-            type="ui" 
-            variant="status" 
+          <app-chip
+            [text]="statusLabel()"
+            type="ui"
+            variant="status"
             [status]="event().status"
           />
         </div>
@@ -317,7 +316,7 @@ import { HeartButtonComponent } from '../../../shared/ui/heart-button/heart-butt
 export class EventCardComponent {
   // Required inputs
   readonly event = input.required<EventModel>();
-  
+
   // Optional inputs
   readonly currentUserId = input<string | null>(null);
 

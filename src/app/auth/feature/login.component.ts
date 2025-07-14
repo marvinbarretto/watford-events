@@ -8,7 +8,6 @@ import { IconComponent } from '@shared/ui/icon/icon.component';
 
 @Component({
   selector: 'app-login',
-  standalone: true,
   imports: [CommonModule, RouterModule, ReactiveFormsModule, IconComponent],
   template: `
     <div class="login-container">
@@ -37,7 +36,7 @@ import { IconComponent } from '@shared/ui/icon/icon.component';
           <!-- Email/Password Form -->
           <div class="email-login-section">
             <h3>Sign in with Email</h3>
-            
+
             <form [formGroup]="loginForm" (ngSubmit)="loginWithEmail()">
               <div class="form-group">
                 <label for="email">Email</label>
@@ -69,8 +68,8 @@ import { IconComponent } from '@shared/ui/icon/icon.component';
                 }
               </div>
 
-              <button 
-                type="submit" 
+              <button
+                type="submit"
                 class="email-login-btn"
                 [disabled]="!loginForm.valid || isLoading()"
               >
@@ -102,7 +101,7 @@ import { IconComponent } from '@shared/ui/icon/icon.component';
         <!-- Footer -->
         <div class="login-footer">
           <p>
-            Don't have an account? 
+            Don't have an account?
             <a routerLink="/register" class="register-link">Create one here</a>
           </p>
         </div>
@@ -372,15 +371,15 @@ import { IconComponent } from '@shared/ui/icon/icon.component';
       .login-container {
         padding: 10px;
       }
-      
+
       .login-card {
         padding: 30px 20px;
       }
-      
+
       .app-logo {
         font-size: 40px;
       }
-      
+
       .login-header h1 {
         font-size: 24px;
       }

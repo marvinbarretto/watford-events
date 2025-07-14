@@ -9,7 +9,6 @@ import { TypeaheadComponent, TypeaheadOption } from '../typeahead/typeahead.comp
  */
 @Component({
   selector: 'app-multi-select',
-  standalone: true,
   imports: [ChipComponent, TypeaheadComponent],
   providers: [
     {
@@ -34,7 +33,7 @@ import { TypeaheadComponent, TypeaheadOption } from '../typeahead/typeahead.comp
           }
         </div>
       }
-      
+
       <!-- Typeahead for adding new items -->
       @if (!isMaxSelectionReached()) {
         <app-typeahead
@@ -50,7 +49,7 @@ import { TypeaheadComponent, TypeaheadOption } from '../typeahead/typeahead.comp
           Maximum {{ maxSelections }} {{ maxSelections === 1 ? 'selection' : 'selections' }} reached
         </div>
       }
-      
+
       @if (helpText) {
         <div class="help-text">{{ helpText }}</div>
       }
@@ -110,7 +109,7 @@ export class MultiSelectComponent<T = any> implements ControlValueAccessor {
   readonly selectedItems = signal<TypeaheadOption<T>[]>([]);
 
   // Computed properties
-  readonly isMaxSelectionReached = computed(() => 
+  readonly isMaxSelectionReached = computed(() =>
     this.selectedItems().length >= this.maxSelections
   );
 
@@ -120,12 +119,12 @@ export class MultiSelectComponent<T = any> implements ControlValueAccessor {
 
   addItem(option: TypeaheadOption<T>) {
     if (this.isMaxSelectionReached()) return;
-    
+
     const currentItems = this.selectedItems();
-    const alreadySelected = currentItems.some(item => 
+    const alreadySelected = currentItems.some(item =>
       this.compareFunction(item.value, option.value)
     );
-    
+
     if (!alreadySelected) {
       const newItems = [...currentItems, option];
       this.selectedItems.set(newItems);
@@ -136,10 +135,10 @@ export class MultiSelectComponent<T = any> implements ControlValueAccessor {
 
   removeItem(option: TypeaheadOption<T>) {
     const currentItems = this.selectedItems();
-    const newItems = currentItems.filter(item => 
+    const newItems = currentItems.filter(item =>
       !this.compareFunction(item.value, option.value)
     );
-    
+
     this.selectedItems.set(newItems);
     this.updateValue();
     this.selectionChanged.emit(newItems);
@@ -165,7 +164,7 @@ export class MultiSelectComponent<T = any> implements ControlValueAccessor {
       value,
       label: this.displayFunction(value)
     }));
-    
+
     this.selectedItems.set(options);
   }
 

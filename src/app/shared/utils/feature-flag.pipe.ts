@@ -3,7 +3,7 @@ import { FeatureFlagService } from '../data-access/feature-flag.service';
 import { environment } from '../../../environments/environment';
 @Pipe({
   name: 'featureFlag',
-  standalone: true,
+
 })
 export class FeatureFlagPipe implements PipeTransform {
   constructor(private featureFlagService: FeatureFlagService) {}

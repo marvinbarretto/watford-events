@@ -14,7 +14,6 @@ import { VenueStore } from '../../../venues/data-access/venue.store';
 
 @Component({
   selector: 'app-home',
-  standalone: true,
   imports: [EventItemComponent, EventFilterComponent, UserPreferencesWidgetComponent, RouterModule],
   templateUrl: './home.component.html',
   styleUrl: './home.component.scss'

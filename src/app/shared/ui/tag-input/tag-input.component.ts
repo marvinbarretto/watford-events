@@ -8,7 +8,6 @@ import { ChipComponent } from '../chip/chip.component';
  */
 @Component({
   selector: 'app-tag-input',
-  standalone: true,
   imports: [ChipComponent, ReactiveFormsModule],
   providers: [
     {
@@ -33,7 +32,7 @@ import { ChipComponent } from '../chip/chip.component';
           }
         </div>
       }
-      
+
       <!-- Input for adding new tags -->
       @if (!isMaxTagsReached()) {
         <div class="tag-input-wrapper">
@@ -46,12 +45,12 @@ import { ChipComponent } from '../chip/chip.component';
             (keydown)="onKeyDown($event)"
             (blur)="onInputBlur()"
           />
-          
+
           <!-- Autocomplete suggestions -->
           @if (showSuggestions() && filteredSuggestions().length > 0) {
             <div class="suggestions-dropdown">
               @for (suggestion of filteredSuggestions(); track suggestion; let i = $index) {
-                <div 
+                <div
                   class="suggestion-item"
                   [class.selected]="selectedSuggestionIndex() === i"
                   (click)="selectSuggestion(suggestion)"
@@ -68,7 +67,7 @@ import { ChipComponent } from '../chip/chip.component';
           Maximum {{ maxTags() }} {{ maxTags() === 1 ? 'tag' : 'tags' }} reached
         </div>
       }
-      
+
       @if (helpText()) {
         <div class="help-text">{{ helpText() }}</div>
       }
@@ -166,11 +165,11 @@ import { ChipComponent } from '../chip/chip.component';
         gap: 6px;
         margin-bottom: 10px;
       }
-      
+
       .tag-input {
         padding: 10px;
       }
-      
+
       .suggestion-item {
         padding: 8px 10px;
       }
@@ -195,16 +194,16 @@ export class TagInputComponent implements ControlValueAccessor {
   readonly selectedSuggestionIndex = signal(-1);
 
   // Computed properties
-  readonly isMaxTagsReached = computed(() => 
+  readonly isMaxTagsReached = computed(() =>
     this.tags().length >= this.maxTags()
   );
 
   readonly filteredSuggestions = computed(() => {
     const input = this.inputControl.value?.toLowerCase() || '';
     if (!input || input.length < this.minTagLength()) return [];
-    
+
     return this.suggestions()
-      .filter(suggestion => 
+      .filter(suggestion =>
         suggestion.toLowerCase().includes(input) &&
         !this.tags().includes(suggestion)
       )
@@ -298,7 +297,7 @@ export class TagInputComponent implements ControlValueAccessor {
 
   addTag(tagText: string) {
     const tag = this.normalizeTag(tagText);
-    
+
     if (!tag || tag.length < this.minTagLength() || tag.length > this.maxTagLength()) {
       return;
     }
@@ -312,7 +311,7 @@ export class TagInputComponent implements ControlValueAccessor {
     this.inputControl.setValue('', { emitEvent: false });
     this.showSuggestions.set(false);
     this.selectedSuggestionIndex.set(-1);
-    
+
     this.updateValue();
   }
 
@@ -340,7 +339,7 @@ export class TagInputComponent implements ControlValueAccessor {
       this.tags.set([]);
       return;
     }
-    
+
     this.tags.set([...tags]);
   }
 

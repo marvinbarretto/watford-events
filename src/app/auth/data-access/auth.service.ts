@@ -136,11 +136,8 @@ export class AuthService extends FirestoreService {
           email: firebaseUser.email,
           photoURL: firebaseUser.photoURL,
           emailVerified: firebaseUser.emailVerified,
-          checkedInPubIds: [],
-          streaks: {},
           displayName: firebaseUser.displayName || firebaseUser.email?.split('@')[0] || 'User',
           joinedAt: new Date().toISOString(),
-          joinedMissionIds: [],
           role: Roles.Public,
         };
 

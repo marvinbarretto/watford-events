@@ -14,7 +14,6 @@ type SortBy = 'name' | 'category' | 'status' | 'createdAt';
 
 @Component({
   selector: 'app-venue-list',
-  standalone: true,
   imports: [CommonModule, FormsModule, VenueCardSlimComponent, VenueCardComponent],
   template: `
     <div class="venue-list-page">

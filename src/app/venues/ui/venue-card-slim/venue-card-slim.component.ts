@@ -4,7 +4,6 @@ import { ChipComponent, ChipStatus } from '../../../shared/ui/chip/chip.componen
 
 @Component({
   selector: 'app-venue-card-slim',
-  standalone: true,
   imports: [ChipComponent],
   template: `
     <div class="venue-card-slim" (click)="handleClick()">

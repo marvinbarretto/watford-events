@@ -4,11 +4,11 @@ export type ToastType = 'success' | 'error' | 'warning' | 'info';
 
 @Component({
   selector: 'app-toast',
-  standalone: true,
+
   template: `
     @if (message()) {
-      <div 
-        class="toast" 
+      <div
+        class="toast"
         [class]="'toast-' + type()"
         [attr.role]="'alert'"
         [attr.aria-live]="'polite'"
@@ -21,17 +21,17 @@ export type ToastType = 'success' | 'error' | 'warning' | 'info';
             @case ('info') { ℹ }
           }
         </div>
-        
+
         <div class="toast-content">
           <p class="toast-message">{{ message() }}</p>
           @if (description()) {
             <p class="toast-description">{{ description() }}</p>
           }
         </div>
-        
+
         @if (dismissible()) {
-          <button 
-            class="toast-dismiss" 
+          <button
+            class="toast-dismiss"
             (click)="onDismiss()"
             [attr.aria-label]="'Dismiss ' + type() + ' message'"
           >
@@ -228,7 +228,7 @@ export class ToastComponent implements OnInit, OnDestroy {
   readonly type = input<ToastType>('info');
   readonly dismissible = input(true);
   readonly duration = input<number | null>(5000); // Auto-dismiss after 5s, null for manual dismiss only
-  
+
   // Output signals
   readonly dismissed = output<void>();
 

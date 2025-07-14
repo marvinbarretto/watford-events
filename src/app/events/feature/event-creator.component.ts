@@ -1,7 +1,8 @@
-import { Component, signal, inject, computed } from '@angular/core';
+import { Component, signal, inject, computed, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormsModule } from '@angular/forms';
-import { RouterModule, Router } from '@angular/router';
+import { ReactiveFormsModule, FormBuilder, FormGroup, Validators, AbstractControl, ValidationErrors } from '@angular/forms';
+import { RouterModule } from '@angular/router';
+import { BaseComponent } from '@shared/data-access/base.component';
 import { LLMService } from '@shared/data-access/llm.service';
 import { EventInferenceService } from '../data-access/event-inference.service';
 import { VenueLookupService } from '@shared/data-access/venue-lookup.service';
@@ -25,17 +26,16 @@ interface SimpleEventForm {
 
 @Component({
   selector: 'app-event-creator',
-  standalone: true,
-  imports: [CommonModule, FormsModule, RouterModule, TypeaheadComponent, IconComponent],
+  imports: [CommonModule, ReactiveFormsModule, RouterModule, TypeaheadComponent, IconComponent],
   template: `
     <div class="event-creator">
       <!-- Header -->
       <header class="page-header">
         <button class="back-btn" (click)="goBack()" type="button">
-          <span class="back-icon">←</span>
+          <app-icon name="arrow_back" size="sm" />
           <span class="back-text">Back</span>
         </button>
-        
+
         <div class="header-info">
           <h1 class="page-title">Create Event</h1>
           <p class="page-subtitle">Quick and simple event creation</p>
@@ -44,10 +44,10 @@ interface SimpleEventForm {
 
       <!-- Main Content -->
       <main class="main-content">
-        
+
         <!-- Flyer Upload Section -->
         <section class="flyer-upload-section">
-          <button class="upload-flyer-btn" 
+          <button class="upload-flyer-btn"
                   [class.processing]="isProcessing()"
                   (click)="handleFlyerUpload()"
                   type="button">
@@ -62,7 +62,7 @@ interface SimpleEventForm {
               <span>Upload Flyer</span>
             }
           </button>
-          
+
           @if (uploadedFlyer()) {
             <div class="flyer-preview">
               <img [src]="uploadedFlyer()" alt="Uploaded flyer">
@@ -71,10 +71,10 @@ interface SimpleEventForm {
               </button>
             </div>
           }
-          
-          <input #fileInput 
-                 type="file" 
-                 accept="image/*" 
+
+          <input #fileInput
+                 type="file"
+                 accept="image/*"
                  capture="environment"
                  (change)="onFileSelected($event)"
                  style="display: none;">
@@ -82,19 +82,18 @@ interface SimpleEventForm {
 
         <!-- Event Form -->
         <section class="event-form-section">
-          <form class="event-form" (ngSubmit)="proceedToConfirmation()">
-            
+          <form class="event-form" [formGroup]="eventForm" (ngSubmit)="proceedToConfirmation()">
+
             <!-- Question 1: What's it called? -->
             <div class="form-field">
               <label class="field-label">What's it called?</label>
-              <input class="field-input" 
+              <input class="field-input"
+                     [class.field-error]="titleError"
                      type="text"
-                     name="title"
-                     [(ngModel)]="formData().title"
-                     (input)="onTitleChange($event)"
-                     placeholder="e.g., Jazz Night at The Globe"
-                     required>
-              
+                     formControlName="title"
+                     placeholder="e.g., Jazz Night at The Globe">
+
+
               @if (inferredEventType()) {
                 <div class="inference-hint">
                   <span class="hint-icon">{{ getEventTypeIcon(inferredEventType()!) }}</span>
@@ -106,11 +105,12 @@ interface SimpleEventForm {
             <!-- Question 2: Where is it? -->
             <div class="form-field">
               <label class="field-label">Where is it?</label>
-              
+
               <!-- Show typeahead when no venue selected -->
               @if (!selectedVenue()) {
                 <app-typeahead
                   class="venue-typeahead"
+                  [class.field-error]="locationError"
                   [placeholder]="'e.g., The Globe Theatre, Watford'"
                   [searchFunction]="venueSearchFunction"
                   [displayFunction]="venueDisplayFunction"
@@ -125,7 +125,7 @@ interface SimpleEventForm {
                   #venueTypeahead
                 ></app-typeahead>
               }
-              
+
               <!-- Show venue tag when venue selected -->
               @if (selectedVenue()) {
                 <div class="venue-tag">
@@ -139,90 +139,96 @@ interface SimpleEventForm {
                   </button>
                 </div>
               }
+
+
+              @if (showVenueInference()) {
+                <div class="inference-hint">
+                  <span class="hint-icon">{{ getVenueInferenceIcon() }}</span>
+                  <span class="hint-text">{{ venueInferenceMessage() }}</span>
+                </div>
+              }
             </div>
 
             <!-- Question 3: When is it? -->
             <div class="form-field">
               <label class="field-label">When is it?</label>
-              <input class="field-input" 
+              <input class="field-input"
+                     [class.field-error]="dateError"
                      type="date"
-                     name="date"
-                     [(ngModel)]="formData().date"
-                     (change)="onDateChange($event)"
-                     required>
-              
+                     formControlName="date">
+
+
               <!-- Smart date suggestions -->
-              @if (!formData().date) {
+              @if (!eventForm.get('date')?.value) {
                 <div class="date-suggestions">
-                  <button class="date-suggestion-btn" 
+                  <button class="date-suggestion-btn"
                           (click)="selectDateSuggestion('today')"
                           type="button">
                     Today
                   </button>
-                  <button class="date-suggestion-btn" 
+                  <button class="date-suggestion-btn"
                           (click)="selectDateSuggestion('tomorrow')"
                           type="button">
                     Tomorrow
                   </button>
-                  <button class="date-suggestion-btn" 
+                  <button class="date-suggestion-btn"
                           (click)="selectDateSuggestion('this-friday')"
                           type="button">
                     This {{ getUpcomingDayName('friday') }}
                   </button>
-                  <button class="date-suggestion-btn" 
+                  <button class="date-suggestion-btn"
                           (click)="selectDateSuggestion('this-saturday')"
                           type="button">
                     This {{ getUpcomingDayName('saturday') }}
                   </button>
                 </div>
               }
-              
-              @if (formData().date) {
+
+              @if (eventForm.get('date')?.value) {
                 <div class="time-row">
                   <!-- Left slot: Start time button or input -->
                   <div class="time-slot-container">
                     @if (showStartTimeInput()) {
                       <label class="time-slot-label">Start time</label>
-                      <input class="time-slot time-input" 
+                      <input class="time-slot time-input"
+                             [class.field-error]="timeError"
                              type="time"
-                             name="startTime"
-                             [(ngModel)]="formData().startTime"
-                             (input)="onStartTimeChange($event)"
+                             formControlName="startTime"
                              placeholder="Start time"
-                             #startTimeInput
-                             required>
+                             #startTimeInput>
                     } @else {
-                      <button class="time-slot time-slot-btn" 
+                      <button class="time-slot time-slot-btn"
+                              [class.field-error]="timeError"
                               (click)="selectStartTime()"
                               type="button">
                         Start time?
                       </button>
                     }
                   </div>
-                  
+
                   <!-- Right slot: All day, End time button, or End time input -->
                   <div class="time-slot-container">
-                    @if (formData().isAllDay) {
+                    @if (eventForm.get('isAllDay')?.value) {
                       <div class="time-slot all-day-indicator">
                         <span class="all-day-text">All day</span>
                       </div>
                     } @else if (showEndTimeInput()) {
                       <label class="time-slot-label">End time</label>
-                      <input class="time-slot time-input" 
+                      <input class="time-slot time-input"
+                             [class.field-error]="endTimeError"
                              type="time"
-                             name="endTime"
-                             [(ngModel)]="formData().endTime"
-                             (input)="onEndTimeChange($event)"
+                             formControlName="endTime"
                              placeholder="End time"
                              #endTimeInput>
-                    } @else if (showStartTimeInput() && formData().startTime) {
-                      <button class="time-slot time-slot-btn end-time-btn" 
+                    } @else if (showStartTimeInput() && eventForm.get('startTime')?.value) {
+                      <button class="time-slot time-slot-btn end-time-btn"
                               (click)="toggleEndTime()"
                               type="button">
                         + End time?
                       </button>
                     } @else {
-                      <button class="time-slot time-slot-btn" 
+                      <button class="time-slot time-slot-btn"
+                              [class.field-error]="timeError"
                               (click)="selectAllDay()"
                               type="button">
                         All day
@@ -230,46 +236,19 @@ interface SimpleEventForm {
                     }
                   </div>
                 </div>
+
               }
             </div>
 
             <!-- Continue Button -->
-            <button class="create-event-btn" 
-                    [disabled]="!canCreateEvent()"
+            <button class="create-event-btn"
                     type="submit">
               Continue
             </button>
-            
+
           </form>
         </section>
 
-        <!-- Smart Suggestions Section -->
-        @if (showSmartSuggestions()) {
-          <section class="smart-suggestions">
-            <h3 class="suggestions-title">Smart suggestions</h3>
-            <div class="suggestions-grid">
-              
-              @if (inferredDuration()) {
-                <div class="suggestion-item">
-                  <span class="suggestion-label">Duration</span>
-                  <span class="suggestion-value">{{ inferredDuration() }} hours</span>
-                </div>
-              }
-              
-              @if (inferredCategories().length > 0) {
-                <div class="suggestion-item">
-                  <span class="suggestion-label">Categories</span>
-                  <div class="category-chips">
-                    @for (category of inferredCategories(); track category) {
-                      <span class="category-chip">{{ getCategoryLabel(category) }}</span>
-                    }
-                  </div>
-                </div>
-              }
-              
-            </div>
-          </section>
-        }
 
       </main>
     </div>
@@ -467,6 +446,15 @@ interface SimpleEventForm {
       color: var(--text-secondary);
     }
 
+    .field-input.field-error {
+      border-color: var(--error);
+    }
+
+    .field-input.field-error:focus {
+      border-color: var(--error);
+      box-shadow: 0 0 0 2px rgba(var(--error-rgb), 0.2);
+    }
+
     /* Inference Hint */
     .inference-hint {
       display: flex;
@@ -484,6 +472,8 @@ interface SimpleEventForm {
     .hint-icon {
       font-size: 1rem;
     }
+
+    /* Error styling is handled by .field-error class on inputs */
 
     /* Date Suggestions */
     .date-suggestions {
@@ -539,6 +529,15 @@ interface SimpleEventForm {
 
     .venue-typeahead input::placeholder {
       color: var(--text-secondary);
+    }
+
+    .venue-typeahead.field-error input {
+      border-color: var(--error);
+    }
+
+    .venue-typeahead.field-error input:focus {
+      border-color: var(--error);
+      box-shadow: 0 0 0 2px rgba(var(--error-rgb), 0.2);
     }
 
     /* Selected Venue Display - replaces input field */
@@ -672,6 +671,14 @@ interface SimpleEventForm {
       transform: translateY(-1px);
     }
 
+    .time-slot-btn.field-error {
+      border-color: var(--error);
+    }
+
+    .time-slot-btn.field-error:hover {
+      border-color: var(--error);
+    }
+
     .end-time-btn {
       border-style: dashed;
       color: var(--text-secondary);
@@ -739,71 +746,7 @@ interface SimpleEventForm {
       transform: translateY(-1px);
     }
 
-    .create-event-btn:disabled {
-      background: var(--border);
-      color: var(--text-secondary);
-      cursor: not-allowed;
-      transform: none;
-    }
 
-    /* Smart Suggestions */
-    .smart-suggestions {
-      margin-top: 2rem;
-      padding: 1.5rem;
-      background: var(--background-lighter);
-      border-radius: 12px;
-      border: 1px solid var(--border);
-    }
-
-    .suggestions-title {
-      font-size: 1rem;
-      font-weight: 600;
-      color: var(--text);
-      margin: 0 0 1rem 0;
-    }
-
-    .suggestions-grid {
-      display: flex;
-      flex-direction: column;
-      gap: 1rem;
-    }
-
-    .suggestion-item {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 0.75rem;
-      background: var(--background);
-      border-radius: 8px;
-      border: 1px solid var(--border);
-    }
-
-    .suggestion-label {
-      font-size: 0.875rem;
-      color: var(--text-secondary);
-      font-weight: 500;
-    }
-
-    .suggestion-value {
-      font-size: 0.875rem;
-      color: var(--text);
-      font-weight: 600;
-    }
-
-    .category-chips {
-      display: flex;
-      gap: 0.5rem;
-      flex-wrap: wrap;
-    }
-
-    .category-chip {
-      background: var(--primary);
-      color: var(--on-primary);
-      padding: 0.25rem 0.75rem;
-      border-radius: 12px;
-      font-size: 0.75rem;
-      font-weight: 600;
-    }
 
     /* Mobile Optimizations */
     @media (max-width: 768px) {
@@ -868,16 +811,19 @@ interface SimpleEventForm {
     }
   `]
 })
-export class EventCreatorComponent {
+export class EventCreatorComponent extends BaseComponent implements OnDestroy {
   // Services
   protected readonly llmService = inject(LLMService);
   protected readonly inferenceService = inject(EventInferenceService);
   protected readonly venueLookupService = inject(VenueLookupService);
   protected readonly authService = inject(AuthService);
   protected readonly eventStore = inject(EventStore);
-  protected readonly router = inject(Router);
+  private readonly fb = inject(FormBuilder);
 
-  // Form state
+  // Reactive Form
+  eventForm!: FormGroup;
+
+  // Form state (keeping for compatibility with existing code)
   readonly formData = signal<SimpleEventForm>({
     title: '',
     location: '',
@@ -898,10 +844,17 @@ export class EventCreatorComponent {
   readonly inferredCategories = signal<EventCategory[]>([]);
   readonly selectedVenue = signal<Venue | null>(null);
 
+  // Venue inference
+  readonly inferredVenueMatch = signal<Venue | null>(null);
+  readonly venueInferenceType = signal<'close-match' | 'new-venue' | null>(null);
+  readonly venueInferenceMessage = signal<string>('');
+
   // UI state
   readonly showStartTimeInput = signal(false);
   readonly showEndTimeInput = signal(false);
-  
+  readonly submitAttempted = signal(false);
+
+
   // Venue typeahead functions
   readonly venueSearchFunction = (query: string) => this.venueLookupService.searchVenues(query);
   readonly venueDisplayFunction = (venue: Venue) => this.venueLookupService.displayVenue(venue);
@@ -914,21 +867,170 @@ export class EventCreatorComponent {
     return !!(this.inferredDuration() || this.inferredCategories().length > 0);
   });
 
-  readonly canCreateEvent = computed(() => {
-    const data = this.formData();
-    const hasTime = data.isAllDay || data.startTime;
-    return !!(data.title?.trim() && data.location?.trim() && data.date && hasTime);
+  readonly showVenueInference = computed(() => {
+    return !!(this.venueInferenceType() && this.venueInferenceMessage() && !this.selectedVenue());
   });
+
+  // Reactive form error getters
+  get titleError() {
+    const control = this.eventForm.get('title');
+    return control?.invalid && (control?.dirty || this.submitAttempted());
+  }
+
+  get titleErrorMessage() {
+    const control = this.eventForm.get('title');
+    if (control?.hasError('required')) return 'Please enter an event title';
+    if (control?.hasError('minlength')) return 'Event title must be at least 3 characters';
+    return '';
+  }
+
+  get locationError() {
+    const control = this.eventForm.get('location');
+    return control?.invalid && (control?.dirty || this.submitAttempted());
+  }
+
+  get locationErrorMessage() {
+    const control = this.eventForm.get('location');
+    if (control?.hasError('required')) return 'Please enter an event location';
+    return '';
+  }
+
+  get dateError() {
+    const control = this.eventForm.get('date');
+    return control?.invalid && (control?.dirty || this.submitAttempted());
+  }
+
+  get dateErrorMessage() {
+    const control = this.eventForm.get('date');
+    if (control?.hasError('required')) return 'Please select an event date';
+    if (control?.hasError('dateInPast')) return 'Event date cannot be in the past';
+    return '';
+  }
+
+  get timeError() {
+    const isAllDay = this.eventForm.get('isAllDay')?.value;
+    const startTime = this.eventForm.get('startTime')?.value;
+    const startTimeControl = this.eventForm.get('startTime');
+
+    return !isAllDay && !startTime && (startTimeControl?.dirty || this.submitAttempted());
+  }
+
+  get timeErrorMessage() {
+    return 'Please select a start time or choose all day';
+  }
+
+  get endTimeError() {
+    const control = this.eventForm.get('endTime');
+    return control?.invalid && (control?.dirty || this.submitAttempted());
+  }
+
+  get endTimeErrorMessage() {
+    const control = this.eventForm.get('endTime');
+    if (control?.hasError('endTimeBeforeStart')) return 'End time must be after start time';
+    return '';
+  }
+
+  // Custom Validators
+  private dateNotInPastValidator(control: AbstractControl): ValidationErrors | null {
+    if (!control.value) return null;
+
+    const selectedDate = new Date(control.value);
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    return selectedDate < today ? { dateInPast: true } : null;
+  }
+
+  private endTimeAfterStartValidator(control: AbstractControl): ValidationErrors | null {
+    const parent = control.parent;
+    if (!parent) return null;
+
+    const startTime = parent.get('startTime')?.value;
+    const endTime = control.value;
+
+    if (!startTime || !endTime) return null;
+
+    const startDate = new Date(`2000-01-01T${startTime}`);
+    const endDate = new Date(`2000-01-01T${endTime}`);
+
+    return endDate <= startDate ? { endTimeBeforeStart: true } : null;
+  }
+
+  // Lifecycle
+  protected override onInit(): void {
+    this.initializeForm();
+    this.setupFormSubscriptions();
+  }
+
+  ngOnDestroy(): void {
+    // Subscriptions automatically cleaned up by BaseComponent's takeUntilDestroyed
+  }
+
+  private initializeForm(): void {
+    this.eventForm = this.fb.group({
+      title: ['', [Validators.required, Validators.minLength(3)]],
+      location: ['', Validators.required],
+      venueId: [''],
+      date: ['', [Validators.required, this.dateNotInPastValidator]],
+      isAllDay: [false],
+      startTime: [''],
+      endTime: ['', this.endTimeAfterStartValidator]
+    });
+  }
+
+  private setupFormSubscriptions(): void {
+    // Title changes for inference
+    this.eventForm.get('title')?.valueChanges
+      .pipe(this.untilDestroyed)
+      .subscribe(title => {
+        if (title && typeof title === 'string' && title.length > 3) {
+          this.runInference(title);
+        }
+      });
+
+    // Location changes for venue clearing
+    this.eventForm.get('location')?.valueChanges
+      .pipe(this.untilDestroyed)
+      .subscribe(location => {
+        // Clear selected venue if user is typing a custom location
+        if (this.selectedVenue() && typeof location === 'string' && location !== this.selectedVenue()!.name) {
+          this.selectedVenue.set(null);
+        }
+      });
+
+    // Sync reactive form with signal (for compatibility)
+    this.eventForm.valueChanges
+      .pipe(this.untilDestroyed)
+      .subscribe(value => {
+        if (value && typeof value === 'object') {
+          this.formData.set({
+            title: (value as any).title || '',
+            location: (value as any).location || '',
+            venueId: (value as any).venueId || undefined,
+            date: (value as any).date || '',
+            isAllDay: (value as any).isAllDay || false,
+            startTime: (value as any).startTime || '',
+            endTime: (value as any).endTime || ''
+          });
+        }
+      });
+  }
 
   // Navigation
   goBack() {
-    window.history.back();
+    this.onlyOnBrowser(() => {
+      const window = this.platform.getWindow();
+      window?.history.back();
+    });
   }
 
   // Flyer upload
   handleFlyerUpload() {
-    const fileInput = document.querySelector('input[type="file"]') as HTMLInputElement;
-    fileInput?.click();
+    this.onlyOnBrowser(() => {
+      const document = this.platform.getDocument();
+      const fileInput = document?.querySelector('input[type="file"]') as HTMLInputElement;
+      fileInput?.click();
+    });
   }
 
   async onFileSelected(event: any) {
@@ -940,26 +1042,32 @@ export class EventCreatorComponent {
 
   async processFlyer(file: File) {
     if (!file.type.startsWith('image/')) {
-      alert('Please select an image file');
+      this.showError('Please select an image file');
       return;
     }
 
     this.isProcessing.set(true);
-    
+
     try {
-      // Create preview URL
-      const imageUrl = URL.createObjectURL(file);
-      this.uploadedFlyer.set(imageUrl);
+      // Create preview URL (SSR-safe)
+      const imageUrl = this.onlyOnBrowser(() => {
+        const window = this.platform.getWindow();
+        return window && 'URL' in window ? (window as any).URL.createObjectURL(file) : undefined;
+      });
+
+      if (imageUrl) {
+        this.uploadedFlyer.set(imageUrl);
+      }
 
       // Extract data with LLM
       const result = await this.llmService.extractEventFromImage(file);
-      
+
       if (result.success && result.eventData) {
         const data = result.eventData;
-        
+
         // Fill in the form
         const extractedTime = this.extractTimeFromString(data.date);
-        this.formData.set({
+        this.eventForm.patchValue({
           title: data.title || '',
           location: data.location || '',
           date: this.extractDateFromString(data.date),
@@ -978,166 +1086,189 @@ export class EventCreatorComponent {
       }
     } catch (error) {
       console.error('Error processing flyer:', error);
-      alert('Error processing the flyer. Please try again.');
+      this.showError('Error processing the flyer. Please try again.');
     } finally {
       this.isProcessing.set(false);
     }
   }
 
   removeFlyer() {
-    if (this.uploadedFlyer()) {
-      URL.revokeObjectURL(this.uploadedFlyer()!);
+    const flyerUrl = this.uploadedFlyer();
+    if (flyerUrl) {
+      this.onlyOnBrowser(() => {
+        const window = this.platform.getWindow();
+        if (window && 'URL' in window) {
+          (window as any).URL.revokeObjectURL(flyerUrl);
+        }
+      });
     }
     this.uploadedFlyer.set(null);
   }
 
-  // Form handlers
-  onTitleChange(event: Event) {
-    const input = event.target as HTMLInputElement;
-    const title = input.value;
-    
-    this.formData.update(data => ({ ...data, title }));
-    
-    // Run inference on title change
-    if (title.length > 3) {
-      this.runInference(title);
-    }
-  }
 
   onVenueSelected(option: TypeaheadOption<Venue>) {
     console.log('🏢 Venue selected:', option);
-    
+
     const venue = option.value;
     this.selectedVenue.set(venue);
-    
-    this.formData.update(data => ({ 
-      ...data, 
+    this.clearVenueInference(); // Clear inference when venue is selected
+
+    this.eventForm.patchValue({
       location: venue.name,
       venueId: venue.id
-    }));
+    });
   }
-  
+
   onLocationSearchChanged(query: string) {
     console.log('🔍 Location search changed:', query);
-    
+
     // Update form data with the typed location
-    this.formData.update(data => ({ 
-      ...data, 
+    this.eventForm.patchValue({
       location: query,
       venueId: undefined // Clear venue ID when typing custom location
-    }));
-    
+    });
+
     // Clear selected venue if user is typing a custom location
     if (this.selectedVenue() && query !== this.selectedVenue()!.name) {
       this.selectedVenue.set(null);
     }
-  }
-  
-  clearVenue() {
-    this.selectedVenue.set(null);
-    this.formData.update(data => ({ 
-      ...data, 
-      location: '',
-      venueId: undefined
-    }));
+
+    // Trigger venue inference for unrecognized venues
+    this.runVenueInference(query);
   }
 
-  onDateChange(event: Event) {
-    const input = event.target as HTMLInputElement;
-    const newDate = input.value;
-    
-    console.log('📅 Date changed:', {
-      newDate,
-      previousDate: this.formData().date,
-      timestamp: new Date().toISOString()
-    });
-    
-    this.formData.update(data => ({ ...data, date: newDate }));
-    
-    // Log signal state after update
-    console.log('📅 Signal updated:', {
-      formData: this.formData(),
-      shouldShowTimeRow: !!this.formData().date,
-      timeRowCondition: `formData().date = ${this.formData().date}`
+  clearVenue() {
+    this.selectedVenue.set(null);
+    this.clearVenueInference();
+    this.eventForm.patchValue({
+      location: '',
+      venueId: undefined
     });
   }
+
+  private clearVenueInference() {
+    this.inferredVenueMatch.set(null);
+    this.venueInferenceType.set(null);
+    this.venueInferenceMessage.set('');
+  }
+
 
   // Time option handlers - streamlined
   selectStartTime() {
     this.showStartTimeInput.set(true);
     this.showEndTimeInput.set(false);
-    this.formData.update(data => ({ 
-      ...data, 
+    this.eventForm.patchValue({
       isAllDay: false,
       endTime: '' // Clear end time when switching to start time
-    }));
-    
-    // Auto-focus and trigger time picker in next tick
-    setTimeout(() => {
-      const startTimeInput = document.querySelector('input[name="startTime"]') as HTMLInputElement;
-      if (startTimeInput) {
-        startTimeInput.focus();
-        startTimeInput.click(); // Trigger native time picker
-      }
-    }, 0);
+    });
+
+    // Auto-focus and trigger time picker in next tick (SSR-safe)
+    this.onlyOnBrowser(() => {
+      setTimeout(() => {
+        const document = this.platform.getDocument();
+        const startTimeInput = document?.querySelector('input[formControlName="startTime"]') as HTMLInputElement;
+        if (startTimeInput) {
+          startTimeInput.focus();
+          startTimeInput.click(); // Trigger native time picker
+        }
+      }, 0);
+    });
   }
 
   selectAllDay() {
     this.showStartTimeInput.set(false);
     this.showEndTimeInput.set(false);
-    this.formData.update(data => ({ 
-      ...data, 
-      isAllDay: true, 
-      startTime: '', 
-      endTime: '' 
-    }));
+    this.eventForm.patchValue({
+      isAllDay: true,
+      startTime: '',
+      endTime: ''
+    });
   }
 
-  onStartTimeChange(event: Event) {
-    const input = event.target as HTMLInputElement;
-    this.formData.update(data => ({ ...data, startTime: input.value }));
-  }
 
-  onEndTimeChange(event: Event) {
-    const input = event.target as HTMLInputElement;
-    this.formData.update(data => ({ ...data, endTime: input.value }));
-  }
 
   toggleEndTime() {
     if (this.showEndTimeInput()) {
       // Hide end time input and clear value
       this.showEndTimeInput.set(false);
-      this.formData.update(data => ({ ...data, endTime: '' }));
+      this.eventForm.patchValue({ endTime: '' });
     } else {
       // Show end time input
       this.showEndTimeInput.set(true);
-      
-      // Auto-focus and trigger time picker in next tick
-      setTimeout(() => {
-        const endTimeInput = document.querySelector('input[name="endTime"]') as HTMLInputElement;
-        if (endTimeInput) {
-          endTimeInput.focus();
-          endTimeInput.click(); // Trigger native time picker
-        }
-      }, 0);
+
+      // Auto-focus and trigger time picker in next tick (SSR-safe)
+      this.onlyOnBrowser(() => {
+        setTimeout(() => {
+          const document = this.platform.getDocument();
+          const endTimeInput = document?.querySelector('input[formControlName="endTime"]') as HTMLInputElement;
+          if (endTimeInput) {
+            endTimeInput.focus();
+            endTimeInput.click(); // Trigger native time picker
+          }
+        }, 0);
+      });
     }
   }
 
   // Smart suggestions
   runInference(title: string) {
     const inference = this.inferenceService.inferFromEventName(title);
-    
+
     this.inferredEventType.set(this.getEventTypeFromCategories(inference.categories));
     this.inferredDuration.set(inference.defaultDuration);
     this.inferredCategories.set(inference.categories);
   }
 
+  private async runVenueInference(query: string) {
+    // Clear previous inference
+    this.clearVenueInference();
+
+    // Skip inference if query is too short or if venue is already selected
+    if (!query || query.length < 3 || this.selectedVenue()) {
+      return;
+    }
+
+    try {
+      const analysis = await this.venueLookupService.analyzeVenueInput(query);
+      
+      if (analysis.type === 'close-match' && analysis.venue) {
+        this.inferredVenueMatch.set(analysis.venue);
+        this.venueInferenceType.set('close-match');
+        this.venueInferenceMessage.set(analysis.message);
+      } else if (analysis.type === 'new-venue' && analysis.message) {
+        this.inferredVenueMatch.set(null);
+        this.venueInferenceType.set('new-venue');
+        this.venueInferenceMessage.set(analysis.message);
+      }
+      // For exact matches, we don't show inference as the venue should appear in typeahead
+    } catch (error) {
+      console.error('Error running venue inference:', error);
+      this.clearVenueInference();
+    }
+  }
+
+
   // Navigate to confirmation page
   proceedToConfirmation() {
-    if (!this.canCreateEvent()) return;
-    
-    const formData = this.formData();
-    
+    // Set submit attempted flag to show validation errors
+    this.submitAttempted.set(true);
+
+    // Check for time validation (not handled by reactive forms directly)
+    const isAllDay = this.eventForm.get('isAllDay')?.value;
+    const startTime = this.eventForm.get('startTime')?.value;
+
+    if (!isAllDay && !startTime) {
+      // Time validation error will be shown via submitAttempted flag
+      return;
+    }
+
+    // Only proceed if form is valid
+    if (!this.eventForm.valid) {
+      return;
+    }
+
+    const formData = this.eventForm.value;
+
     // Prepare event data for confirmation page
     const eventData = {
       // From form
@@ -1150,19 +1281,19 @@ export class EventCreatorComponent {
       location: formData.location.trim(),
       // Only include venueId if it has a value
       ...(formData.venueId && { venueId: formData.venueId }),
-      
+
       // From inference
       categories: this.inferredCategories(),
-      
+
       // Additional context for confirmation page
       selectedVenue: this.selectedVenue(),
       uploadedFlyer: this.uploadedFlyer(),
       inferredEventType: this.inferredEventType(),
       inferredDuration: this.inferredDuration()
     };
-    
+
     console.log('Proceeding to confirmation with data:', eventData);
-    
+
     // Navigate to confirmation page with event data
     this.router.navigate(['/events/create/confirm'], {
       state: { eventData }
@@ -1173,7 +1304,7 @@ export class EventCreatorComponent {
   getEventTypeIcon(type: string): string {
     const icons: Record<string, string> = {
       music: '🎵',
-      quiz: '🧠', 
+      quiz: '🧠',
       comedy: '😄',
       theatre: '🎭',
       sports: '⚽',
@@ -1186,6 +1317,18 @@ export class EventCreatorComponent {
   getEventTypeFromCategories(categories: EventCategory[]): string | null {
     if (categories.length === 0) return null;
     return categories[0]; // Use the first category as the primary type
+  }
+
+  getVenueInferenceIcon(): string {
+    const type = this.venueInferenceType();
+    switch (type) {
+      case 'close-match':
+        return '📍';
+      case 'new-venue':
+        return '🏢';
+      default:
+        return '📍';
+    }
   }
 
   getCategoryLabel(category: EventCategory): string {
@@ -1235,27 +1378,27 @@ export class EventCreatorComponent {
   // Date suggestion methods
   selectDateSuggestion(suggestion: 'today' | 'tomorrow' | 'this-friday' | 'this-saturday') {
     const date = this.getDateForSuggestion(suggestion);
-    this.formData.update(data => ({ ...data, date }));
+    this.eventForm.patchValue({ date });
   }
 
   private getDateForSuggestion(suggestion: 'today' | 'tomorrow' | 'this-friday' | 'this-saturday'): string {
     const today = new Date();
-    
+
     switch (suggestion) {
       case 'today':
         return today.toISOString().split('T')[0];
-      
+
       case 'tomorrow':
         const tomorrow = new Date(today);
         tomorrow.setDate(tomorrow.getDate() + 1);
         return tomorrow.toISOString().split('T')[0];
-      
+
       case 'this-friday':
         return this.getNextDayOfWeek(today, 5).toISOString().split('T')[0]; // Friday = 5
-      
+
       case 'this-saturday':
         return this.getNextDayOfWeek(today, 6).toISOString().split('T')[0]; // Saturday = 6
-      
+
       default:
         return today.toISOString().split('T')[0];
     }
@@ -1264,15 +1407,15 @@ export class EventCreatorComponent {
   private getNextDayOfWeek(date: Date, targetDay: number): Date {
     const result = new Date(date);
     const currentDay = result.getDay();
-    
+
     // Calculate days until target day
     let daysUntilTarget = targetDay - currentDay;
-    
+
     // If target day is today or has passed this week, get next week's occurrence
     if (daysUntilTarget <= 0) {
       daysUntilTarget += 7;
     }
-    
+
     result.setDate(result.getDate() + daysUntilTarget);
     return result;
   }
@@ -1281,16 +1424,16 @@ export class EventCreatorComponent {
     const today = new Date();
     const targetDay = day === 'friday' ? 5 : 6;
     const nextOccurrence = this.getNextDayOfWeek(today, targetDay);
-    
+
     // Check if it's this week or next week
     const currentWeekStart = new Date(today);
     currentWeekStart.setDate(today.getDate() - today.getDay()); // Start of current week (Sunday)
-    
+
     const nextOccurrenceWeekStart = new Date(nextOccurrence);
     nextOccurrenceWeekStart.setDate(nextOccurrence.getDate() - nextOccurrence.getDay());
-    
+
     const isThisWeek = currentWeekStart.getTime() === nextOccurrenceWeekStart.getTime();
-    
+
     return isThisWeek ? day.charAt(0).toUpperCase() + day.slice(1) : `${day.charAt(0).toUpperCase() + day.slice(1)}`;
   }
 }

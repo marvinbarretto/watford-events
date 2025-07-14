@@ -12,7 +12,6 @@ import { Venue } from '../../../venues/utils/venue.model';
 
 @Component({
   selector: 'app-event-item',
-  standalone: true,
   imports: [DatePipe, ChipComponent, IconComponent, HighlightPipe, DateBoxComponent],
   styleUrl: './event-item.component.scss',
   template: `
@@ -82,7 +81,7 @@ import { Venue } from '../../../venues/utils/venue.model';
           </div>
 
           @if (event().categories?.length || event().tags?.length) {
-            <div 
+            <div
               class="event-tags"
               role="region"
               [attr.aria-label]="'Categories and tags for ' + event().title">
@@ -108,9 +107,9 @@ import { Venue } from '../../../venues/utils/venue.model';
           }
 
           @if (isExpanded() && event().description) {
-            <div 
-              class="event-description" 
-              [innerHTML]="(event().description || '') | highlight : searchTerm()" 
+            <div
+              class="event-description"
+              [innerHTML]="(event().description || '') | highlight : searchTerm()"
               itemprop="description"
               [attr.id]="'event-details-' + event().id"
               role="region"
@@ -120,7 +119,7 @@ import { Venue } from '../../../venues/utils/venue.model';
 
           <div class="event-actions" role="group" [attr.aria-label]="'Actions for ' + event().title">
             @if (event().website) {
-              <button 
+              <button
                 class="action-btn"
                 (click)="openWebsite($event)"
                 [attr.aria-label]="'Visit website for ' + event().title"
@@ -130,7 +129,7 @@ import { Venue } from '../../../venues/utils/venue.model';
               </button>
             }
             @if (locationDisplay()) {
-              <button 
+              <button
                 class="action-btn"
                 (click)="getDirections($event)"
                 [attr.aria-label]="'Get directions to ' + locationDisplay()!.primary"
@@ -139,7 +138,7 @@ import { Venue } from '../../../venues/utils/venue.model';
                 Directions
               </button>
             }
-            <button 
+            <button
               class="action-btn"
               (click)="shareEvent($event)"
               [attr.aria-label]="'Share ' + event().title"
@@ -157,9 +156,9 @@ import { Venue } from '../../../venues/utils/venue.model';
           [attr.aria-label]="isExpanded() ? 'Collapse event details for ' + event().title : 'Expand event details for ' + event().title"
           [attr.aria-controls]="'event-details-' + event().id"
         >
-          <app-icon 
-            [name]="isExpanded() ? 'keyboard_arrow_up' : 'keyboard_arrow_down'" 
-            size="sm" 
+          <app-icon
+            [name]="isExpanded() ? 'keyboard_arrow_up' : 'keyboard_arrow_down'"
+            size="sm"
             animation="hover-weight"
             class="expand-icon"
           />
@@ -204,7 +203,7 @@ export class EventItemComponent {
   readonly formatDistance = computed(() => {
     const distance = this.userDistance();
     const unit = this.distanceUnit();
-    
+
     if (distance === null || distance === Infinity) {
       return 'Distance unknown';
     }
@@ -222,7 +221,7 @@ export class EventItemComponent {
   readonly locationDisplay = computed(() => {
     const venue = this.venue();
     const event = this.event();
-    
+
     if (venue) {
       // Priority: Show venue name + short address
       return {
@@ -240,7 +239,7 @@ export class EventItemComponent {
         hasVenue: false
       };
     }
-    
+
     return null;
   });
 
@@ -290,14 +289,14 @@ export class EventItemComponent {
     event.stopPropagation();
     const venue = this.venue();
     const eventLocation = this.event().location;
-    
+
     let query = '';
     if (venue) {
       query = `${venue.name}, ${venue.address}`;
     } else if (eventLocation) {
       query = eventLocation;
     }
-    
+
     if (query) {
       const mapsUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(query)}`;
       window.open(mapsUrl, '_blank', 'noopener');
@@ -307,7 +306,7 @@ export class EventItemComponent {
   shareEvent(event: MouseEvent): void {
     event.stopPropagation();
     const eventData = this.event();
-    
+
     if (navigator.share) {
       // Use Web Share API if available
       navigator.share({

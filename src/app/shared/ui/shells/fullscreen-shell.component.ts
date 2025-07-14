@@ -3,7 +3,6 @@ import { RouterOutlet } from '@angular/router';
 
 @Component({
   selector: 'app-fullscreen-shell',
-  standalone: true,
   imports: [RouterOutlet],
   template: `
     <div class="fullscreen-shell">

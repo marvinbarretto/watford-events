@@ -7,17 +7,17 @@ import { EventStore } from '../data-access/event.store';
 import { EventModel, EventType, EventCategory, EVENT_CATEGORIES } from '../utils/event.model';
 import { VenueLookupService } from '../../shared/data-access/venue-lookup.service';
 import { Venue } from '../../venues/utils/venue.model';
+import { IconComponent } from '@shared/ui/icon/icon.component';
 
 @Component({
   selector: 'app-natural-language-add-event',
-  standalone: true,
-  imports: [RouterModule, FormsModule],
+  imports: [RouterModule, FormsModule, IconComponent],
   template: `
     <div class="natural-add-container">
       <!-- Header -->
       <div class="header">
         <button class="back-btn" (click)="goBack()">
-          <span class="back-arrow">←</span>
+          <app-icon name="arrow_back" size="sm" />
           <span>Back</span>
         </button>
         <h1>What's your event?</h1>

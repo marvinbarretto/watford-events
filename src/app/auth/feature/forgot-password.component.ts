@@ -8,7 +8,6 @@ import { IconComponent } from '@shared/ui/icon/icon.component';
 
 @Component({
   selector: 'app-forgot-password',
-  standalone: true,
   imports: [CommonModule, RouterModule, ReactiveFormsModule, IconComponent],
   template: `
     <div class="forgot-password-container">
@@ -37,8 +36,8 @@ import { IconComponent } from '@shared/ui/icon/icon.component';
                 }
               </div>
 
-              <button 
-                type="submit" 
+              <button
+                type="submit"
                 class="reset-btn"
                 [disabled]="!forgotPasswordForm.valid || isLoading()"
               >
@@ -52,7 +51,7 @@ import { IconComponent } from '@shared/ui/icon/icon.component';
             <div class="success-icon">✅</div>
             <h2>Email Sent!</h2>
             <p>We've sent a password reset link to <strong>{{ sentToEmail() }}</strong></p>
-            
+
             <div class="success-instructions">
               <h3>What's next?</h3>
               <ol>
@@ -83,11 +82,11 @@ import { IconComponent } from '@shared/ui/icon/icon.component';
         <!-- Navigation Links -->
         <div class="forgot-password-footer">
           <p>
-            Remember your password? 
+            Remember your password?
             <a routerLink="/login" class="login-link">Sign in here</a>
           </p>
           <p>
-            Don't have an account? 
+            Don't have an account?
             <a routerLink="/register" class="register-link">Create one here</a>
           </p>
         </div>
@@ -327,15 +326,15 @@ import { IconComponent } from '@shared/ui/icon/icon.component';
       .forgot-password-container {
         padding: 10px;
       }
-      
+
       .forgot-password-card {
         padding: 30px 20px;
       }
-      
+
       .app-logo {
         font-size: 40px;
       }
-      
+
       .forgot-password-header h1 {
         font-size: 24px;
       }
@@ -373,7 +372,7 @@ export class ForgotPasswordComponent {
     try {
       const { email } = this.forgotPasswordForm.value;
       await this.authStore.resetPassword(email);
-      
+
       this.sentToEmail.set(email);
       this.emailSent.set(true);
       console.log('Password reset email sent successfully');

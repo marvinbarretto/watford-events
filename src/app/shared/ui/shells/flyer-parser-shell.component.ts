@@ -1,12 +1,12 @@
 import { Component, inject } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
 import { Platform } from '@ionic/angular';
-import { 
-  IonApp, 
-  IonContent, 
-  IonHeader, 
-  IonToolbar, 
-  IonTitle, 
+import {
+  IonApp,
+  IonContent,
+  IonHeader,
+  IonToolbar,
+  IonTitle,
   IonBackButton,
   IonButtons
 } from '@ionic/angular/standalone';
@@ -15,7 +15,6 @@ import { camera, chevronBack } from 'ionicons/icons';
 
 @Component({
   selector: 'app-flyer-parser-shell',
-  standalone: true,
   imports: [
     RouterOutlet,
     IonApp,
@@ -38,7 +37,7 @@ import { camera, chevronBack } from 'ionicons/icons';
             <ion-title>Scan Flyer</ion-title>
           </ion-toolbar>
         </ion-header>
-        
+
         <ion-content fullscreen>
           <router-outlet></router-outlet>
         </ion-content>
@@ -50,7 +49,7 @@ import { camera, chevronBack } from 'ionicons/icons';
           <h1>Flyer Parser</h1>
           <p>Upload an event flyer to extract event details</p>
         </header>
-        
+
         <main class="flyer-parser-content">
           <router-outlet></router-outlet>
         </main>
@@ -65,26 +64,26 @@ import { camera, chevronBack } from 'ionicons/icons';
       background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
       color: white;
     }
-    
+
     .flyer-parser-header {
       padding: 2rem;
       text-align: center;
       background: rgba(255, 255, 255, 0.1);
       backdrop-filter: blur(10px);
     }
-    
+
     .flyer-parser-header h1 {
       margin: 0 0 0.5rem;
       font-size: 2.5rem;
       font-weight: 300;
     }
-    
+
     .flyer-parser-header p {
       margin: 0;
       opacity: 0.8;
       font-size: 1.1rem;
     }
-    
+
     .flyer-parser-content {
       flex: 1;
       padding: 2rem;
@@ -96,7 +95,7 @@ import { camera, chevronBack } from 'ionicons/icons';
 })
 export class FlyerParserShell {
   protected readonly platform = inject(Platform);
-  
+
   constructor() {
     addIcons({ camera, chevronBack });
   }

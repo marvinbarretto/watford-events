@@ -8,14 +8,13 @@ import { Roles } from '../../../auth/utils/roles.enum';
 
 @Component({
   selector: 'app-footer',
-  standalone: true,
   imports: [CommonModule, DevDebugComponent],
   templateUrl: './footer.component.html',
   styleUrl: './footer.component.scss'
 })
 export class FooterComponent {
   private readonly authStore = inject(AuthStore);
-  
+
   readonly currentYear = new Date().getFullYear();
   readonly version = packageJson.version;
   readonly showDevDebug = !environment.production && this.isAdminUser();

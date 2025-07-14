@@ -9,13 +9,6 @@ export type User = {
   photoURL: string | null;
   joinedAt: string;
   role: Roles;
-
-  // Pub-related data
-  checkedInPubIds: string[];
-  streaks: Record<string, number>;
-  joinedMissionIds: string[];
-
-  totalPoints?: number;
 };
 
 

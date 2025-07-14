@@ -1,4 +1,5 @@
 import { Component, input, output, computed } from '@angular/core';
+import { IconComponent } from '../icon/icon.component';
 
 export type ChipType = 'ui' | 'action';
 export type ChipVariant = 'status' | 'category' | 'confidence' | 'feature' | 'custom';
@@ -6,7 +7,8 @@ export type ChipStatus = 'published' | 'draft' | 'cancelled' | 'mock' | 'feature
 
 @Component({
   selector: 'app-chip',
-  standalone: true,
+  imports: [IconComponent],
+
   template: `
     <span
       class="chip"
@@ -17,7 +19,7 @@ export type ChipStatus = 'published' | 'draft' | 'cancelled' | 'mock' | 'feature
       (click)="handleClick()"
     >
       @if (icon()) {
-        <span class="chip-icon">{{ icon() }}</span>
+        <app-icon [name]="icon()!" size="xs" class="chip-icon" />
       }
       <span class="chip-text">{{ text() }}</span>
     </span>
@@ -142,7 +144,7 @@ export type ChipStatus = 'published' | 'draft' | 'cancelled' | 'mock' | 'feature
 export class ChipComponent {
   // Required inputs
   readonly text = input.required<string>();
-  
+
   // Optional inputs
   readonly type = input<ChipType>('ui');
   readonly variant = input<ChipVariant>('custom');
@@ -160,25 +162,25 @@ export class ChipComponent {
   // Computed properties
   readonly chipClasses = computed(() => {
     const classes = ['chip'];
-    
+
     // Add type class
     classes.push(`chip-${this.type()}`);
-    
+
     // Add variant class
     if (this.variant() !== 'custom') {
       classes.push(`chip-${this.variant()}`);
     }
-    
+
     // Add status class if provided
     if (this.status()) {
       classes.push(`status-${this.status()}`);
     }
-    
+
     // Add low confidence class
     if (this.lowConfidence()) {
       classes.push('low-confidence');
     }
-    
+
     return classes.join(' ');
   });
 

@@ -6,11 +6,12 @@ import { FormsModule } from '@angular/forms';
 import { AuthStore } from '@auth/data-access/auth.store';
 import { UserStore } from '@users/data-access/user.store';
 import { Roles } from '@auth/utils/roles.enum';
+import { ChipComponent } from '@shared/ui/chip/chip.component';
+import { IconComponent } from '@shared/ui/icon/icon.component';
 
 @Component({
   selector: 'app-user-info',
-  standalone: true,
-  imports: [CommonModule, RouterModule, FormsModule],
+  imports: [CommonModule, RouterModule, FormsModule, ChipComponent, IconComponent],
   template: `
     <!-- Only show when user is authenticated -->
     @if (authStore.isAuthenticated() && userStore.hasUser()) {
@@ -42,8 +43,8 @@ import { Roles } from '@auth/utils/roles.enum';
                     class="username-input"
                     [disabled]="savingUsername()"
                   />
-                  <button 
-                    (click)="saveUsername()" 
+                  <button
+                    (click)="saveUsername()"
                     class="save-btn"
                     [disabled]="!isValidUsername() || savingUsername()">
                     {{ savingUsername() ? 'Saving...' : 'Save' }}
@@ -71,8 +72,29 @@ import { Roles } from '@auth/utils/roles.enum';
                   <!-- Display mode -->
                   <div class="username-display">
                     <span class="username" (click)="startEdit()">{{ userStore.displayName() }}</span>
+
+                    <!-- User Status Chip -->
+                    <app-chip
+                      [text]="getUserStatusText()"
+                      [icon]="getUserStatusIcon()"
+                      [color]="getUserStatusColor()"
+                      [textColor]="getUserStatusTextColor()"
+                      [borderColor]="getUserStatusBorderColor()"
+                      type="ui"
+                      variant="custom"
+                    />
+
+                    <!-- Role Chip -->
                     @if (user()?.role && user()!.role !== Roles.Authenticated && user()!.role !== Roles.Public) {
-                      <span class="role-badge" [class]="'role-' + user()!.role">{{ getRoleDisplay() }}</span>
+                      <app-chip
+                        [text]="getRoleDisplay()"
+                        [icon]="getRoleIcon()"
+                        [color]="getRoleColor()"
+                        [textColor]="getRoleTextColor()"
+                        [borderColor]="getRoleBorderColor()"
+                        type="ui"
+                        variant="custom"
+                      />
                     }
                   </div>
                 }
@@ -87,7 +109,12 @@ import { Roles } from '@auth/utils/roles.enum';
           <!-- Quick Actions -->
           <div class="user-actions">
             <a routerLink="/settings" class="settings-link" title="Settings">
-              ⚙️
+              <app-icon
+                name="settings"
+                size="md"
+                animation="hover-weight"
+                [color]="getIconColor()"
+              />
             </a>
           </div>
         </div>
@@ -96,8 +123,8 @@ import { Roles } from '@auth/utils/roles.enum';
   `,
   styles: [`
     .user-info-bar {
-      background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
-      border-bottom: 1px solid #dee2e6;
+      background: linear-gradient(135deg, var(--background-lighter) 0%, var(--background-darker) 100%);
+      border-bottom: 1px solid var(--border);
       padding: 12px 0;
     }
 
@@ -120,23 +147,23 @@ import { Roles } from '@auth/utils/roles.enum';
       height: 40px;
       border-radius: 50%;
       object-fit: cover;
-      border: 2px solid #fff;
-      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+      border: 2px solid var(--background-lighter);
+      box-shadow: 0 2px 4px var(--shadow);
     }
 
     .default-avatar {
       width: 40px;
       height: 40px;
       border-radius: 50%;
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-      color: white;
+      background: linear-gradient(135deg, var(--primary) 0%, var(--primary-hover) 100%);
+      color: var(--on-primary);
       display: flex;
       align-items: center;
       justify-content: center;
       font-weight: 600;
       font-size: 14px;
-      border: 2px solid #fff;
-      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+      border: 2px solid var(--background-lighter);
+      box-shadow: 0 2px 4px var(--shadow);
     }
 
     /* User Details */
@@ -154,7 +181,7 @@ import { Roles } from '@auth/utils/roles.enum';
 
     .welcome-text {
       font-size: 14px;
-      color: #495057;
+      color: var(--text-secondary);
       font-weight: 500;
     }
 
@@ -166,22 +193,24 @@ import { Roles } from '@auth/utils/roles.enum';
 
     .username-input {
       padding: 6px 12px;
-      border: 2px solid #dee2e6;
+      border: 2px solid var(--border);
       border-radius: 6px;
       font-size: 14px;
       min-width: 200px;
       transition: border-color 0.2s;
+      background: var(--background-lighter);
+      color: var(--text);
     }
 
     .username-input:focus {
       outline: none;
-      border-color: #007bff;
+      border-color: var(--primary);
     }
 
     .save-btn {
       padding: 6px 16px;
-      background: #28a745;
-      color: white;
+      background: var(--success);
+      color: var(--background-lighter);
       border: none;
       border-radius: 6px;
       font-size: 14px;
@@ -191,11 +220,11 @@ import { Roles } from '@auth/utils/roles.enum';
     }
 
     .save-btn:hover:not(:disabled) {
-      background: #218838;
+      background: var(--success-hover);
     }
 
     .save-btn:disabled {
-      background: #6c757d;
+      background: var(--text-muted);
       cursor: not-allowed;
     }
 
@@ -214,7 +243,7 @@ import { Roles } from '@auth/utils/roles.enum';
 
     .username {
       font-weight: 600;
-      color: #495057;
+      color: var(--text);
       cursor: pointer;
       padding: 4px 8px;
       border-radius: 4px;
@@ -222,26 +251,9 @@ import { Roles } from '@auth/utils/roles.enum';
     }
 
     .username:hover {
-      background: rgba(0,123,255,0.1);
+      background: var(--background-darker);
     }
 
-    .role-badge {
-      font-size: 12px;
-      padding: 2px 8px;
-      border-radius: 12px;
-      font-weight: 500;
-      text-transform: uppercase;
-    }
-
-    .role-admin {
-      background: #dc3545;
-      color: white;
-    }
-
-    .role-author {
-      background: #17a2b8;
-      color: white;
-    }
 
     /* Username Editing */
     .username-edit-group {
@@ -252,11 +264,13 @@ import { Roles } from '@auth/utils/roles.enum';
 
     .username-edit-input {
       padding: 4px 8px;
-      border: 1px solid #dee2e6;
+      border: 1px solid var(--border);
       border-radius: 4px;
       font-size: 14px;
       font-weight: 600;
       min-width: 150px;
+      background: var(--background-lighter);
+      color: var(--text);
     }
 
     .save-btn-small, .cancel-btn-small {
@@ -269,13 +283,13 @@ import { Roles } from '@auth/utils/roles.enum';
     }
 
     .save-btn-small {
-      background: #28a745;
-      color: white;
+      background: var(--success);
+      color: var(--background-lighter);
     }
 
     .cancel-btn-small {
-      background: #6c757d;
-      color: white;
+      background: var(--text-muted);
+      color: var(--background-lighter);
     }
 
     /* User Actions */
@@ -284,7 +298,7 @@ import { Roles } from '@auth/utils/roles.enum';
     }
 
     .settings-link {
-      color: #6c757d;
+      color: var(--text-secondary);
       text-decoration: none;
       font-size: 18px;
       padding: 8px;
@@ -293,13 +307,13 @@ import { Roles } from '@auth/utils/roles.enum';
     }
 
     .settings-link:hover {
-      background: rgba(0,0,0,0.1);
+      background: var(--background-darker);
     }
 
     /* Error Message */
     .error-message {
       font-size: 12px;
-      color: #dc3545;
+      color: var(--error);
       margin-top: 4px;
     }
 
@@ -331,7 +345,7 @@ export class UserInfoComponent {
   // Services
   protected readonly authStore = inject(AuthStore);
   protected readonly userStore = inject(UserStore);
-  
+
   // Expose Roles enum to template
   protected readonly Roles = Roles;
 
@@ -339,7 +353,7 @@ export class UserInfoComponent {
   readonly editingUsername = signal(false);
   readonly savingUsername = signal(false);
   readonly errorMessage = signal<string | null>(null);
-  
+
   // Form values
   newUsername = signal('');
   editUsername = signal('');
@@ -354,23 +368,23 @@ export class UserInfoComponent {
   needsUsernameSetup = computed(() => {
     const user = this.user();
     const authUser = this.authStore.user();
-    
+
     if (!user || !authUser) return false;
-    
+
     // Check if this is a Google user with a generated display name
     const displayName = user.displayName;
     const email = user.email;
-    
+
     // If display name is just the email prefix, user needs to set username
     if (email && displayName === email.split('@')[0]) {
       return true;
     }
-    
+
     // If display name is empty or null
     if (!displayName || displayName.trim() === '') {
       return true;
     }
-    
+
     return false;
   });
 
@@ -380,7 +394,7 @@ export class UserInfoComponent {
   getInitials(): string {
     const displayName = this.userStore.displayName();
     if (!displayName) return 'U';
-    
+
     return displayName
       .split(' ')
       .map(name => name.charAt(0).toUpperCase())
@@ -397,6 +411,136 @@ export class UserInfoComponent {
       case Roles.Admin: return 'Admin';
       case Roles.Author: return 'Author';
       default: return '';
+    }
+  }
+
+  /**
+   * Get role icon
+   */
+  getRoleIcon(): string {
+    const role = this.user()?.role;
+    switch (role) {
+      case Roles.Admin: return 'admin_panel_settings';
+      case Roles.Author: return 'edit';
+      default: return '';
+    }
+  }
+
+  /**
+   * Get role chip background color from theme
+   */
+  getRoleColor(): string {
+    const role = this.user()?.role;
+    switch (role) {
+      case Roles.Admin: return 'var(--error)';
+      case Roles.Author: return 'var(--info)';
+      default: return 'var(--secondary)';
+    }
+  }
+
+  /**
+   * Get role chip text color from theme
+   */
+  getRoleTextColor(): string {
+    const role = this.user()?.role;
+    switch (role) {
+      case Roles.Admin: return 'var(--background-lighter)';
+      case Roles.Author: return 'var(--background-lighter)';
+      default: return 'var(--on-secondary)';
+    }
+  }
+
+  /**
+   * Get role chip border color from theme
+   */
+  getRoleBorderColor(): string {
+    const role = this.user()?.role;
+    switch (role) {
+      case Roles.Admin: return 'var(--error-hover)';
+      case Roles.Author: return 'var(--info-hover)';
+      default: return 'var(--border)';
+    }
+  }
+
+  /**
+   * Get icon color from theme
+   */
+  getIconColor(): string {
+    return 'var(--text-secondary)';
+  }
+
+  /**
+   * Get user status text
+   */
+  getUserStatusText(): string {
+    const user = this.user();
+    if (!user) return 'Unknown';
+
+    // Check if user has been active recently (within last 5 minutes)
+    // Note: Using joinedAt as fallback since we don't have lastActive tracking yet
+    const lastActive = new Date(user.joinedAt);
+    const now = new Date();
+    const timeDiff = now.getTime() - lastActive.getTime();
+    const minutesDiff = Math.floor(timeDiff / (1000 * 60));
+
+    if (minutesDiff < 5) {
+      return 'Online';
+    } else if (minutesDiff < 60) {
+      return 'Recently Active';
+    } else {
+      return 'Offline';
+    }
+  }
+
+  /**
+   * Get user status icon
+   */
+  getUserStatusIcon(): string {
+    const statusText = this.getUserStatusText();
+    switch (statusText) {
+      case 'Online': return 'radio_button_checked';
+      case 'Recently Active': return 'schedule';
+      case 'Offline': return 'radio_button_unchecked';
+      default: return 'help';
+    }
+  }
+
+  /**
+   * Get user status background color
+   */
+  getUserStatusColor(): string {
+    const statusText = this.getUserStatusText();
+    switch (statusText) {
+      case 'Online': return 'var(--success)';
+      case 'Recently Active': return 'var(--warning)';
+      case 'Offline': return 'var(--background-darker)';
+      default: return 'var(--secondary)';
+    }
+  }
+
+  /**
+   * Get user status text color
+   */
+  getUserStatusTextColor(): string {
+    const statusText = this.getUserStatusText();
+    switch (statusText) {
+      case 'Online': return 'var(--background-lighter)';
+      case 'Recently Active': return 'var(--background-lighter)';
+      case 'Offline': return 'var(--text-secondary)';
+      default: return 'var(--on-secondary)';
+    }
+  }
+
+  /**
+   * Get user status border color
+   */
+  getUserStatusBorderColor(): string {
+    const statusText = this.getUserStatusText();
+    switch (statusText) {
+      case 'Online': return 'var(--success-hover)';
+      case 'Recently Active': return 'var(--warning-hover)';
+      case 'Offline': return 'var(--border)';
+      default: return 'var(--border)';
     }
   }
 

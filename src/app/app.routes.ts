@@ -30,6 +30,11 @@ export const routes: Routes = [
     loadComponent: () => import('./events/feature/event-creator.component').then(m => m.EventCreatorComponent)
   },
   {
+    path: 'events/create/confirm',
+    data: { shell: 'main' },
+    loadComponent: () => import('./events/feature/event-confirmation.component').then(m => m.EventConfirmationComponent)
+  },
+  {
     path: 'events/:id/enhance',
     data: { shell: 'main' },
     loadComponent: () => import('./events/feature/event-enhancement.component').then(m => m.EventEnhancementComponent)

@@ -2,7 +2,7 @@ import { Component, Input } from '@angular/core';
 
 @Component({
   selector: 'app-camera-alignment-guide',
-  standalone: true,
+
   template: `
     <div class="alignment-guide">
       <!-- Live Capture Indicator -->
@@ -109,17 +109,17 @@ import { Component, Input } from '@angular/core';
         width: 80px;
         height: 80px;
       }
-      
+
       .pulse-ring {
         width: 60px;
         height: 60px;
       }
-      
+
       .live-dot {
         width: 12px;
         height: 12px;
       }
-      
+
       .live-text {
         top: 90px;
         font-size: 12px;

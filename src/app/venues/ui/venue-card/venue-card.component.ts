@@ -5,7 +5,6 @@ import { HeartButtonComponent } from '../../../shared/ui/heart-button/heart-butt
 
 @Component({
   selector: 'app-venue-card',
-  standalone: true,
   imports: [ChipComponent, HeartButtonComponent],
   template: `
     <div class="venue-card" (click)="handleClick()">

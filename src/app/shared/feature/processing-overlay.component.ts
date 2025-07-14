@@ -2,7 +2,7 @@ import { Component, Input } from '@angular/core';
 
 @Component({
   selector: 'app-processing-overlay',
-  standalone: true,
+
   template: `
     <div class="processing-overlay">
       <div class="processing-content">
@@ -64,7 +64,7 @@ import { Component, Input } from '@angular/core';
       .processing-content {
         padding: 20px;
       }
-      
+
       .processing-content h2 {
         font-size: 20px;
       }

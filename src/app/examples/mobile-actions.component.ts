@@ -1,13 +1,13 @@
 import { Component } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { 
-  IonContent, 
-  IonHeader, 
-  IonTitle, 
-  IonToolbar, 
-  IonCard, 
-  IonCardContent, 
-  IonCardHeader, 
+import {
+  IonContent,
+  IonHeader,
+  IonTitle,
+  IonToolbar,
+  IonCard,
+  IonCardContent,
+  IonCardHeader,
   IonCardTitle,
   IonList,
   IonItem,
@@ -33,12 +33,12 @@ import {
   IonSearchbar
 } from '@ionic/angular/standalone';
 import { addIcons } from 'ionicons';
-import { 
-  camera, 
-  image, 
-  share, 
-  trash, 
-  heart, 
+import {
+  camera,
+  image,
+  share,
+  trash,
+  heart,
   star,
   download,
   refresh,
@@ -51,7 +51,6 @@ import {
 
 @Component({
   selector: 'app-mobile-actions',
-  standalone: true,
   imports: [
     FormsModule,
     IonContent,
@@ -96,21 +95,21 @@ import {
         </ion-buttons>
       </ion-toolbar>
     </ion-header>
-    
+
     <ion-content>
       <!-- Pull to Refresh -->
       <ion-refresher slot="fixed" (ionRefresh)="handleRefresh($event)">
         <ion-refresher-content></ion-refresher-content>
       </ion-refresher>
-      
+
       <!-- Search -->
-      <ion-searchbar 
+      <ion-searchbar
         [(ngModel)]="searchTerm"
         (ionInput)="handleSearch($event)"
         placeholder="Search actions..."
         show-clear-button="focus">
       </ion-searchbar>
-      
+
       <!-- Action Buttons -->
       <ion-card>
         <ion-card-header>
@@ -120,8 +119,8 @@ import {
           <ion-grid>
             <ion-row>
               <ion-col size="6">
-                <ion-button 
-                  expand="block" 
+                <ion-button
+                  expand="block"
                   (click)="showActionSheet = true"
                   color="primary">
                   <ion-icon name="share" slot="start"></ion-icon>
@@ -129,8 +128,8 @@ import {
                 </ion-button>
               </ion-col>
               <ion-col size="6">
-                <ion-button 
-                  expand="block" 
+                <ion-button
+                  expand="block"
                   (click)="showAlert = true"
                   color="secondary">
                   <ion-icon name="notifications" slot="start"></ion-icon>
@@ -140,8 +139,8 @@ import {
             </ion-row>
             <ion-row>
               <ion-col size="6">
-                <ion-button 
-                  expand="block" 
+                <ion-button
+                  expand="block"
                   (click)="showToast()"
                   color="tertiary">
                   <ion-icon name="heart" slot="start"></ion-icon>
@@ -149,8 +148,8 @@ import {
                 </ion-button>
               </ion-col>
               <ion-col size="6">
-                <ion-button 
-                  expand="block" 
+                <ion-button
+                  expand="block"
                   (click)="showModal = true"
                   color="success">
                   <ion-icon name="star" slot="start"></ion-icon>
@@ -160,8 +159,8 @@ import {
             </ion-row>
             <ion-row>
               <ion-col size="6">
-                <ion-button 
-                  expand="block" 
+                <ion-button
+                  expand="block"
                   (click)="showLoading()"
                   color="warning">
                   <ion-icon name="download" slot="start"></ion-icon>
@@ -169,8 +168,8 @@ import {
                 </ion-button>
               </ion-col>
               <ion-col size="6">
-                <ion-button 
-                  expand="block" 
+                <ion-button
+                  expand="block"
                   (click)="showConfirmAlert = true"
                   color="danger">
                   <ion-icon name="trash" slot="start"></ion-icon>
@@ -181,7 +180,7 @@ import {
           </ion-grid>
         </ion-card-content>
       </ion-card>
-      
+
       <!-- Status Indicators -->
       <ion-card>
         <ion-card-header>
@@ -191,22 +190,22 @@ import {
           <ion-list>
             <ion-item>
               <ion-label>Progress Bar</ion-label>
-              <ion-progress-bar 
-                [value]="progressValue" 
+              <ion-progress-bar
+                [value]="progressValue"
                 color="primary"
                 slot="end">
               </ion-progress-bar>
             </ion-item>
-            
+
             <ion-item>
               <ion-label>Spinner</ion-label>
-              <ion-spinner 
-                name="crescent" 
+              <ion-spinner
+                name="crescent"
                 color="secondary"
                 slot="end">
               </ion-spinner>
             </ion-item>
-            
+
             <ion-item>
               <ion-label>Badges</ion-label>
               <div slot="end">
@@ -215,7 +214,7 @@ import {
                 <ion-badge color="danger">!</ion-badge>
               </div>
             </ion-item>
-            
+
             <ion-item>
               <ion-label>Chips</ion-label>
               <div slot="end">
@@ -231,7 +230,7 @@ import {
           </ion-list>
         </ion-card-content>
       </ion-card>
-      
+
       <!-- Sample Content -->
       <ion-card>
         <ion-card-header>
@@ -253,7 +252,7 @@ import {
           </ion-list>
         </ion-card-content>
       </ion-card>
-      
+
       <!-- Action Sheet -->
       <ion-action-sheet
         [isOpen]="showActionSheet"
@@ -261,7 +260,7 @@ import {
         header="Choose Action"
         [buttons]="actionSheetButtons">
       </ion-action-sheet>
-      
+
       <!-- Alert -->
       <ion-alert
         [isOpen]="showAlert"
@@ -270,7 +269,7 @@ import {
         message="This is an example alert message!"
         [buttons]="['OK']">
       </ion-alert>
-      
+
       <!-- Confirm Alert -->
       <ion-alert
         [isOpen]="showConfirmAlert"
@@ -279,7 +278,7 @@ import {
         message="Are you sure you want to delete this item?"
         [buttons]="confirmButtons">
       </ion-alert>
-      
+
       <!-- Toast -->
       <ion-toast
         [isOpen]="showToastMessage"
@@ -289,7 +288,7 @@ import {
         position="bottom"
         color="success">
       </ion-toast>
-      
+
       <!-- Modal -->
       <ion-modal [isOpen]="showModal" (didDismiss)="showModal = false">
         <ng-template>
@@ -312,7 +311,7 @@ import {
           </ion-content>
         </ng-template>
       </ion-modal>
-      
+
       <!-- Loading -->
       <ion-loading
         [isOpen]="showLoadingIndicator"
@@ -320,10 +319,10 @@ import {
         duration="3000"
         (didDismiss)="showLoadingIndicator = false">
       </ion-loading>
-      
+
       <!-- Popover -->
-      <ion-popover 
-        [isOpen]="showMorePopover" 
+      <ion-popover
+        [isOpen]="showMorePopover"
         (didDismiss)="showMorePopover = false"
         side="bottom"
         alignment="end">
@@ -352,24 +351,24 @@ import {
     ion-card {
       margin: 16px;
     }
-    
+
     ion-progress-bar {
       width: 100px;
     }
-    
+
     ion-badge {
       margin-left: 8px;
     }
-    
+
     ion-chip {
       margin-left: 8px;
     }
-    
+
     ion-spinner {
       width: 20px;
       height: 20px;
     }
-    
+
     ion-searchbar {
       padding: 16px;
     }
@@ -383,10 +382,10 @@ export class MobileActionsComponent {
   showModal = false;
   showLoadingIndicator = false;
   showMorePopover = false;
-  
+
   searchTerm = '';
   progressValue = 0.7;
-  
+
   sampleItems = [
     {
       title: 'Summer Festival',
@@ -413,7 +412,7 @@ export class MobileActionsComponent {
       color: 'primary'
     }
   ];
-  
+
   actionSheetButtons = [
     {
       text: 'Share',
@@ -443,7 +442,7 @@ export class MobileActionsComponent {
       role: 'cancel'
     }
   ];
-  
+
   confirmButtons = [
     {
       text: 'Cancel',
@@ -458,14 +457,14 @@ export class MobileActionsComponent {
       }
     }
   ];
-  
+
   constructor() {
-    addIcons({ 
-      camera, 
-      image, 
-      share, 
-      trash, 
-      heart, 
+    addIcons({
+      camera,
+      image,
+      share,
+      trash,
+      heart,
       star,
       download,
       refresh,
@@ -476,26 +475,26 @@ export class MobileActionsComponent {
       ellipsisHorizontal
     });
   }
-  
+
   handleRefresh(event: any) {
     setTimeout(() => {
       console.log('Refreshed');
       event.target.complete();
     }, 2000);
   }
-  
+
   handleSearch(event: any) {
     console.log('Searching:', event.target.value);
   }
-  
+
   showToast() {
     this.showToastMessage = true;
   }
-  
+
   showLoading() {
     this.showLoadingIndicator = true;
   }
-  
+
   handlePopoverAction(action: string) {
     console.log('Popover action:', action);
     this.showMorePopover = false;

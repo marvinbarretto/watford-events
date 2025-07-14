@@ -12,7 +12,6 @@ type Particle = {
 
 @Component({
   selector: 'app-heart-button',
-  standalone: true,
   imports: [IconComponent],
   template: `
     <button

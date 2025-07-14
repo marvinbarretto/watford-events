@@ -25,7 +25,6 @@ import { IconComponent } from '@shared/ui/icon/icon.component';
 
 @Component({
   selector: 'app-user-preferences-widget',
-  standalone: true,
   imports: [FormsModule, IconComponent],
   template: `
     <div class="preferences-widget" [class.collapsed]="isCollapsed()">

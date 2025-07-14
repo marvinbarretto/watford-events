@@ -69,12 +69,6 @@ export class UserStore {
    * Use ScoreboardOrchestratorService.pubsVisited instead.
    */
 
-  /**
-   * User's total points (for scoreboard display)
-   * @description Updated by PointsStore when points are awarded
-   */
-  readonly totalPoints = computed(() => this.user()?.totalPoints || 0);
-
   // 🔄 Track auth user changes
   private lastLoadedUserId: string | null = null;
 
@@ -228,10 +222,7 @@ export class UserStore {
             photoURL: authUser.photoURL,
             displayName: authUser.displayName,
             emailVerified: authUser.emailVerified,
-            checkedInPubIds: [],
-            streaks: {},
             joinedAt: new Date().toISOString(),
-            joinedMissionIds: [],
             role: Roles.Authenticated,
           };
 

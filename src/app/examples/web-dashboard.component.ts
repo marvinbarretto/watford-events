@@ -3,7 +3,6 @@ import { CommonModule } from '@angular/common';
 
 @Component({
   selector: 'app-web-dashboard',
-  standalone: true,
   imports: [CommonModule],
   template: `
     <div class="web-dashboard">
@@ -11,7 +10,7 @@ import { CommonModule } from '@angular/common';
         <h1>Web Dashboard Example</h1>
         <p>Traditional web layout with standard HTML components</p>
       </div>
-      
+
       <div class="dashboard-grid">
         <div class="card">
           <h3>Statistics</h3>
@@ -30,7 +29,7 @@ import { CommonModule } from '@angular/common';
             </div>
           </div>
         </div>
-        
+
         <div class="card">
           <h3>Recent Activity</h3>
           <div class="activity-list">
@@ -57,7 +56,7 @@ import { CommonModule } from '@angular/common';
             </div>
           </div>
         </div>
-        
+
         <div class="card">
           <h3>Quick Actions</h3>
           <div class="action-buttons">
@@ -66,7 +65,7 @@ import { CommonModule } from '@angular/common';
             <button class="btn btn-outline">Settings</button>
           </div>
         </div>
-        
+
         <div class="card wide">
           <h3>Data Table</h3>
           <table class="data-table">
@@ -109,28 +108,28 @@ import { CommonModule } from '@angular/common';
       margin: 0 auto;
       padding: 2rem;
     }
-    
+
     .dashboard-header {
       margin-bottom: 2rem;
       text-align: center;
     }
-    
+
     .dashboard-header h1 {
       color: #333;
       margin-bottom: 0.5rem;
     }
-    
+
     .dashboard-header p {
       color: #666;
       font-size: 1.1rem;
     }
-    
+
     .dashboard-grid {
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
       gap: 1.5rem;
     }
-    
+
     .card {
       background: white;
       border-radius: 8px;
@@ -138,50 +137,50 @@ import { CommonModule } from '@angular/common';
       box-shadow: 0 2px 8px rgba(0,0,0,0.1);
       border: 1px solid #e0e0e0;
     }
-    
+
     .card.wide {
       grid-column: 1 / -1;
     }
-    
+
     .card h3 {
       margin: 0 0 1rem;
       color: #333;
     }
-    
+
     .stats {
       display: flex;
       gap: 1rem;
       justify-content: space-around;
     }
-    
+
     .stat {
       text-align: center;
     }
-    
+
     .stat .number {
       display: block;
       font-size: 1.8rem;
       font-weight: bold;
       color: #667eea;
     }
-    
+
     .stat .label {
       font-size: 0.9rem;
       color: #666;
     }
-    
+
     .activity-list {
       display: flex;
       flex-direction: column;
       gap: 1rem;
     }
-    
+
     .activity-item {
       display: flex;
       align-items: center;
       gap: 1rem;
     }
-    
+
     .activity-icon {
       font-size: 1.5rem;
       width: 2.5rem;
@@ -192,23 +191,23 @@ import { CommonModule } from '@angular/common';
       background: #f0f0f0;
       border-radius: 50%;
     }
-    
+
     .activity-title {
       font-weight: 500;
       color: #333;
     }
-    
+
     .activity-time {
       font-size: 0.9rem;
       color: #666;
     }
-    
+
     .action-buttons {
       display: flex;
       flex-direction: column;
       gap: 0.5rem;
     }
-    
+
     .btn {
       padding: 0.75rem 1rem;
       border: none;
@@ -217,71 +216,71 @@ import { CommonModule } from '@angular/common';
       cursor: pointer;
       transition: all 0.2s;
     }
-    
+
     .btn-primary {
       background: #667eea;
       color: white;
     }
-    
+
     .btn-primary:hover {
       background: #5a6fd8;
     }
-    
+
     .btn-secondary {
       background: #6c757d;
       color: white;
     }
-    
+
     .btn-secondary:hover {
       background: #5a6268;
     }
-    
+
     .btn-outline {
       background: transparent;
       color: #667eea;
       border: 1px solid #667eea;
     }
-    
+
     .btn-outline:hover {
       background: #667eea;
       color: white;
     }
-    
+
     .data-table {
       width: 100%;
       border-collapse: collapse;
     }
-    
+
     .data-table th,
     .data-table td {
       padding: 0.75rem;
       text-align: left;
       border-bottom: 1px solid #e0e0e0;
     }
-    
+
     .data-table th {
       background: #f8f9fa;
       font-weight: 600;
       color: #333;
     }
-    
+
     .status {
       padding: 0.25rem 0.5rem;
       border-radius: 4px;
       font-size: 0.85rem;
       font-weight: 500;
     }
-    
+
     .status.active {
       background: #d4edda;
       color: #155724;
     }
-    
+
     .status.pending {
       background: #fff3cd;
       color: #856404;
     }
-    
+
     .status.completed {
       background: #d1ecf1;
       color: #0c5460;

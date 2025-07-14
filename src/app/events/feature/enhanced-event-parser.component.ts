@@ -12,7 +12,6 @@ import { GapAnalysisService, GapAnalysisResult } from '@events/data-access/gap-a
  */
 @Component({
   selector: 'app-enhanced-event-parser',
-  standalone: true,
   imports: [FormsModule, CommonModule],
   template: `
     <div class="parser">
@@ -21,7 +20,7 @@ import { GapAnalysisService, GapAnalysisResult } from '@events/data-access/gap-a
         <div class="parser__header-inner">
           <h1 class="parser__title">Enhanced Event Parser</h1>
           <p class="parser__subtitle">Extract event data from text, images, and web sources</p>
-          
+
           <!-- Enhanced Status Bar -->
           <div class="parser__status-bar">
             <!-- Overall Confidence -->
@@ -29,12 +28,12 @@ import { GapAnalysisService, GapAnalysisResult } from '@events/data-access/gap-a
               <div class="confidence__bar">
                 <span class="confidence__label">Overall Confidence</span>
                 <div class="confidence__track">
-                  <div 
-                    class="confidence__fill" 
+                  <div
+                    class="confidence__fill"
                     [style.width.%]="overallConfidence()"
                   ></div>
                 </div>
-                <span 
+                <span
                   class="confidence__value"
                   [class]="getConfidenceClass(overallConfidence())"
                 >
@@ -42,15 +41,15 @@ import { GapAnalysisService, GapAnalysisResult } from '@events/data-access/gap-a
                 </span>
               </div>
             </div>
-            
+
             <!-- Processing Progress -->
             @if (isProcessing()) {
               <div class="progress">
                 <div class="progress__bar">
                   <span class="progress__label">{{ progress().stage }}</span>
                   <div class="progress__track">
-                    <div 
-                      class="progress__fill" 
+                    <div
+                      class="progress__fill"
                       [style.width.%]="progressPercentage()"
                     ></div>
                   </div>
@@ -63,7 +62,7 @@ import { GapAnalysisService, GapAnalysisResult } from '@events/data-access/gap-a
                 }
               </div>
             }
-            
+
             <!-- Source Status -->
             <div class="sources">
               <span class="sources__label">Active Sources:</span>
@@ -158,9 +157,9 @@ import { GapAnalysisService, GapAnalysisResult } from '@events/data-access/gap-a
                   <div class="input-header">
                     <label class="input-label">Upload Event Flyer</label>
                   </div>
-                  
+
                   <!-- Drag & Drop Area -->
-                  <div 
+                  <div
                     class="drop-zone"
                     [class.dragover]="isDragOver()"
                     (dragover)="onDragOver($event)"
@@ -178,7 +177,7 @@ import { GapAnalysisService, GapAnalysisResult } from '@events/data-access/gap-a
                       </span>
                     </div>
                   </div>
-                  
+
                   <input
                     #fileInput
                     type="file"
@@ -287,7 +286,7 @@ import { GapAnalysisService, GapAnalysisResult } from '@events/data-access/gap-a
                       <h4>Data Fusion Summary</h4>
                       <span class="fusion-summary__confidence">{{ fusionResult()!.confidence.overall }}% confidence</span>
                     </div>
-                    
+
                     @if (fusionResult()!.conflicts.length > 0) {
                       <div class="fusion-conflicts">
                         <strong>Resolved {{ fusionResult()!.conflicts.length }} conflicts:</strong>
@@ -298,7 +297,7 @@ import { GapAnalysisService, GapAnalysisResult } from '@events/data-access/gap-a
                         }
                       </div>
                     }
-                    
+
                     @if (fusionResult()!.recommendations.length > 0) {
                       <div class="fusion-recommendations">
                         <strong>Recommendations:</strong>
@@ -317,11 +316,11 @@ import { GapAnalysisService, GapAnalysisResult } from '@events/data-access/gap-a
                       <h4>Data Completeness Analysis</h4>
                       <div class="completeness-meter">
                         <div class="completeness-meter__track">
-                          <div 
+                          <div
                             class="completeness-meter__fill"
                             [style.width.%]="dataCompleteness()"
-                            [class]="dataCompleteness() >= 80 ? 'completeness-meter__fill--high' : 
-                                     dataCompleteness() >= 60 ? 'completeness-meter__fill--medium' : 
+                            [class]="dataCompleteness() >= 80 ? 'completeness-meter__fill--high' :
+                                     dataCompleteness() >= 60 ? 'completeness-meter__fill--medium' :
                                      'completeness-meter__fill--low'"
                           ></div>
                         </div>
@@ -360,7 +359,7 @@ import { GapAnalysisService, GapAnalysisResult } from '@events/data-access/gap-a
                           <div class="gap-item" [class]="getGapStatusClass(gap) + ' ' + getImportanceClass(gap.importance)">
                             <div class="gap-item__header">
                               <span class="gap-item__field">{{ gap.displayName }}</span>
-                              <span class="gap-item__status">{{ gap.status === 'missing' ? 'Missing' : 
+                              <span class="gap-item__status">{{ gap.status === 'missing' ? 'Missing' :
                                                                    gap.status === 'low_confidence' ? 'Low confidence' :
                                                                    gap.status === 'partial' ? 'Partial' : 'Good' }}</span>
                             </div>
@@ -403,7 +402,7 @@ import { GapAnalysisService, GapAnalysisResult } from '@events/data-access/gap-a
                       <div class="next-action">
                         @switch (gapAnalysis()!.nextBestAction.type) {
                           @case ('add_source') {
-                            <button 
+                            <button
                               class="next-action__btn next-action__btn--add-source"
                               (click)="clickNextAction(gapAnalysis()!.nextBestAction.sourceType)"
                             >
@@ -418,7 +417,7 @@ import { GapAnalysisService, GapAnalysisResult } from '@events/data-access/gap-a
                             </div>
                           }
                           @case ('ready_to_create') {
-                            <button 
+                            <button
                               class="next-action__btn next-action__btn--create"
                               (click)="createEvent()"
                             >
@@ -447,9 +446,9 @@ import { GapAnalysisService, GapAnalysisResult } from '@events/data-access/gap-a
                         }
                       </div>
                     </div>
-                    
+
                     @if (activeField() !== 'title') {
-                      <div 
+                      <div
                         (click)="focusField('title')"
                         class="json-field__display"
                       >
@@ -483,9 +482,9 @@ import { GapAnalysisService, GapAnalysisResult } from '@events/data-access/gap-a
                         }
                       </div>
                     </div>
-                    
+
                     @if (activeField() !== 'description') {
-                      <div 
+                      <div
                         (click)="focusField('description')"
                         class="json-field__display json-field__display--multiline"
                       >
@@ -518,9 +517,9 @@ import { GapAnalysisService, GapAnalysisResult } from '@events/data-access/gap-a
                         }
                       </div>
                     </div>
-                    
+
                     @if (activeField() !== 'date') {
-                      <div 
+                      <div
                         (click)="focusField('date')"
                         class="json-field__display"
                       >
@@ -1486,18 +1485,18 @@ import { GapAnalysisService, GapAnalysisResult } from '@events/data-access/gap-a
         flex-direction: column;
         height: auto;
       }
-      
+
       .parser__panel {
         width: 100%;
         padding: 0.75rem;
       }
-      
+
       .parser__status-bar {
         flex-direction: column;
         align-items: stretch;
         gap: 0.5rem;
       }
-      
+
       .confidence, .progress, .sources {
         justify-content: center;
       }
@@ -1521,121 +1520,121 @@ import { GapAnalysisService, GapAnalysisResult } from '@events/data-access/gap-a
 export class EnhancedEventParserComponent {
   private readonly _multiModalParser = inject(MultiModalParserService);
   private readonly _gapAnalysisService = inject(GapAnalysisService);
-  
+
   // UI State
   readonly activeTab = signal<'text' | 'image' | 'url'>('text');
   readonly activeField = signal<string | null>(null);
   readonly isDragOver = signal(false);
   readonly isProcessing = signal(false);
-  
+
   // Input signals
   readonly textInput = signal('');
   readonly urlInput = signal('');
-  
+
   // Data signals
   readonly activeSources = signal<DataSourceInput[]>([]);
   readonly extractedData = signal<any>(null);
   readonly fusionResult = signal<any>(null);
   readonly individualResults = signal<ProcessingResult[]>([]);
   readonly selectedCategories = signal<EventCategory[]>([]);
-  
+
   // Gap analysis signals
   readonly gapAnalysis = signal<GapAnalysisResult | null>(null);
-  
+
   // Progress tracking
   readonly progress = this._multiModalParser.progress;
-  
+
   // Computed values
   readonly overallConfidence = computed(() => {
     const data = this.extractedData();
     return data?.overallConfidence || 0;
   });
-  
+
   readonly progressPercentage = computed(() => {
     const prog = this.progress();
     if (prog.totalSources === 0) return 0;
     return Math.round((prog.completedSources / prog.totalSources) * 100);
   });
-  
+
   readonly hasExtractedData = computed(() => !!this.extractedData());
-  
+
   readonly canCreateEvent = computed(() => {
     const data = this.extractedData();
     return data && data.title?.value && data.date?.value;
   });
-  
+
   // Gap analysis computed values
   readonly showGapAnalysis = computed(() => {
     return this.hasExtractedData() && this.gapAnalysis() !== null;
   });
-  
+
   readonly usedSourceTypes = computed(() => {
     return this.activeSources().map(source => source.type);
   });
-  
+
   readonly dataCompleteness = computed(() => {
     const gap = this.gapAnalysis();
     return gap?.overall.completeness || 0;
   });
-  
+
   readonly criticalGaps = computed(() => {
     const gap = this.gapAnalysis();
     return gap?.gaps.filter(g => g.importance === 'critical') || [];
   });
-  
+
   readonly recommendedSources = computed(() => {
     const gap = this.gapAnalysis();
     return gap?.suggestedSources.slice(0, 3) || [];
   });
-  
+
   // Constants
   readonly availableCategories = EVENT_CATEGORIES;
-  
+
   @ViewChild('titleInput') titleInputRef!: ElementRef;
   @ViewChild('descriptionInput') descriptionInputRef!: ElementRef;
   @ViewChild('dateInput') dateInputRef!: ElementRef;
-  
+
   // Tab management
   setActiveTab(tab: 'text' | 'image' | 'url'): void {
     this.activeTab.set(tab);
   }
-  
+
   // Source management
   addTextSource(): void {
     const text = this.textInput().trim();
     if (!text) return;
-    
+
     this.activeSources.update(sources => [
       ...sources,
       { type: 'text', data: text, priority: 50 }
     ]);
-    
+
     this.textInput.set('');
   }
-  
+
   addUrlSource(): void {
     const url = this.urlInput().trim();
     if (!url || !this.isValidUrl(url)) return;
-    
+
     this.activeSources.update(sources => [
       ...sources,
       { type: 'url', data: url, priority: 70 }
     ]);
-    
+
     this.urlInput.set('');
   }
-  
+
   removeSource(index: number): void {
-    this.activeSources.update(sources => 
+    this.activeSources.update(sources =>
       sources.filter((_, i) => i !== index)
     );
   }
-  
+
   clearAllSources(): void {
     this.activeSources.set([]);
     this.resetData();
   }
-  
+
   // File handling
   onFileSelect(event: Event): void {
     const input = event.target as HTMLInputElement;
@@ -1643,46 +1642,46 @@ export class EnhancedEventParserComponent {
       this.addImageSources(Array.from(input.files));
     }
   }
-  
+
   onDragOver(event: DragEvent): void {
     event.preventDefault();
     this.isDragOver.set(true);
   }
-  
+
   onDragLeave(event: DragEvent): void {
     event.preventDefault();
     this.isDragOver.set(false);
   }
-  
+
   onDrop(event: DragEvent): void {
     event.preventDefault();
     this.isDragOver.set(false);
-    
+
     const files = Array.from(event.dataTransfer?.files || [])
       .filter(file => file.type.startsWith('image/'));
-    
+
     if (files.length > 0) {
       this.addImageSources(files);
     }
   }
-  
+
   private addImageSources(files: File[]): void {
     const newSources = files.map(file => ({
       type: 'image' as const,
       data: file,
       priority: 80
     }));
-    
+
     this.activeSources.update(sources => [...sources, ...newSources]);
   }
-  
+
   // Parsing
   async parseAllSources(): Promise<void> {
     if (this.activeSources().length === 0 || this.isProcessing()) return;
-    
+
     try {
       this.isProcessing.set(true);
-      
+
       const result = await this._multiModalParser.parseFromMultipleSources(
         this.activeSources(),
         {
@@ -1693,24 +1692,24 @@ export class EnhancedEventParserComponent {
           }
         }
       );
-      
+
       if (result.success && result.finalData) {
         this.extractedData.set(result.finalData);
         this.fusionResult.set(result.fusionResult);
         this.individualResults.set(result.individualResults);
-        
+
         // Update categories from extracted data
         if (result.finalData.categories) {
           this.selectedCategories.set(result.finalData.categories);
         }
-        
+
         // Trigger gap analysis
         this.updateGapAnalysis();
       } else {
         console.error('Parsing failed:', result.error);
         // TODO: Show error message to user
       }
-      
+
     } catch (error) {
       console.error('Error during parsing:', error);
       // TODO: Show error message to user
@@ -1718,11 +1717,11 @@ export class EnhancedEventParserComponent {
       this.isProcessing.set(false);
     }
   }
-  
+
   // Field editing
   focusField(fieldName: string): void {
     this.activeField.set(fieldName);
-    
+
     // Focus the input after a brief delay to allow DOM update
     setTimeout(() => {
       const inputRef = this.getFieldInputRef(fieldName);
@@ -1731,18 +1730,18 @@ export class EnhancedEventParserComponent {
       }
     }, 0);
   }
-  
+
   blurField(): void {
     this.activeField.set(null);
   }
-  
+
   updateField(fieldName: string, event: Event): void {
     const target = event.target as HTMLInputElement | HTMLTextAreaElement;
     const value = target.value;
-    
+
     this.extractedData.update(data => {
       if (!data) return data;
-      
+
       return {
         ...data,
         [fieldName]: {
@@ -1753,7 +1752,7 @@ export class EnhancedEventParserComponent {
       };
     });
   }
-  
+
   private getFieldInputRef(fieldName: string): ElementRef | null {
     switch (fieldName) {
       case 'title': return this.titleInputRef;
@@ -1762,7 +1761,7 @@ export class EnhancedEventParserComponent {
       default: return null;
     }
   }
-  
+
   // Categories
   toggleCategory(category: EventCategory): void {
     this.selectedCategories.update(categories => {
@@ -1773,7 +1772,7 @@ export class EnhancedEventParserComponent {
         return [...categories, category];
       }
     });
-    
+
     // Update extracted data
     this.extractedData.update(data => {
       if (!data) return data;
@@ -1783,7 +1782,7 @@ export class EnhancedEventParserComponent {
       };
     });
   }
-  
+
   // Utility methods
   isValidUrl(url: string): boolean {
     try {
@@ -1793,7 +1792,7 @@ export class EnhancedEventParserComponent {
       return false;
     }
   }
-  
+
   getSourceDisplayName(type: string): string {
     const names = {
       text: 'Text',
@@ -1804,51 +1803,51 @@ export class EnhancedEventParserComponent {
     };
     return names[type as keyof typeof names] || type;
   }
-  
+
   getSourcePreview(source: DataSourceInput): string {
     switch (source.type) {
       case 'text':
-        return typeof source.data === 'string' 
-          ? source.data.slice(0, 50) + '...' 
+        return typeof source.data === 'string'
+          ? source.data.slice(0, 50) + '...'
           : 'Text content';
       case 'image':
-        return source.data instanceof File 
-          ? source.data.name 
+        return source.data instanceof File
+          ? source.data.name
           : 'Image file';
       case 'url':
-        return typeof source.data === 'string' 
-          ? source.data 
+        return typeof source.data === 'string'
+          ? source.data
           : 'URL';
       default:
         return 'Data source';
     }
   }
-  
+
   getSourceBadgeClass(source: DataSourceInput): string {
     return 'source-badge--active';
   }
-  
+
   getConfidenceClass(confidence: number): string {
     if (confidence >= 80) return 'confidence__value--high';
     if (confidence >= 50) return 'confidence__value--medium';
     return 'confidence__value--low';
   }
-  
+
   getFieldConfidence(fieldName: string): number {
     const data = this.extractedData();
     const field = data?.[fieldName];
     return field?.confidence || 0;
   }
-  
+
   getFieldSource(fieldName: string): string | null {
     const data = this.extractedData();
     const field = data?.[fieldName];
     return field?.source || null;
   }
-  
+
   formatDateForDisplay(dateValue: string | undefined): string {
     if (!dateValue) return '';
-    
+
     try {
       const date = new Date(dateValue);
       return date.toLocaleString();
@@ -1856,7 +1855,7 @@ export class EnhancedEventParserComponent {
       return dateValue;
     }
   }
-  
+
   // Actions
   resetData(): void {
     this.extractedData.set(null);
@@ -1865,11 +1864,11 @@ export class EnhancedEventParserComponent {
     this.selectedCategories.set([]);
     this.activeField.set(null);
   }
-  
+
   async copyEventJson(): Promise<void> {
     const data = this.extractedData();
     if (!data) return;
-    
+
     try {
       await navigator.clipboard.writeText(JSON.stringify(data, null, 2));
       // TODO: Show success message
@@ -1878,22 +1877,22 @@ export class EnhancedEventParserComponent {
       // TODO: Show error message
     }
   }
-  
+
   // Gap analysis
   private updateGapAnalysis(): void {
     const data = this.extractedData();
     const usedSources = this.usedSourceTypes();
-    
+
     const analysis = this._gapAnalysisService.analyzeGaps(data, usedSources);
     this.gapAnalysis.set(analysis);
   }
-  
+
   getSuggestionsForSource(sourceType: string): string {
     const gap = this.gapAnalysis();
     const suggestion = gap?.suggestedSources.find(s => s.sourceType === sourceType);
     return suggestion?.reasoning || `Add ${sourceType} source to improve data quality`;
   }
-  
+
   getGapStatusClass(gap: any): string {
     switch (gap.status) {
       case 'missing': return 'gap-status--missing';
@@ -1903,7 +1902,7 @@ export class EnhancedEventParserComponent {
       default: return '';
     }
   }
-  
+
   getImportanceClass(importance: string): string {
     switch (importance) {
       case 'critical': return 'gap-importance--critical';
@@ -1916,7 +1915,7 @@ export class EnhancedEventParserComponent {
   async createEvent(): Promise<void> {
     const data = this.extractedData();
     if (!data || !this.canCreateEvent()) return;
-    
+
     // TODO: Implement event creation
     console.log('Creating event:', data);
   }

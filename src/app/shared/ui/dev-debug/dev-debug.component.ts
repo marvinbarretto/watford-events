@@ -12,12 +12,11 @@ import { createMockEvent, createMockEvents, createMixedEvents } from '../../../.
 
 @Component({
   selector: 'app-dev-debug',
-  standalone: true,
   imports: [CommonModule],
   template: `
     <div class="dev-debug admin-debug-panel" [class.expanded]="expanded()">
-      <button 
-        class="dev-debug__toggle admin-toggle" 
+      <button
+        class="dev-debug__toggle admin-toggle"
         (click)="toggleExpanded()"
         [attr.aria-expanded]="expanded()"
         aria-label="Toggle admin debug panel">
@@ -31,7 +30,7 @@ import { createMockEvent, createMockEvents, createMixedEvents } from '../../../.
             <span class="admin-icon">🔑</span>
             <span class="admin-text">Administrator Debug Panel</span>
           </div>
-          
+
           <!-- Event Statistics Dashboard -->
           <section class="debug-section">
             <h3>📊 Event Statistics</h3>
@@ -63,7 +62,7 @@ import { createMockEvent, createMockEvents, createMixedEvents } from '../../../.
           <section class="debug-section">
             <h3>🗂️ Event Management</h3>
             <div class="action-buttons">
-              <button 
+              <button
                 class="btn btn--danger"
                 (click)="deleteMockEvents()"
                 [disabled]="deleting() || eventStats().mock === 0">
@@ -73,8 +72,8 @@ import { createMockEvent, createMockEvents, createMixedEvents } from '../../../.
                   🗑️ Batch Delete Mock Events ({{ eventStats().mock }})
                 }
               </button>
-              
-              <button 
+
+              <button
                 class="btn btn--secondary"
                 (click)="toggleEventFilter()">
                 @if (showOnlyMockEvents()) {
@@ -84,7 +83,7 @@ import { createMockEvent, createMockEvents, createMixedEvents } from '../../../.
                 }
               </button>
 
-              <button 
+              <button
                 class="btn btn--success"
                 (click)="generateMockEvents()"
                 [disabled]="generating()">
@@ -143,7 +142,7 @@ import { createMockEvent, createMockEvents, createMixedEvents } from '../../../.
                         {{ event.status }} • Created: {{ event.createdAt | date:'short' }}
                       </span>
                     </div>
-                    <button 
+                    <button
                       class="btn btn--small btn--danger"
                       (click)="deleteSingleMockEvent(event.id)"
                       [disabled]="deleting()">
@@ -159,25 +158,25 @@ import { createMockEvent, createMockEvents, createMixedEvents } from '../../../.
           <section class="debug-section">
             <h3>🐛 Debug Actions</h3>
             <div class="action-buttons">
-              <button 
+              <button
                 class="btn btn--secondary"
                 (click)="logDebugInfo()">
                 📋 Log Debug Info
               </button>
-              
-              <button 
+
+              <button
                 class="btn btn--secondary"
                 (click)="reloadEvents()">
                 🔄 Reload Events
               </button>
-              
-              <button 
+
+              <button
                 class="btn btn--secondary"
                 (click)="clearEventStoreError()">
                 🧹 Clear Store Error
               </button>
 
-              <button 
+              <button
                 class="btn btn--secondary"
                 (click)="measurePerformance()">
                 ⏱️ Measure Performance
@@ -189,7 +188,7 @@ import { createMockEvent, createMockEvents, createMixedEvents } from '../../../.
           <section class="debug-section">
             <h3>👥 User Management</h3>
             <div class="action-buttons">
-              <button 
+              <button
                 class="btn btn--danger"
                 (click)="clearAnonymousUsers()"
                 [disabled]="cleaningUsers()">
@@ -199,8 +198,8 @@ import { createMockEvent, createMockEvents, createMixedEvents } from '../../../.
                   🗑️ Clear Anonymous Users
                 }
               </button>
-              
-              <button 
+
+              <button
                 class="btn btn--warning"
                 (click)="clearAllTestUsers()"
                 [disabled]="cleaningUsers()">
@@ -524,14 +523,14 @@ export class DevDebugComponent {
 
   protected toggleEventFilter(): void {
     this.showOnlyMockEvents.update(current => !current);
-    this.debugService.standard('[DevDebug] Event filter toggled', { 
-      showOnlyMockEvents: this.showOnlyMockEvents() 
+    this.debugService.standard('[DevDebug] Event filter toggled', {
+      showOnlyMockEvents: this.showOnlyMockEvents()
     });
   }
 
   protected async deleteMockEvents(): Promise<void> {
     const mockEvents = this.mockEvents();
-    
+
     if (mockEvents.length === 0) {
       this.debugService.warn('[DevDebug] No mock events to delete');
       return;
@@ -555,13 +554,13 @@ export class DevDebugComponent {
     try {
       // Use batch delete for cost efficiency (admin-only, no permission checks)
       const result = await this.eventService.deleteMockEventsBatch();
-      
+
       this.debugService.success(`[DevDebug] Successfully batch deleted all ${result.deleted} mock events`);
       this.debugService.standard(`[DevDebug] Cost savings: 1 write operation vs ${result.deleted} individual writes (${Math.round((1 - 1/result.deleted) * 100)}% savings)`);
-      
+
       // Reload events to reflect changes
       await this.eventStore.reload();
-      
+
       alert(`Successfully batch deleted ${result.deleted} mock events.\n\nCost savings: ${Math.round((1 - 1/result.deleted) * 100)}% reduction in Firestore writes!`);
     } catch (error) {
       this.debugService.error('[DevDebug] Failed to batch delete mock events', error);
@@ -595,7 +594,7 @@ export class DevDebugComponent {
   protected logDebugInfo(): void {
     this.debugService.standard('[DevDebug] System debug information:');
     this.debugService.logDebugInfo();
-    
+
     console.group('🛠️ [DevDebug] Event Store Debug Info');
     console.log('Store State:', this.eventStore.getDebugInfo());
     console.log('Event Statistics:', this.eventStats());
@@ -701,7 +700,7 @@ export class DevDebugComponent {
 
   async measurePerformance(): Promise<void> {
     this.debugService.standard('[DevDebug] Starting performance measurement');
-    
+
     const measurements = {
       eventStoreReload: 0,
       eventFiltering: 0,
@@ -768,12 +767,12 @@ export class DevDebugComponent {
     try {
       // Get all users to identify anonymous ones
       const allUsers = await this.userService.getAllUsers();
-      
+
       // Identify anonymous users by common patterns:
       // 1. Null or empty email
       // 2. Display names like "Anonymous", "Guest", or auto-generated patterns
-      const anonymousUsers = allUsers.filter(user => 
-        !user.email || 
+      const anonymousUsers = allUsers.filter(user =>
+        !user.email ||
         user.email.trim() === '' ||
         user.displayName.toLowerCase().includes('anonymous') ||
         user.displayName.toLowerCase().includes('guest') ||
@@ -793,7 +792,7 @@ export class DevDebugComponent {
 
       // Use cleanup service batch operations for efficiency
       let deletedCount = 0;
-      
+
       for (const user of anonymousUsers) {
         try {
           await this.userService.deleteUser(user.uid);
@@ -848,9 +847,9 @@ export class DevDebugComponent {
 
     try {
       const result = await this.cleanupService.clearUserData();
-      
+
       this.debugService.success('[DevDebug] Complete user cleanup finished', result);
-      
+
       const totalDeleted = result.users.deletedCount + result.earnedBadges.deletedCount;
       alert(`Successfully deleted all user data:\n\n` +
             `Users: ${result.users.deletedCount}\n` +

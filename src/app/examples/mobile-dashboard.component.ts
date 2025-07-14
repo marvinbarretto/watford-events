@@ -1,13 +1,13 @@
 import { Component } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { 
-  IonContent, 
-  IonHeader, 
-  IonTitle, 
-  IonToolbar, 
-  IonCard, 
-  IonCardContent, 
-  IonCardHeader, 
+import {
+  IonContent,
+  IonHeader,
+  IonTitle,
+  IonToolbar,
+  IonCard,
+  IonCardContent,
+  IonCardHeader,
   IonCardTitle,
   IonList,
   IonItem,
@@ -26,11 +26,11 @@ import {
   IonFabButton
 } from '@ionic/angular/standalone';
 import { addIcons } from 'ionicons';
-import { 
-  calendar, 
-  people, 
-  trendingUp, 
-  notifications, 
+import {
+  calendar,
+  people,
+  trendingUp,
+  notifications,
   star,
   add,
   statsChart,
@@ -41,7 +41,6 @@ import {
 
 @Component({
   selector: 'app-mobile-dashboard',
-  standalone: true,
   imports: [
     FormsModule,
     IonContent,
@@ -73,7 +72,7 @@ import {
         <ion-title>Mobile Dashboard</ion-title>
       </ion-toolbar>
     </ion-header>
-    
+
     <ion-content>
       <!-- Stats Cards -->
       <ion-grid>
@@ -126,7 +125,7 @@ import {
           </ion-col>
         </ion-row>
       </ion-grid>
-      
+
       <!-- Segment Filter -->
       <ion-segment [(ngModel)]="selectedSegment" class="segment-filter">
         <ion-segment-button value="recent">
@@ -139,7 +138,7 @@ import {
           <ion-label>Upcoming</ion-label>
         </ion-segment-button>
       </ion-segment>
-      
+
       <!-- Event List -->
       <ion-card>
         <ion-card-header>
@@ -166,8 +165,8 @@ import {
                   {{ event.date }}
                 </p>
               </ion-label>
-              <ion-badge 
-                slot="end" 
+              <ion-badge
+                slot="end"
                 [color]="getBadgeColor(event.status)">
                 {{ event.status }}
               </ion-badge>
@@ -176,7 +175,7 @@ import {
           </ion-list>
         </ion-card-content>
       </ion-card>
-      
+
       <!-- Quick Actions -->
       <ion-card>
         <ion-card-header>
@@ -215,7 +214,7 @@ import {
           </ion-grid>
         </ion-card-content>
       </ion-card>
-      
+
       <!-- Activity Feed -->
       <ion-card>
         <ion-card-header>
@@ -240,7 +239,7 @@ import {
           </ion-list>
         </ion-card-content>
       </ion-card>
-      
+
       <!-- Floating Action Button -->
       <ion-fab slot="fixed" vertical="bottom" horizontal="end">
         <ion-fab-button>
@@ -253,32 +252,32 @@ import {
     .stat-card {
       margin: 8px;
     }
-    
+
     .stat-card ion-card-content {
       text-align: center;
       padding: 16px;
     }
-    
+
     .stat-icon {
       font-size: 2rem;
       margin-bottom: 8px;
     }
-    
+
     .stat-number {
       font-size: 1.5rem;
       font-weight: bold;
       color: var(--ion-color-primary);
     }
-    
+
     .stat-label {
       color: var(--ion-color-medium);
       font-size: 0.9rem;
     }
-    
+
     .segment-filter {
       margin: 16px;
     }
-    
+
     .activity-icon {
       width: 100%;
       height: 100%;
@@ -287,12 +286,12 @@ import {
       align-items: center;
       justify-content: center;
     }
-    
+
     .activity-time {
       font-size: 0.8rem;
       color: var(--ion-color-medium);
     }
-    
+
     ion-item ion-icon[size="small"] {
       margin-right: 4px;
     }
@@ -300,7 +299,7 @@ import {
 })
 export class MobileDashboardComponent {
   selectedSegment = 'recent';
-  
+
   events = [
     {
       name: 'Summer Music Festival',
@@ -331,7 +330,7 @@ export class MobileDashboardComponent {
       avatar: 'https://via.placeholder.com/40x40/F39C12/FFFFFF?text=F'
     }
   ];
-  
+
   activities = [
     {
       title: 'New Event Created',
@@ -362,13 +361,13 @@ export class MobileDashboardComponent {
       color: '#E74C3C'
     }
   ];
-  
+
   constructor() {
-    addIcons({ 
-      calendar, 
-      people, 
-      trendingUp, 
-      notifications, 
+    addIcons({
+      calendar,
+      people,
+      trendingUp,
+      notifications,
       star,
       add,
       statsChart,
@@ -377,7 +376,7 @@ export class MobileDashboardComponent {
       ticket
     });
   }
-  
+
   getBadgeColor(status: string): string {
     switch (status.toLowerCase()) {
       case 'active':

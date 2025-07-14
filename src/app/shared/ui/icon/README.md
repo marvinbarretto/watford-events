@@ -7,8 +7,7 @@ A reusable icon component using Google Material Symbols with variable font anima
 ```typescript
 import { IconComponent } from '@shared/ui/icon/icon.component';
 
-@Component({
-  imports: [IconComponent],
+@Component({  imports: [IconComponent],
   template: `
     <app-icon name="location_on" size="sm" />
     <app-icon name="schedule" size="md" color="blue" />

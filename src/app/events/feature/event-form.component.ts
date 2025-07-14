@@ -15,8 +15,7 @@ import { EventExtractionResult } from '../../shared/utils/event-extraction-types
 import { parseEventDateTime, isLikelyDateTime } from '../utils/date-time-parser.util';
 
 @Component({
-  selector: 'app-event-form',
-  imports: [ReactiveFormsModule, TypeaheadComponent, ChipComponent, MultiSelectComponent, TagInputComponent],
+  selector: 'app-event-form',  imports: [ReactiveFormsModule, TypeaheadComponent, ChipComponent, MultiSelectComponent, TagInputComponent],
   template: `
     <div class="event-form-container">
       <!-- Extraction Result Summary -->
@@ -167,7 +166,7 @@ import { parseEventDateTime, isLikelyDateTime } from '../utils/date-time-parser.
               [compareFunction]="compareVenues"
               (selectedOption)="onVenueSelected($event)"
             />
-            
+
             <!-- Custom Location Input (shows when no venue selected) -->
             @if (!selectedVenue()) {
               <input
@@ -179,7 +178,7 @@ import { parseEventDateTime, isLikelyDateTime } from '../utils/date-time-parser.
               />
             }
           </div>
-          
+
           @if (getConfidence('location') > 0) {
             <app-chip
               [text]="getConfidence('location') + '% confident'"
@@ -188,7 +187,7 @@ import { parseEventDateTime, isLikelyDateTime } from '../utils/date-time-parser.
               [lowConfidence]="getConfidence('location') < 70"
             />
           }
-          
+
           @if (selectedVenue()) {
             <div class="selected-venue-info">
               <strong>{{ selectedVenue()?.name }}</strong>
@@ -609,7 +608,7 @@ export class EventFormComponent implements OnInit {
 
   // Category search functions
   searchCategories = (query: string) => {
-    return EVENT_CATEGORIES.filter(category => 
+    return EVENT_CATEGORIES.filter(category =>
       category.label.toLowerCase().includes(query.toLowerCase()) ||
       category.description?.toLowerCase().includes(query.toLowerCase())
     );
@@ -707,12 +706,12 @@ export class EventFormComponent implements OnInit {
     }
 
     const value = this.extractionResult.eventData[field as keyof typeof this.extractionResult.eventData];
-    
+
     // Handle array fields (categories, tags) - convert to string representation
     if (Array.isArray(value)) {
       return value.length > 0 ? value.join(', ') : null;
     }
-    
+
     return (value as string) || null;
   }
 
@@ -730,7 +729,7 @@ export class EventFormComponent implements OnInit {
 
   onVenueSelected(option: TypeaheadOption<Venue>) {
     this.selectedVenue.set(option.value);
-    this.eventForm.patchValue({ 
+    this.eventForm.patchValue({
       venue: option.value,
       location: '' // Clear custom location when venue is selected
     });
@@ -738,7 +737,7 @@ export class EventFormComponent implements OnInit {
 
   clearVenue() {
     this.selectedVenue.set(null);
-    this.eventForm.patchValue({ 
+    this.eventForm.patchValue({
       venue: null,
       location: '' // Reset location field for manual entry
     });
@@ -756,12 +755,12 @@ export class EventFormComponent implements OnInit {
     // Custom validation for location - either venue or custom location is required
     const hasVenue = this.selectedVenue() !== null;
     const hasLocation = this.eventForm.get('location')?.value?.trim();
-    
+
     if (status === 'published' && !hasVenue && !hasLocation) {
       this.error.emit('Please select a venue or enter a custom location');
       return;
     }
-    
+
     if (!this.eventForm.valid && status === 'published') {
       this.error.emit('Please fill in all required fields');
       return;

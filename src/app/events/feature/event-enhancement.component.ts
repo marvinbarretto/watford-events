@@ -19,22 +19,21 @@ interface EventEnhancementForm {
 
 @Component({
   selector: 'app-event-enhancement',
-  standalone: true,
   imports: [CommonModule, FormsModule, RouterModule, IconComponent],
   template: `
     <div class="event-enhancement">
       <!-- Header -->
       <header class="page-header">
         <button class="back-btn" (click)="goBack()" type="button">
-          <span class="back-icon">←</span>
+          <app-icon name="arrow_back" size="sm" />
           <span class="back-text">Back</span>
         </button>
-        
+
         <div class="header-info">
           <h1 class="page-title">Enhance Your Event</h1>
           <p class="page-subtitle">Add details to make your event shine</p>
         </div>
-        
+
         <div class="status-badge">
           <span class="badge-icon">📝</span>
           <span>Draft</span>
@@ -52,7 +51,7 @@ interface EventEnhancementForm {
       <!-- Event Enhancement Content -->
       @if (!isLoading() && event()) {
         <main class="main-content">
-          
+
           <!-- Event Summary -->
           <section class="event-summary">
             <div class="summary-card">
@@ -92,17 +91,17 @@ interface EventEnhancementForm {
 
           <!-- Enhancement Form -->
           <form class="enhancement-form" (ngSubmit)="saveEnhancements()">
-            
+
             <!-- Description Section -->
             <section class="form-section">
               <div class="section-header">
                 <h3 class="section-title">Description & Details</h3>
                 <p class="section-subtitle">Help people understand what to expect</p>
               </div>
-              
+
               <div class="form-field">
                 <label class="field-label">Event Description</label>
-                <textarea 
+                <textarea
                   class="field-textarea"
                   [(ngModel)]="enhancementForm().description"
                   name="description"
@@ -120,7 +119,7 @@ interface EventEnhancementForm {
 
               <div class="form-field">
                 <label class="field-label">Organizer</label>
-                <input 
+                <input
                   class="field-input"
                   type="text"
                   [(ngModel)]="enhancementForm().organizer"
@@ -131,7 +130,7 @@ interface EventEnhancementForm {
 
               <div class="form-field">
                 <label class="field-label">Contact Info</label>
-                <input 
+                <input
                   class="field-input"
                   type="text"
                   [(ngModel)]="enhancementForm().contactInfo"
@@ -142,7 +141,7 @@ interface EventEnhancementForm {
 
               <div class="form-field">
                 <label class="field-label">Website / Tickets</label>
-                <input 
+                <input
                   class="field-input"
                   type="url"
                   [(ngModel)]="enhancementForm().website"
@@ -158,13 +157,13 @@ interface EventEnhancementForm {
                 <h3 class="section-title">Categories & Tags</h3>
                 <p class="section-subtitle">Help people discover your event</p>
               </div>
-              
+
               <div class="form-field">
                 <label class="field-label">Categories</label>
                 <div class="category-grid">
                   @for (category of availableCategories; track category.value) {
                     <label class="category-option">
-                      <input 
+                      <input
                         type="checkbox"
                         [checked]="isCategorySelected(category.value)"
                         (change)="toggleCategory(category.value)"
@@ -177,7 +176,7 @@ interface EventEnhancementForm {
 
               <div class="form-field">
                 <label class="field-label">Tags</label>
-                <input 
+                <input
                   class="field-input"
                   type="text"
                   [(ngModel)]="tagInput"
@@ -745,10 +744,10 @@ export class EventEnhancementComponent implements OnInit {
 
       // Load event from EventStore
       const event = await this.eventStore.fetchEventById(eventId);
-      
+
       if (event) {
         this.event.set(event);
-        
+
         // Pre-populate enhancement form with existing data
         this.enhancementForm.set({
           description: event.description || '',
@@ -762,7 +761,7 @@ export class EventEnhancementComponent implements OnInit {
       } else {
         this.error.set('Event not found');
       }
-      
+
       this.isLoading.set(false);
 
     } catch (err) {
@@ -796,13 +795,13 @@ export class EventEnhancementComponent implements OnInit {
   formatEventDate(): string {
     const event = this.event();
     if (!event) return '';
-    
+
     const date = new Date(event.date);
-    return date.toLocaleDateString('en-GB', { 
-      weekday: 'long', 
-      year: 'numeric', 
-      month: 'long', 
-      day: 'numeric' 
+    return date.toLocaleDateString('en-GB', {
+      weekday: 'long',
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric'
     });
   }
 
@@ -816,7 +815,7 @@ export class EventEnhancementComponent implements OnInit {
       const categories = form.categories.includes(category)
         ? form.categories.filter(c => c !== category)
         : [...form.categories, category];
-      
+
       return { ...form, categories };
     });
   }
@@ -826,7 +825,7 @@ export class EventEnhancementComponent implements OnInit {
     const tags = this.tagInput.split(',')
       .map(tag => tag.trim())
       .filter(tag => tag.length > 0);
-    
+
     this.enhancementForm.update(form => ({ ...form, tags }));
     this.tagInput = '';
   }
@@ -873,7 +872,7 @@ export class EventEnhancementComponent implements OnInit {
       if (!event) return;
 
       const enhancements = this.enhancementForm();
-      
+
       // Update event with enhancements
       const updatedEvent = await this.eventStore.updateEvent(event.id, {
         description: enhancements.description.trim() || undefined,
@@ -905,7 +904,7 @@ export class EventEnhancementComponent implements OnInit {
       if (!event) return;
 
       const enhancements = this.enhancementForm();
-      
+
       // First save any pending enhancements
       const updatedEvent = await this.eventStore.updateEvent(event.id, {
         description: enhancements.description.trim() || undefined,
@@ -924,7 +923,7 @@ export class EventEnhancementComponent implements OnInit {
 
       // Now publish the event
       const publishedEvent = await this.eventStore.publishEvent(event.id);
-      
+
       if (publishedEvent) {
         alert('Event published successfully! 🚀');
         this.router.navigate(['/events', event.id]);

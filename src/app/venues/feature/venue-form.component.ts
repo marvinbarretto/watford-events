@@ -9,22 +9,25 @@ import { VenueStore } from '../data-access/venue.store';
 import { AdminStore } from '../../admin/data-access/admin.store';
 import { AuthStore } from '../../auth/data-access/auth.store';
 import { Venue, VenueFormData } from '../utils/venue.model';
+import { IconComponent } from '@shared/ui/icon/icon.component';
 
 @Component({
-  selector: 'app-venue-form',
-  imports: [CommonModule, ReactiveFormsModule, RouterModule],
+  selector: 'app-venue-form',  imports: [CommonModule, ReactiveFormsModule, RouterModule, IconComponent],
   template: `
     <div class="venue-form-container">
       <div class="header">
         <h2>{{ isEditing() ? 'Edit' : 'Add New' }} Venue</h2>
-        <a routerLink="/admin/venues" class="back-link">← Back to Venues</a>
+        <a routerLink="/admin/venues" class="back-link">
+          <app-icon name="arrow_back" size="sm" />
+          Back to Venues
+        </a>
       </div>
 
       <form [formGroup]="venueForm" (ngSubmit)="saveVenue()" class="venue-form">
         <!-- Basic Information -->
         <fieldset class="form-section">
           <legend>Basic Information</legend>
-          
+
           <div class="form-group">
             <label for="name">Venue Name *</label>
             <input
@@ -80,7 +83,7 @@ import { Venue, VenueFormData } from '../utils/venue.model';
         <!-- Geographic Information -->
         <fieldset class="form-section">
           <legend>Location</legend>
-          
+
           <div class="form-row">
             <div class="form-group">
               <label for="latitude">Latitude *</label>
@@ -119,18 +122,18 @@ import { Venue, VenueFormData } from '../utils/venue.model';
         <!-- Accessibility Features -->
         <fieldset class="form-section">
           <legend>Accessibility Features</legend>
-          
+
           <div class="checkbox-group">
             <label class="checkbox-label">
               <input type="checkbox" formControlName="accessibleEntrance" />
               <span>Accessible Entrance</span>
             </label>
-            
+
             <label class="checkbox-label">
               <input type="checkbox" formControlName="stepFreeAccess" />
               <span>Step-free Access</span>
             </label>
-            
+
             <label class="checkbox-label">
               <input type="checkbox" formControlName="elevatorAvailable" />
               <span>Elevator Available</span>
@@ -141,18 +144,18 @@ import { Venue, VenueFormData } from '../utils/venue.model';
         <!-- Toilet Facilities -->
         <fieldset class="form-section">
           <legend>Toilet Facilities</legend>
-          
+
           <div class="checkbox-group">
             <label class="checkbox-label">
               <input type="checkbox" formControlName="accessibleToilet" />
               <span>Accessible Toilet</span>
             </label>
-            
+
             <label class="checkbox-label">
               <input type="checkbox" formControlName="genderNeutral" />
               <span>Gender Neutral Toilets</span>
             </label>
-            
+
             <label class="checkbox-label">
               <input type="checkbox" formControlName="babyChanging" />
               <span>Baby Changing Facilities</span>
@@ -163,7 +166,7 @@ import { Venue, VenueFormData } from '../utils/venue.model';
         <!-- Capacity Information -->
         <fieldset class="form-section">
           <legend>Capacity Information</legend>
-          
+
           <div class="form-row">
             <div class="form-group">
               <label for="maxCapacity">Maximum Capacity</label>
@@ -192,7 +195,7 @@ import { Venue, VenueFormData } from '../utils/venue.model';
         <!-- Contact Information -->
         <fieldset class="form-section">
           <legend>Contact Information</legend>
-          
+
           <div class="form-row">
             <div class="form-group">
               <label for="phone">Phone Number</label>
@@ -232,7 +235,7 @@ import { Venue, VenueFormData } from '../utils/venue.model';
         <!-- Transport Information -->
         <fieldset class="form-section">
           <legend>Transport Information</legend>
-          
+
           <div class="form-group">
             <label for="buses">Bus Information</label>
             <textarea
@@ -270,7 +273,7 @@ import { Venue, VenueFormData } from '../utils/venue.model';
         <!-- Additional Information -->
         <fieldset class="form-section">
           <legend>Additional Information</legend>
-          
+
           <div class="form-group">
             <label for="notesForVisitors">Notes for Visitors</label>
             <textarea
@@ -297,9 +300,9 @@ import { Venue, VenueFormData } from '../utils/venue.model';
         <!-- Form Actions -->
         <div class="form-actions">
           <button type="button" class="btn btn-secondary" (click)="cancel()">Cancel</button>
-          <button 
-            type="submit" 
-            class="btn btn-primary" 
+          <button
+            type="submit"
+            class="btn btn-primary"
             [disabled]="venueForm.invalid || saving()"
           >
             {{ saving() ? 'Saving...' : (isEditing() ? 'Update' : 'Create') }} Venue
@@ -364,7 +367,7 @@ export class VenueFormComponent implements OnInit {
 
   async ngOnInit() {
     const venueId = this.route.snapshot.paramMap.get('id');
-    
+
     if (venueId) {
       // Edit mode - fetch venue data
       this.isEditing.set(true);
@@ -462,19 +465,19 @@ export class VenueFormComponent implements OnInit {
           parking: formValue.parking || undefined
         } : undefined,
         notesForVisitors: formValue.notesForVisitors || undefined,
-        amenities: formValue.amenities ? 
-          formValue.amenities.split(',').map((s: string) => s.trim()).filter((s: string) => s) : 
+        amenities: formValue.amenities ?
+          formValue.amenities.split(',').map((s: string) => s.trim()).filter((s: string) => s) :
           undefined
       };
 
       if (this.isEditing() && this.venue) {
         // Update existing venue
         await this.venueService.updateVenue(this.venue.id, venueData);
-        
+
         // Update stores
         this.adminStore.updateVenue(this.venue.id, { ...venueData, updatedAt: new Date() });
         this.venueStore.updateVenue(this.venue.id, { ...venueData, updatedAt: new Date() });
-        
+
         const updatedVenue = { ...this.venue, ...venueData, updatedAt: new Date() };
       } else {
         // Create new venue
@@ -485,7 +488,7 @@ export class VenueFormComponent implements OnInit {
           createdAt: new Date(),
           updatedAt: new Date()
         });
-        
+
         // Update stores
         this.adminStore.setVenues([...this.adminStore.venues(), newVenue]);
         this.venueStore.addVenue(newVenue);

@@ -26,7 +26,6 @@ export type TypeaheadOption<T = any> = {
  */
 @Component({
   selector: 'app-typeahead',
-  standalone: true,
   imports: [ReactiveFormsModule, OverlayModule, A11yModule],
   changeDetection: ChangeDetectionStrategy.OnPush,
   providers: [
@@ -61,7 +60,7 @@ export type TypeaheadOption<T = any> = {
         (keydown)="onKeydown($event)"
         autocomplete="off"
       />
-      
+
       <!-- Loading Indicator -->
       @if (isLoading()) {
         <div class="loading-indicator" [attr.aria-label]="'Searching for ' + searchControl.value">
@@ -69,21 +68,21 @@ export type TypeaheadOption<T = any> = {
           <span class="loading-text">{{ loadingText }}</span>
         </div>
       }
-      
+
       <!-- Results Dropdown -->
       @if (showDropdown() && options().length > 0) {
-        <div class="dropdown-overlay" 
-             cdkOverlayOrigin 
+        <div class="dropdown-overlay"
+             cdkOverlayOrigin
              #trigger="cdkOverlayOrigin"
              cdkTrapFocus>
-          <div 
+          <div
             class="dropdown-content"
             role="listbox"
             [id]="'typeahead-listbox-' + componentId"
             [attr.aria-label]="'Search results for ' + searchControl.value"
           >
             @for (option of visibleOptions(); track option.value; let i = $index) {
-              <div 
+              <div
                 class="dropdown-item"
                 role="option"
                 [id]="'typeahead-option-' + componentId + '-' + i"
@@ -100,7 +99,7 @@ export type TypeaheadOption<T = any> = {
                 }
               </div>
             }
-            
+
             <!-- Virtual Scrolling Indicator -->
             @if (hasMoreResults()) {
               <div class="more-results-indicator" role="status" aria-live="polite">
@@ -110,7 +109,7 @@ export type TypeaheadOption<T = any> = {
           </div>
         </div>
       }
-      
+
       <!-- No Results -->
       @if (showDropdown() && options().length === 0 && searchControl.value && !isLoading()) {
         <div class="dropdown-overlay">
@@ -122,19 +121,19 @@ export type TypeaheadOption<T = any> = {
           </div>
         </div>
       }
-      
+
       <!-- Error State -->
       @if (hasError()) {
         <div class="error-message" role="alert" aria-live="assertive">
           {{ errorMessage() }}
         </div>
       }
-      
+
       <!-- Screen Reader Announcements -->
-      <div 
-        class="sr-only" 
-        role="status" 
-        aria-live="polite" 
+      <div
+        class="sr-only"
+        role="status"
+        aria-live="polite"
         aria-atomic="true"
         [attr.aria-label]="screenReaderStatus()"
       >
@@ -144,7 +143,7 @@ export type TypeaheadOption<T = any> = {
   `,
   styles: [`
     /* ===== THEME-INTEGRATED TYPEAHEAD STYLES ===== */
-    
+
     .typeahead-container {
       position: relative;
       width: 100%;
@@ -354,11 +353,11 @@ export type TypeaheadOption<T = any> = {
       input {
         border-width: 3px;
       }
-      
+
       .dropdown-item.selected {
         border-left-width: 4px;
       }
-      
+
       .dropdown-content {
         border-width: 3px;
       }
@@ -379,11 +378,11 @@ export type TypeaheadOption<T = any> = {
       .dropdown-content {
         max-height: 200px;
       }
-      
+
       .dropdown-item {
         padding: 14px 12px;
       }
-      
+
       input {
         font-size: 16px; /* Prevents zoom on iOS */
       }
@@ -393,7 +392,7 @@ export type TypeaheadOption<T = any> = {
       .dropdown-content {
         max-height: 160px;
       }
-      
+
       .dropdown-item {
         padding: 12px;
       }
@@ -422,11 +421,11 @@ export class TypeaheadComponent<T = any> implements ControlValueAccessor, OnInit
   @Input() searchFunction: (query: string) => Promise<TypeaheadOption<T>[]> | TypeaheadOption<T>[] = () => [];
   @Input() displayFunction: (value: T) => string = (value: T) => String(value);
   @Input() compareFunction: (a: T, b: T) => boolean = (a: T, b: T) => a === b;
-  
+
   // ===== ACCESSIBILITY INPUTS =====
   @Input() ariaLabel?: string;
   @Input() ariaDescribedBy?: string;
-  
+
   // ===== CUSTOMIZATION INPUTS =====
   @Input() loadingText = 'Searching...';
   @Input() noResultsText = 'No results found';
@@ -476,7 +475,7 @@ export class TypeaheadComponent<T = any> implements ControlValueAccessor, OnInit
   private searchCache = new Map<string, { data: TypeaheadOption<T>[], timestamp: number }>();
   private lastSearchTime = 0;
   private abortController: AbortController | null = null;
-  
+
   // ===== UNIQUE ID FOR ACCESSIBILITY =====
   readonly componentId = Math.random().toString(36).substr(2, 9);
 
@@ -578,12 +577,12 @@ export class TypeaheadComponent<T = any> implements ControlValueAccessor, OnInit
   private handleSearchError(error: any) {
     console.error('Typeahead search error:', error);
     const errorMsg = error?.message || 'Search failed. Please try again.';
-    
+
     this.errorMessage.set(errorMsg);
     this.options.set([]);
     this.showDropdown.set(false);
     this.isLoading.set(false);
-    
+
     this.updateScreenReaderStatus(`Search error: ${errorMsg}`);
     this.errorOccurred.emit(errorMsg);
     this.liveAnnouncer.announce(`Search failed: ${errorMsg}`);
@@ -710,10 +709,10 @@ export class TypeaheadComponent<T = any> implements ControlValueAccessor, OnInit
     this.searchControl.setValue(option.label, { emitEvent: false });
     this.hideDropdown();
     this.selectedIndex.set(-1);
-    
+
     this.onChange(option.value);
     this.selectedOption.emit(option);
-    
+
     // Announce selection to screen readers
     this.liveAnnouncer.announce(`Selected: ${option.label}`);
     this.updateScreenReaderStatus(`Selected ${option.label}`);
@@ -803,7 +802,7 @@ export class TypeaheadComponent<T = any> implements ControlValueAccessor, OnInit
   }
 
   // ===== PUBLIC API METHODS =====
-  
+
   /**
    * Focus the input programmatically
    */

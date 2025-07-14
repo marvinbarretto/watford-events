@@ -26,7 +26,6 @@ interface TestItem {
 
 @Component({
   selector: 'app-test',
-  standalone: true,
   imports: [CommonModule, IconComponent],
   templateUrl: './test.component.html',
   styleUrl: './test.component.scss'

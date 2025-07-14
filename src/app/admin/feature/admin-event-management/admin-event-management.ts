@@ -8,8 +8,7 @@ import { EventModel } from '@app/events/utils/event.model';
 import { IconComponent } from '@shared/ui/icon/icon.component';
 
 @Component({
-  selector: 'app-admin-event-management',
-  imports: [CommonModule, FormsModule, RouterModule, IconComponent],
+  selector: 'app-admin-event-management',  imports: [CommonModule, FormsModule, RouterModule, IconComponent],
   templateUrl: './admin-event-management.html',
   styleUrl: './admin-event-management.scss'
 })
@@ -33,7 +32,7 @@ export class AdminEventManagement implements OnInit {
 
   private async loadEvents() {
     this.adminStore.setEventsLoading(true);
-    
+
     try {
       const events = await this.eventService.getAll();
       this.adminStore.setEvents(events);
@@ -46,16 +45,16 @@ export class AdminEventManagement implements OnInit {
 
   get filteredAndSortedEvents(): EventModel[] {
     let filtered = this.events();
-    
+
     // Apply status filter
     if (this.filterStatus !== 'all') {
       filtered = filtered.filter((event: EventModel) => event.status === this.filterStatus);
     }
-    
+
     // Apply sorting
     filtered.sort((a: EventModel, b: EventModel) => {
       let comparison = 0;
-      
+
       switch (this.sortBy) {
         case 'date':
           comparison = new Date(a.date).getTime() - new Date(b.date).getTime();
@@ -67,10 +66,10 @@ export class AdminEventManagement implements OnInit {
           comparison = a.status.localeCompare(b.status);
           break;
       }
-      
+
       return this.sortOrder === 'desc' ? -comparison : comparison;
     });
-    
+
     return filtered;
   }
 
@@ -81,7 +80,7 @@ export class AdminEventManagement implements OnInit {
 
       const updatedEvent = { ...event, status: newStatus, updatedAt: new Date() };
       await this.eventService.updateEvent(eventId, updatedEvent);
-      
+
       // Update store
       this.adminStore.updateEvent(eventId, { status: newStatus, updatedAt: new Date() });
     } catch (error) {
@@ -91,7 +90,7 @@ export class AdminEventManagement implements OnInit {
 
   async deleteEvent(eventId: string) {
     if (!confirm('Are you sure you want to delete this event?')) return;
-    
+
     try {
       await this.eventService.deleteEvent(eventId);
       this.adminStore.removeEvent(eventId);

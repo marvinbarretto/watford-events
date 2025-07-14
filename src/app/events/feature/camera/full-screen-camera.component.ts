@@ -4,10 +4,10 @@ import { CommonModule } from '@angular/common';
 import { CameraService } from '../../../shared/data-access/camera.service';
 import { CameraAlignmentGuideComponent } from './camera-alignment-guide.component';
 import { CameraCaptureButtonComponent } from './camera-capture-button.component';
+import { IconComponent } from '@shared/ui/icon/icon.component';
 
 @Component({
-  selector: 'app-full-screen-camera',
-  imports: [CameraAlignmentGuideComponent, CameraCaptureButtonComponent],
+  selector: 'app-full-screen-camera',  imports: [CameraAlignmentGuideComponent, CameraCaptureButtonComponent, IconComponent],
   template: `
     <div class="full-screen-camera">
       <!-- Camera Stream -->
@@ -43,7 +43,7 @@ import { CameraCaptureButtonComponent } from './camera-capture-button.component'
       <!-- Header Overlay -->
       <div class="header-overlay">
         <button class="back-btn" (click)="onBackClick()">
-          <span class="back-arrow">←</span>
+          <app-icon name="arrow_back" size="sm" />
           <span>Back</span>
         </button>
         <h1>Scan Flyer</h1>

@@ -1,11 +1,11 @@
 /**
  * @fileoverview SettingsComponent - Comprehensive user settings management page
- * 
+ *
  * PURPOSE:
  * - Complete interface for managing persistent preferences
  * - Organized into sections: General, Notifications, Accessibility, Privacy
  * - Accessible only to authenticated users
- * 
+ *
  * FEATURES:
  * - Theme selection with preview
  * - Language preference
@@ -19,21 +19,20 @@ import { Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { AuthStore } from '@auth/data-access/auth.store';
 import { UserPreferencesStore } from '../data-access/user-preferences.store';
-import { 
-  ThemePreference, 
-  LanguageCode 
+import {
+  ThemePreference,
+  LanguageCode
 } from '../utils/user-preferences.types';
 import { IconComponent } from '@shared/ui/icon/icon.component';
 
 @Component({
   selector: 'app-settings',
-  standalone: true,
   imports: [FormsModule, IconComponent],
   template: `
     <div class="settings-container">
       <header class="settings-header">
         <button class="back-btn" (click)="goBack()">
-          <span class="back-icon">←</span>
+          <app-icon name="arrow_back" size="sm" />
           Back
         </button>
         <h1 class="page-title">Settings</h1>
@@ -60,14 +59,14 @@ import { IconComponent } from '@shared/ui/icon/icon.component';
             <span class="section-icon">⚙️</span>
             General
           </h2>
-          
+
           <div class="setting-group">
             <label class="setting-label">
               <span class="label-text">
                 <span class="label-icon">🌍</span>
                 Language
               </span>
-              <select 
+              <select
                 class="setting-select"
                 [value]="preferencesStore.language()"
                 (change)="onLanguageChange($event)"
@@ -108,7 +107,7 @@ import { IconComponent } from '@shared/ui/icon/icon.component';
             <span class="section-icon">🔔</span>
             Notifications
           </h2>
-          
+
           <div class="setting-group">
             <label class="setting-checkbox">
               <input
@@ -201,7 +200,7 @@ import { IconComponent } from '@shared/ui/icon/icon.component';
             <span class="section-icon">♿</span>
             Accessibility
           </h2>
-          
+
           <div class="setting-group">
             <label class="setting-label">
               <span class="label-text">
@@ -264,7 +263,7 @@ import { IconComponent } from '@shared/ui/icon/icon.component';
             <span class="section-icon">🔒</span>
             Privacy
           </h2>
-          
+
           <div class="setting-group">
             <label class="setting-checkbox">
               <input
@@ -323,7 +322,7 @@ import { IconComponent } from '@shared/ui/icon/icon.component';
             <span class="section-icon">👤</span>
             Account
           </h2>
-          
+
           <div class="setting-group">
             <div class="account-actions">
               <button
@@ -334,7 +333,7 @@ import { IconComponent } from '@shared/ui/icon/icon.component';
                 <span class="btn-icon">🔄</span>
                 Reset All Settings
               </button>
-              
+
               <button
                 class="action-btn secondary"
                 (click)="exportSettings()"
@@ -343,7 +342,7 @@ import { IconComponent } from '@shared/ui/icon/icon.component';
                 <span class="btn-icon">📤</span>
                 Export Settings
               </button>
-              
+
               <button
                 class="action-btn danger"
                 (click)="logout()"
@@ -792,7 +791,7 @@ export class SettingsComponent {
     const settings = this.preferencesStore.getUserPreferences();
     const dataStr = JSON.stringify(settings, null, 2);
     const dataBlob = new Blob([dataStr], { type: 'application/json' });
-    
+
     const link = document.createElement('a');
     link.href = URL.createObjectURL(dataBlob);
     link.download = 'watford-events-settings.json';

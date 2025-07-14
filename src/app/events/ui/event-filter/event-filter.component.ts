@@ -14,7 +14,7 @@ export interface EventCounts {
 
 @Component({
   selector: 'app-event-filter',
-  standalone: true,
+
   template: `
     <div class="event-filter">
       <div class="filter-header">

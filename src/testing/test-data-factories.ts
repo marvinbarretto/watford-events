@@ -22,13 +22,9 @@ export const createMockUser = (overrides: Partial<User> = {}): User => {
     photoURL: null,
     joinedAt: generateTimestamp().toISOString(),
     role: Roles.Authenticated,
-    checkedInPubIds: [],
-    streaks: {},
-    joinedMissionIds: [],
-    totalPoints: 0,
     ...overrides
   };
-  
+
   console.log('👤 Created mock user:', { uid: user.uid, email: user.email, displayName: user.displayName });
   return user;
 };
@@ -39,7 +35,7 @@ export const createMockUser = (overrides: Partial<User> = {}): User => {
  * @param debugName - Name for debugging logs
  */
 export const createMockUserSignal = (
-  overrides: Partial<User> = {}, 
+  overrides: Partial<User> = {},
   debugName = 'user-signal'
 ): WritableSignal<User> => {
   const user = createMockUser(overrides);
@@ -47,15 +43,11 @@ export const createMockUserSignal = (
   return createGenericTestSignal(user, debugName);
 };
 
-export const createMockUserWithPoints = (points: number, overrides: Partial<User> = {}): User => 
-  createMockUser({ totalPoints: points, ...overrides });
+export const createMockUserWithPoints = (points: number, overrides: Partial<User> = {}): User =>
+  createMockUser({ ...overrides });
 
-export const createMockActiveUser = (overrides: Partial<User> = {}): User => 
+export const createMockActiveUser = (overrides: Partial<User> = {}): User =>
   createMockUser({
-    checkedInPubIds: ['pub-1', 'pub-2'],
-    streaks: { 'weekly': 3, 'monthly': 12 },
-    joinedMissionIds: ['mission-1'],
-    totalPoints: 150,
     ...overrides
   });
 
@@ -102,7 +94,7 @@ export interface MockEvent {
   createdBy: string;
   ownerId: string;
   status: 'draft' | 'published' | 'cancelled';
-  
+
   // LLM extraction metadata
   imageUrl?: string;
   scannedAt?: Date;
@@ -110,13 +102,13 @@ export interface MockEvent {
   rawTextData?: string;
   llmModel?: string;
   processingTime?: number;
-  
+
   // Additional event details
   organizer?: string;
   ticketInfo?: string;
   contactInfo?: string;
   website?: string;
-  
+
   // Development/Testing fields
   isMockEvent?: boolean;
 }
@@ -185,8 +177,8 @@ export const createMockEvents = (count: number, factory: (index: number) => Part
 
 // Create mixed real and mock events for development
 export const createMixedEvents = (
-  realCount: number, 
-  mockCount: number, 
+  realCount: number,
+  mockCount: number,
   factory: (index: number, isReal: boolean) => Partial<MockEvent> = () => ({})
 ): MockEvent[] => {
   const realEvents = Array.from({ length: realCount }, (_, index) => createRealEvent({
@@ -194,13 +186,13 @@ export const createMixedEvents = (
     title: `Real Event ${index + 1}`,
     ...factory(index, true)
   }));
-  
+
   const mockEvents = Array.from({ length: mockCount }, (_, index) => createMockEvent({
     id: generateId(`mock-event-${index}`),
     title: `Mock Event ${index + 1}`,
     ...factory(index, false)
   }));
-  
+
   // Shuffle the events to mix them
   return [...realEvents, ...mockEvents].sort(() => Math.random() - 0.5);
 };

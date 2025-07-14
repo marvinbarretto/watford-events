@@ -5,7 +5,6 @@ import { EventCategory, EVENT_CATEGORIES, EventModel, EventType } from '@events/
 
 @Component({
   selector: 'app-event-parser',
-  standalone: true,
   imports: [FormsModule],
   styles: [`
     .parser {
@@ -529,20 +528,20 @@ import { EventCategory, EVENT_CATEGORIES, EventModel, EventType } from '@events/
         <div class="parser__header-inner">
           <h1 class="parser__title">Event Parser</h1>
           <p class="parser__subtitle">Extract event data from text and refine the results</p>
-          
+
           <div class="parser__status-bar">
             <div class="confidence">
               <div class="confidence__bar">
                 <span class="confidence__label">Confidence:</span>
                 <div class="confidence__track">
-                  <div 
+                  <div
                     class="confidence__fill"
                     [style.width.%]="overallConfidence()"
                   ></div>
                 </div>
                 <span class="confidence__value" [class]="getConfidenceColorClass()">{{ overallConfidence() }}%</span>
               </div>
-              
+
               <div class="legend">
                 <div class="legend__item">
                   <div class="legend__dot legend__dot--parsed"></div>
@@ -558,7 +557,7 @@ import { EventCategory, EVENT_CATEGORIES, EventModel, EventType } from '@events/
                 </div>
               </div>
             </div>
-            
+
             <div class="ai-toggle">
               <label>
                 <input type="checkbox" [(ngModel)]="useLLM" disabled>
@@ -592,13 +591,13 @@ import { EventCategory, EVENT_CATEGORIES, EventModel, EventType } from '@events/
                 </button>
               </div>
             </div>
-            
+
             <div class="panel__body">
               <div class="input-wrapper">
                 @if (highlightedText()) {
                   <div class="input-highlighted" [innerHTML]="highlightedText()"></div>
                 }
-                
+
                 <textarea
                   [value]="inputText()"
                   (input)="onInputChange($event)"
@@ -609,8 +608,8 @@ import { EventCategory, EVENT_CATEGORIES, EventModel, EventType } from '@events/
 
                 <div class="append-mode">
                   <label class="append-mode__label">
-                    <input 
-                      type="checkbox" 
+                    <input
+                      type="checkbox"
                       [(ngModel)]="appendMode"
                     />
                     Append mode - add more context
@@ -655,7 +654,7 @@ import { EventCategory, EVENT_CATEGORIES, EventModel, EventType } from '@events/
             <div class="panel__body">
               <div class="json">
                 <div class="json__punct">{{ '{' }}</div>
-                
+
                 <!-- Title -->
                 <div class="json__line json__line--indent">
                   <span class="json__key">"title":</span>
@@ -667,7 +666,7 @@ import { EventCategory, EVENT_CATEGORIES, EventModel, EventType } from '@events/
                       }
                     </div>
                     @if (activeField() !== 'title') {
-                      <div 
+                      <div
                         (click)="focusField('title')"
                         class="json__value-display"
                       >
@@ -701,7 +700,7 @@ import { EventCategory, EVENT_CATEGORIES, EventModel, EventType } from '@events/
                       }
                     </div>
                     @if (activeField() !== 'description') {
-                      <div 
+                      <div
                         (click)="focusField('description')"
                         class="json__value-display"
                       >
@@ -734,7 +733,7 @@ import { EventCategory, EVENT_CATEGORIES, EventModel, EventType } from '@events/
                       }
                     </div>
                     @if (activeField() !== 'date') {
-                      <div 
+                      <div
                         (click)="focusField('date')"
                         class="json__value-display"
                       >
@@ -838,7 +837,7 @@ import { EventCategory, EVENT_CATEGORIES, EventModel, EventType } from '@events/
                     </div>
                   </div>
                 </div>
-                
+
                 <div class="json__punct">{{ '}' }}</div>
               </div>
             </div>
@@ -869,7 +868,7 @@ export class EventParserComponent {
   onInputChange(event: Event) {
     const text = (event.target as HTMLTextAreaElement).value;
     this.inputText.set(text);
-    
+
     // Auto-parse on input if there's substantial content
     if (text.trim().length > 50) {
       this.parseText();
@@ -881,7 +880,7 @@ export class EventParserComponent {
     if (!newText.trim()) return;
 
     let textToParse: string;
-    
+
     if (this.appendMode && this.cumulativeText()) {
       // In append mode, combine existing cumulative text with new text
       textToParse = this.cumulativeText() + '\n\n' + newText;
@@ -895,17 +894,17 @@ export class EventParserComponent {
     }
 
     const parsed = this.parsingService.parseEventText(textToParse);
-    
+
     // In append mode, merge with existing data rather than replace
     if (this.appendMode && this.parsedData()) {
       const mergedParsed = this.mergeParsingResults(this.parsedData()!, parsed);
       this.parsedData.set(mergedParsed);
       this.overallConfidence.set(mergedParsed.overallConfidence);
-      
+
       // Update editable event with merged data, but preserve manual edits
       const newEditable = this.parsingService.convertToEditableFormat(mergedParsed);
       const currentEditable = this.editableEvent();
-      
+
       // Only update fields that weren't manually edited (preserve user changes)
       const mergedEditable = this.mergeEditableData(currentEditable, newEditable);
       this.editableEvent.set(mergedEditable);
@@ -913,29 +912,29 @@ export class EventParserComponent {
       // Normal mode - replace all data
       this.parsedData.set(parsed);
       this.overallConfidence.set(parsed.overallConfidence);
-      
+
       const editable = this.parsingService.convertToEditableFormat(parsed);
       this.editableEvent.set(editable);
     }
-    
+
     // Generate highlighted text
     this.generateHighlightedText(textToParse, this.parsedData()!);
   }
 
   private mergeParsingResults(existing: ParsedEventData, newData: ParsedEventData): ParsedEventData {
     const merged = { ...existing };
-    
+
     // For each field, keep the one with higher confidence
     Object.keys(newData).forEach(key => {
       if (key === 'overallConfidence') return;
-      
+
       const existingField = existing[key as keyof ParsedEventData];
       const newField = newData[key as keyof ParsedEventData];
-      
+
       if (newField && typeof newField === 'object' && 'confidence' in newField) {
         const newParsedField = newField as ParsedField;
         const existingParsedField = existingField as ParsedField;
-        
+
         // Use new field if it has higher confidence or existing field is empty
         if (!existingParsedField || newParsedField.confidence > existingParsedField.confidence) {
           (merged as any)[key] = newField;
@@ -947,29 +946,29 @@ export class EventParserComponent {
         (merged as any)[key] = mergedArray;
       }
     });
-    
+
     // Recalculate overall confidence
     const confidenceValues = Object.values(merged)
       .filter(field => field && typeof field === 'object' && 'confidence' in field)
       .map(field => (field as ParsedField).confidence);
-    
-    merged.overallConfidence = confidenceValues.length > 0 
+
+    merged.overallConfidence = confidenceValues.length > 0
       ? Math.round(confidenceValues.reduce((sum, conf) => sum + conf, 0) / confidenceValues.length)
       : 0;
-    
+
     return merged;
   }
 
   private mergeEditableData(current: EditableEventData, newData: EditableEventData): EditableEventData {
     const merged = { ...current };
-    
+
     // Only update fields that are empty or have very low confidence
     Object.keys(newData).forEach(key => {
       const currentValue = current[key as keyof EditableEventData];
       const newValue = newData[key as keyof EditableEventData];
-      
+
       // If current field is empty, use new value
-      if (!currentValue || (typeof currentValue === 'string' && !currentValue.trim()) || 
+      if (!currentValue || (typeof currentValue === 'string' && !currentValue.trim()) ||
           (Array.isArray(currentValue) && currentValue.length === 0)) {
         (merged as any)[key] = newValue;
       }
@@ -978,14 +977,14 @@ export class EventParserComponent {
         (merged as any)[key] = [...new Set([...currentValue, ...newValue])];
       }
     });
-    
+
     return merged;
   }
 
   private generateHighlightedText(text: string, parsed: ParsedEventData) {
     let highlighted = text;
     const highlights: { start: number; end: number; field: string; confidence: number }[] = [];
-    
+
     // Collect all highlights with positions
     Object.entries(parsed).forEach(([field, value]) => {
       if (value && typeof value === 'object' && 'startIndex' in value && 'endIndex' in value) {
@@ -1000,22 +999,22 @@ export class EventParserComponent {
         }
       }
     });
-    
+
     // Sort by start position (reverse to avoid index shifting)
     highlights.sort((a, b) => b.start - a.start);
-    
+
     // Apply highlights
     highlights.forEach(highlight => {
       const cssClass = this.getHighlightClass(highlight.confidence);
       const before = highlighted.substring(0, highlight.start);
       const match = highlighted.substring(highlight.start, highlight.end);
       const after = highlighted.substring(highlight.end);
-      
-      highlighted = before + 
-        `<span class="${cssClass}" title="${highlight.field}: ${highlight.confidence}% confidence">${match}</span>` + 
+
+      highlighted = before +
+        `<span class="${cssClass}" title="${highlight.field}: ${highlight.confidence}% confidence">${match}</span>` +
         after;
     });
-    
+
     this.highlightedText.set(highlighted);
   }
 
@@ -1027,9 +1026,9 @@ export class EventParserComponent {
 
   getFieldIndicatorClass(field: keyof EditableEventData): string {
     const value = this.editableEvent()[field];
-    const hasValue = value && (typeof value === 'string' ? value.trim() : true) && 
+    const hasValue = value && (typeof value === 'string' ? value.trim() : true) &&
                     (Array.isArray(value) ? value.length > 0 : true);
-    
+
     if (hasValue) {
       const confidence = this.getFieldConfidence(field);
       if (confidence >= 80) return 'field-dot--parsed';
@@ -1042,7 +1041,7 @@ export class EventParserComponent {
   getFieldConfidence(field: keyof EditableEventData): number {
     const parsed = this.parsedData();
     if (!parsed) return 0;
-    
+
     const fieldData = parsed[field as keyof ParsedEventData];
     if (fieldData && typeof fieldData === 'object' && 'confidence' in fieldData) {
       return (fieldData as ParsedField).confidence;
@@ -1060,7 +1059,7 @@ export class EventParserComponent {
   updateField(field: keyof EditableEventData, event: Event) {
     const target = event.target as HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement;
     const current = this.editableEvent();
-    
+
     this.editableEvent.set({
       ...current,
       [field]: target.value
@@ -1070,14 +1069,14 @@ export class EventParserComponent {
   toggleCategory(category: EventCategory) {
     const current = this.editableEvent();
     const categories = current.categories || [];
-    
+
     const index = categories.indexOf(category);
     if (index > -1) {
       categories.splice(index, 1);
     } else if (categories.length < 3) {
       categories.push(category);
     }
-    
+
     this.editableEvent.set({
       ...current,
       categories: [...categories]
@@ -1086,17 +1085,17 @@ export class EventParserComponent {
 
   addTag() {
     if (!this.newTag.trim()) return;
-    
+
     const current = this.editableEvent();
     const tags = current.tags || [];
-    
+
     if (tags.length < 10 && !tags.includes(this.newTag.trim().toLowerCase())) {
       this.editableEvent.set({
         ...current,
         tags: [...tags, this.newTag.trim().toLowerCase()]
       });
     }
-    
+
     this.newTag = '';
   }
 
@@ -1104,7 +1103,7 @@ export class EventParserComponent {
     const current = this.editableEvent();
     const tags = current.tags || [];
     const index = tags.indexOf(tag);
-    
+
     if (index > -1) {
       tags.splice(index, 1);
       this.editableEvent.set({

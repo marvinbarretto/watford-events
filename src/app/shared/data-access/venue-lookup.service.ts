@@ -2,6 +2,7 @@ import { Injectable, inject } from '@angular/core';
 import { VenueService } from '../../venues/data-access/venue.service';
 import { Venue } from '../../venues/utils/venue.model';
 import { TypeaheadOption } from '../ui/typeahead/typeahead.component';
+import { findBestMatch, findSimilarMatches } from '../utils/string-similarity.utils';
 
 /**
  * Service for venue lookup functionality in forms
@@ -154,5 +155,89 @@ export class VenueLookupService {
    */
   compareVenues(a: Venue, b: Venue): boolean {
     return a.id === b.id;
+  }
+
+  /**
+   * Find similar venues using fuzzy matching
+   * @param query The search query
+   * @param threshold Minimum similarity score (default: 0.6)
+   * @returns Best matching venue with similarity score, or null if none found
+   */
+  async findSimilarVenues(query: string, threshold: number = 0.6): Promise<{
+    venue: Venue;
+    similarity: number;
+  } | null> {
+    try {
+      const allVenues = await this.venueService.getPublishedVenues();
+      const venueNames = allVenues.map(v => v.name);
+      
+      const bestMatch = findBestMatch(query, venueNames, threshold);
+      
+      if (!bestMatch) return null;
+      
+      const matchingVenue = allVenues.find(v => v.name === bestMatch.match);
+      
+      return matchingVenue ? {
+        venue: matchingVenue,
+        similarity: bestMatch.similarity
+      } : null;
+    } catch (error) {
+      console.error('Error finding similar venues:', error);
+      return null;
+    }
+  }
+
+  /**
+   * Analyze venue input and determine inference type
+   * @param query The user input
+   * @returns Inference information about the venue
+   */
+  async analyzeVenueInput(query: string): Promise<{
+    type: 'exact-match' | 'close-match' | 'new-venue';
+    venue?: Venue;
+    similarity?: number;
+    message: string;
+  }> {
+    if (!query || query.length < 2) {
+      return {
+        type: 'new-venue',
+        message: ''
+      };
+    }
+
+    try {
+      // First check for exact matches
+      const exactMatches = await this.venueService.searchVenues(query);
+      if (exactMatches.length > 0) {
+        return {
+          type: 'exact-match',
+          venue: exactMatches[0],
+          message: ''
+        };
+      }
+
+      // Then check for similar matches
+      const similarMatch = await this.findSimilarVenues(query, 0.6);
+      if (similarMatch) {
+        return {
+          type: 'close-match',
+          venue: similarMatch.venue,
+          similarity: similarMatch.similarity,
+          message: `Similar to ${similarMatch.venue.name}`
+        };
+      }
+
+      // No matches found - it's a new venue
+      return {
+        type: 'new-venue',
+        message: 'New/unknown venue'
+      };
+    } catch (error) {
+      console.error('Error analyzing venue input:', error);
+      return {
+        type: 'new-venue',
+        message: 'New/unknown venue'
+      };
+    }
   }
 }

@@ -8,15 +8,14 @@ import { MobileMainShell } from './shared/ui/shells/mobile-main-shell.component'
 import { FullScreenShell } from './shared/ui/shells/fullscreen-shell.component';
 import { FlyerParserShell } from './shared/ui/shells/flyer-parser-shell.component';
 
-type ShellType = 
+type ShellType =
   | 'web-main'           // Desktop web layout
-  | 'mobile-main'        // Mobile with Ionic components  
+  | 'mobile-main'        // Mobile with Ionic components
   | 'fullscreen'         // Login, onboarding (no nav)
   | 'flyer-parser';      // Special layout for flyer scanning
 
 @Component({
-  selector: 'app-root',
-  imports: [
+  selector: 'app-root',  imports: [
     RouterOutlet,
     WebMainShell,
     MobileMainShell,
@@ -50,9 +49,9 @@ export class App {
   private readonly router = inject(Router);
   private readonly activatedRoute = inject(ActivatedRoute);
   private readonly ssrPlatform = inject(SsrPlatformService);
-  
+
   private readonly navigationSignal = signal(0);
-  
+
   constructor() {
     // Force recomputation on route changes - only on browser
     this.ssrPlatform.onlyOnBrowser(() => {
@@ -63,45 +62,45 @@ export class App {
       });
     });
   }
-  
+
   readonly currentShell = computed(() => {
     this.navigationSignal(); // Force recomputation
-    
+
     // During SSR, use a safe default
     const url = this.ssrPlatform.onlyOnBrowser(() => this.router.url) || '/';
     const routeShell = this.getShellFromUrl(url);
-    
+
     return this.selectShellForPlatform(routeShell);
   });
-  
+
   private getShellFromUrl(url: string): string {
     if (url.startsWith('/flyer-parser')) {
       return 'flyer-parser';
     }
-    
+
     if (url.startsWith('/login')) {
       return 'fullscreen';
     }
-    
+
     return 'main';
   }
-  
+
   private selectShellForPlatform(routeShell: string): ShellType {
     // Special shells handle platform differences internally
     if (routeShell === 'fullscreen') {
       return 'fullscreen';
     }
-    
+
     if (routeShell === 'flyer-parser') {
       return 'flyer-parser';
     }
-    
+
     // Main shells vary by platform - safe platform detection for SSR
     if (routeShell === 'main' || !routeShell) {
       const isMobile = this.ssrPlatform.onlyOnBrowser(() => this.platform.is('capacitor')) || false;
       return isMobile ? 'mobile-main' : 'web-main';
     }
-    
+
     return 'web-main'; // Fallback
   }
 }

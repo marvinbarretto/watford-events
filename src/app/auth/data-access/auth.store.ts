@@ -79,10 +79,7 @@ export class AuthStore {
         displayName: displayName ?? firebaseUser.email?.split('@')[0] ?? 'User',
         emailVerified: firebaseUser.emailVerified,
         role: this.getDefaultRole(firebaseUser),
-        checkedInPubIds: [],
-        streaks: {},
         joinedAt: new Date().toISOString(),
-        joinedMissionIds: [],
       };
 
       // ✅ Update auth state only
@@ -145,12 +142,12 @@ export class AuthStore {
   private getDefaultRole(firebaseUser: FirebaseUser): Roles {
     // For now, assign authenticated role to all users
     // In the future, you might want to check email domains or other criteria
-    
+
     // TODO: Add admin email check or other admin assignment logic
     // if (firebaseUser.email === 'admin@watford-events.com') {
     //   return Roles.Admin;
     // }
-    
+
     return Roles.Authenticated;
   }
 }

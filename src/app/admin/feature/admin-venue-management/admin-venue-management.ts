@@ -8,8 +8,7 @@ import { Venue } from '@app/venues/utils/venue.model';
 import { IconComponent } from '@shared/ui/icon/icon.component';
 
 @Component({
-  selector: 'app-admin-venue-management',
-  imports: [CommonModule, FormsModule, RouterModule, IconComponent],
+  selector: 'app-admin-venue-management',  imports: [CommonModule, FormsModule, RouterModule, IconComponent],
   templateUrl: './admin-venue-management.html',
   styleUrl: './admin-venue-management.scss'
 })
@@ -52,7 +51,7 @@ export class AdminVenueManagement implements OnInit {
 
   private async loadVenues() {
     this.adminStore.setVenuesLoading(true);
-    
+
     try {
       const venues = await this.venueService.getAll();
       this.adminStore.setVenues(venues);
@@ -65,26 +64,26 @@ export class AdminVenueManagement implements OnInit {
 
   get filteredAndSortedVenues(): Venue[] {
     let filtered = this.venues();
-    
+
     // Apply status filter
     if (this.filterStatus !== 'all') {
       filtered = filtered.filter((venue: Venue) => venue.status === this.filterStatus);
     }
-    
+
     // Apply category filter
     if (this.filterCategory !== 'all') {
       filtered = filtered.filter((venue: Venue) => venue.category === this.filterCategory);
     }
-    
+
     // Apply accessibility filter
     if (this.showOnlyAccessible) {
       filtered = filtered.filter((venue: Venue) => this.isAccessible(venue));
     }
-    
+
     // Apply sorting
     filtered.sort((a: Venue, b: Venue) => {
       let comparison = 0;
-      
+
       switch (this.sortBy) {
         case 'name':
           comparison = a.name.localeCompare(b.name);
@@ -99,10 +98,10 @@ export class AdminVenueManagement implements OnInit {
           comparison = new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime();
           break;
       }
-      
+
       return this.sortOrder === 'desc' ? -comparison : comparison;
     });
-    
+
     return filtered;
   }
 
@@ -112,7 +111,7 @@ export class AdminVenueManagement implements OnInit {
       if (!venue) return;
 
       await this.venueService.updateVenue(venueId, { status: newStatus });
-      
+
       // Update store
       this.adminStore.updateVenue(venueId, { status: newStatus, updatedAt: new Date() });
     } catch (error) {
@@ -122,7 +121,7 @@ export class AdminVenueManagement implements OnInit {
 
   async deleteVenue(venueId: string) {
     if (!confirm('Are you sure you want to delete this venue?')) return;
-    
+
     try {
       await this.venueService.deleteVenue(venueId);
       this.adminStore.removeVenue(venueId);
@@ -175,14 +174,14 @@ export class AdminVenueManagement implements OnInit {
 
   getAccessibilityFeatures(venue: Venue): string[] {
     const features: string[] = [];
-    
+
     if (venue.accessibleEntrance) features.push('Accessible Entrance');
     if (venue.stepFreeAccess) features.push('Step-free Access');
     if (venue.elevatorAvailable) features.push('Elevator Available');
     if (venue.toilets?.accessibleToilet) features.push('Accessible Toilets');
     if (venue.toilets?.babyChanging) features.push('Baby Changing');
     if (venue.toilets?.genderNeutral) features.push('Gender Neutral Toilets');
-    
+
     return features;
   }
 

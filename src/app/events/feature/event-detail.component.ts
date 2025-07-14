@@ -6,10 +6,10 @@ import { AuthStore } from '../../auth/data-access/auth.store';
 import { EventModel } from '../utils/event.model';
 import { toDate, formatTimestamp } from '../../shared/utils/timestamp.utils';
 import { ChipComponent } from '../../shared/ui/chip/chip.component';
+import { IconComponent } from '@shared/ui/icon/icon.component';
 
 @Component({
-  selector: 'app-event-detail',
-  imports: [RouterModule, ChipComponent],
+  selector: 'app-event-detail',  imports: [RouterModule, ChipComponent, IconComponent],
   template: `
     <div class="event-detail-container">
       <!-- Loading State -->
@@ -26,14 +26,17 @@ import { ChipComponent } from '../../shared/ui/chip/chip.component';
           <div class="error-icon">❌</div>
           <h2>Event Not Found</h2>
           <p>{{ error() }}</p>
-          <button class="back-btn" (click)="goBack()">← Back to Events</button>
+          <button class="back-btn" (click)="goBack()">
+            <app-icon name="arrow_back" size="sm" />
+            Back to Events
+          </button>
         </div>
       }
 
       <!-- Event Detail -->
       @if (event() && !loading() && !error()) {
         <div class="event-content">
-          
+
           <!-- Hero Section -->
           <div class="event-hero">
             @if (event()?.imageUrl) {
@@ -42,7 +45,7 @@ import { ChipComponent } from '../../shared/ui/chip/chip.component';
                 <div class="hero-overlay">
                   <div class="hero-actions">
                     <button class="action-btn back-btn" (click)="goBack()">
-                      <span>←</span>
+                      <app-icon name="arrow_back" size="sm" />
                       <span>Back</span>
                     </button>
                     @if (canEdit()) {
@@ -63,7 +66,7 @@ import { ChipComponent } from '../../shared/ui/chip/chip.component';
                 <span class="placeholder-icon">📅</span>
                 <div class="hero-actions">
                   <button class="action-btn back-btn" (click)="goBack()">
-                    <span>←</span>
+                    <app-icon name="arrow_back" size="sm" />
                     <span>Back</span>
                   </button>
                   @if (canEdit()) {
@@ -92,7 +95,7 @@ import { ChipComponent } from '../../shared/ui/chip/chip.component';
                 [status]="event()!.status"
               />
             </div>
-            
+
             @if (event()?.scannedAt) {
               <app-chip
                 [text]="'AI-Generated' + (event()?.scannerConfidence ? ' (' + event()?.scannerConfidence + '%)' : '')"
@@ -105,11 +108,11 @@ import { ChipComponent } from '../../shared/ui/chip/chip.component';
 
           <!-- Event Details Grid -->
           <div class="event-details-grid">
-            
+
             <!-- Core Information Section -->
             <div class="info-section">
               <h3 class="section-title">Event Details</h3>
-              
+
               <div class="info-item">
                 <span class="info-icon">📅</span>
                 <div class="info-content">
@@ -185,7 +188,7 @@ import { ChipComponent } from '../../shared/ui/chip/chip.component';
             @if (event()?.scannedAt) {
               <div class="ai-section">
                 <h3 class="section-title">AI Processing Details</h3>
-                
+
                 <div class="ai-stats">
                   @if (event()?.scannerConfidence) {
                     <div class="ai-stat">
@@ -236,7 +239,7 @@ import { ChipComponent } from '../../shared/ui/chip/chip.component';
             <!-- Social Section -->
             <div class="social-section">
               <h3 class="section-title">Event Engagement</h3>
-              
+
               <div class="social-stats">
                 <div class="social-stat">
                   <span class="social-stat-number">{{ attendeeCount() }}</span>
@@ -261,7 +264,7 @@ import { ChipComponent } from '../../shared/ui/chip/chip.component';
             <!-- Meta Information -->
             <div class="meta-section">
               <h3 class="section-title">Event Information</h3>
-              
+
               <div class="meta-item">
                 <span class="meta-label">Created</span>
                 <span class="meta-value">{{ getSafeDateDisplay(event()!.createdAt) }}</span>
@@ -281,12 +284,12 @@ import { ChipComponent } from '../../shared/ui/chip/chip.component';
             <!-- Debug Section -->
             <div class="debug-section">
               <h3 class="section-title">🐛 Debug Information</h3>
-              
+
               <button class="toggle-btn" (click)="toggleDebugData()">
                 <span>{{ showDebugData() ? '▼' : '▶' }}</span>
                 <span>Raw Event Object</span>
               </button>
-              
+
               @if (showDebugData()) {
                 <div class="debug-content">
                   <pre>{{ getDebugEventData() }}</pre>
@@ -786,7 +789,7 @@ export class EventDetailComponent implements OnInit {
   readonly canEdit = computed(() => {
     const currentUser = this.user();
     const currentEvent = this.event();
-    return currentUser && currentEvent && 
+    return currentUser && currentEvent &&
            (currentEvent.createdBy === currentUser.uid || currentEvent.ownerId === currentUser.uid);
   });
 
@@ -798,21 +801,21 @@ export class EventDetailComponent implements OnInit {
   readonly isAttending = computed(() => {
     const currentUser = this.user();
     const currentEvent = this.event();
-    return currentUser && currentEvent && 
+    return currentUser && currentEvent &&
            currentEvent.attendeeIds.includes(currentUser.uid);
   });
 
   readonly daysUntilEvent = computed(() => {
     const currentEvent = this.event();
     if (!currentEvent) return 0;
-    
+
     const now = new Date();
     const eventDate = toDate(currentEvent.date);
     if (!eventDate) return 0;
-    
+
     const diffTime = eventDate.getTime() - now.getTime();
     const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-    
+
     return Math.max(0, diffDays);
   });
 
@@ -824,10 +827,10 @@ export class EventDetailComponent implements OnInit {
     try {
       this.loading.set(true);
       this.error.set(null);
-      
+
       // Get the ID parameter (could be an actual ID or a slug)
       const idOrSlug = this.route.snapshot.paramMap.get('id');
-      
+
       if (!idOrSlug) {
         this.error.set('Event identifier is required');
         return;
@@ -836,7 +839,7 @@ export class EventDetailComponent implements OnInit {
       console.log('[EventDetail] 🔍 Looking for event with identifier:', idOrSlug);
 
       let event: EventModel | null = null;
-      
+
       // First try as an ID (most common case for existing events)
       if (idOrSlug.startsWith('event_')) {
         console.log('[EventDetail] 🆔 Treating as event ID');
@@ -922,14 +925,14 @@ export class EventDetailComponent implements OnInit {
   getDebugEventData(): string {
     const currentEvent = this.event();
     if (!currentEvent) return 'No event data available';
-    
+
     return JSON.stringify(currentEvent, null, 2);
   }
 
   async toggleRsvp() {
     const currentEvent = this.event();
     const currentUser = this.user();
-    
+
     if (!currentEvent || !currentUser) return;
 
     try {
@@ -938,7 +941,7 @@ export class EventDetailComponent implements OnInit {
       } else {
         await this.eventStore.addAttendee(currentEvent.id, currentUser.uid);
       }
-      
+
       // Reload event to get updated attendee list
       await this.loadEvent();
     } catch (error) {
@@ -956,7 +959,7 @@ export class EventDetailComponent implements OnInit {
       }
       return 'No date available';
     }
-    
+
     return this.formatEventDate(date);
   }
 

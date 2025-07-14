@@ -3,7 +3,6 @@ import { RouterModule } from '@angular/router';
 
 @Component({
   selector: 'app-events-directory',
-  standalone: true,
   imports: [RouterModule],
   template: `
     <div class="events-directory">
@@ -15,7 +14,7 @@ import { RouterModule } from '@angular/router';
 
       <!-- Main Content Grid -->
       <div class="directory-grid">
-        
+
         <!-- Add Events Section -->
         <section class="directory-section add-events">
           <div class="section-header">
@@ -25,7 +24,7 @@ import { RouterModule } from '@angular/router';
             </h2>
             <p class="section-description">Multiple ways to create your event</p>
           </div>
-          
+
           <div class="action-cards">
             <a routerLink="/events/create" class="action-card featured">
               <div class="card-icon">➕</div>
@@ -33,7 +32,7 @@ import { RouterModule } from '@angular/router';
               <p class="card-description">Quick and simple 3-question creator</p>
               <span class="card-badge">Recommended</span>
             </a>
-            
+
             <a routerLink="/events/add" class="action-card">
               <div class="card-icon">📝</div>
               <h3 class="card-title">Advanced Form</h3>
@@ -51,20 +50,20 @@ import { RouterModule } from '@angular/router';
             </h2>
             <p class="section-description">Advanced event processing tools</p>
           </div>
-          
+
           <div class="action-cards">
             <a routerLink="/events/parser" class="action-card">
               <div class="card-icon">🔍</div>
               <h3 class="card-title">Event Parser</h3>
               <p class="card-description">Process multiple event sources</p>
             </a>
-            
+
             <a routerLink="/events/enhanced-parser" class="action-card">
               <div class="card-icon">🚀</div>
               <h3 class="card-title">Enhanced Parser</h3>
               <p class="card-description">Advanced parsing with AI</p>
             </a>
-            
+
             <a routerLink="/flyer-parser" class="action-card">
               <div class="card-icon">🖼️</div>
               <h3 class="card-title">Flyer Parser</h3>
@@ -82,14 +81,14 @@ import { RouterModule } from '@angular/router';
             </h2>
             <p class="section-description">Find and explore events</p>
           </div>
-          
+
           <div class="action-cards">
             <a routerLink="/" class="action-card">
               <div class="card-icon">🏠</div>
               <h3 class="card-title">Home Feed</h3>
               <p class="card-description">Latest events and updates</p>
             </a>
-            
+
             <a routerLink="/venues" class="action-card">
               <div class="card-icon">📍</div>
               <h3 class="card-title">Venues</h3>
@@ -107,14 +106,14 @@ import { RouterModule } from '@angular/router';
             </h2>
             <p class="section-description">Admin and management tools</p>
           </div>
-          
+
           <div class="action-cards">
             <a routerLink="/admin/events" class="action-card admin">
               <div class="card-icon">👑</div>
               <h3 class="card-title">Admin Dashboard</h3>
               <p class="card-description">Manage all events and users</p>
             </a>
-            
+
             <a routerLink="/admin/venues" class="action-card admin">
               <div class="card-icon">🏢</div>
               <h3 class="card-title">Venue Management</h3>

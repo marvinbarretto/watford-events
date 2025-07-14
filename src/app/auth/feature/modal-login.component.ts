@@ -7,7 +7,6 @@ import { IconComponent } from '@shared/ui/icon/icon.component';
 
 @Component({
   selector: 'app-modal-login',
-  standalone: true,
   imports: [CommonModule, ReactiveFormsModule, IconComponent],
   template: `
     <div class="login-modal">
@@ -63,8 +62,8 @@ import { IconComponent } from '@shared/ui/icon/icon.component';
             }
           </div>
 
-          <button 
-            type="submit" 
+          <button
+            type="submit"
             class="email-login-btn"
             [disabled]="!loginForm.valid || isLoading()"
           >
@@ -89,7 +88,7 @@ import { IconComponent } from '@shared/ui/icon/icon.component';
             <a href="/forgot-password" class="forgot-link">Forgot your password?</a>
           </p>
           <p>
-            Don't have an account? 
+            Don't have an account?
             <a href="/register" class="register-link">Create one here</a>
           </p>
         </div>
@@ -321,7 +320,7 @@ import { IconComponent } from '@shared/ui/icon/icon.component';
         max-width: 100%;
         margin: 0;
       }
-      
+
       .modal-header,
       .modal-content {
         padding-left: 16px;

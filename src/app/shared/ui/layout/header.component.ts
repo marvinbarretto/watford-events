@@ -12,7 +12,6 @@ import packageJson from '../../../../../package.json';
 
 @Component({
   selector: 'app-header',
-  standalone: true,
   imports: [CommonModule, RouterModule],
   templateUrl: './header.component.html',
   styleUrl: './header.component.scss'

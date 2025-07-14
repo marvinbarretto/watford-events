@@ -1,13 +1,13 @@
 import { Component } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { 
-  IonContent, 
-  IonHeader, 
-  IonTitle, 
-  IonToolbar, 
-  IonCard, 
-  IonCardContent, 
-  IonCardHeader, 
+import {
+  IonContent,
+  IonHeader,
+  IonTitle,
+  IonToolbar,
+  IonCard,
+  IonCardContent,
+  IonCardHeader,
   IonCardTitle,
   IonList,
   IonItem,
@@ -33,10 +33,10 @@ import {
   IonCol
 } from '@ionic/angular/standalone';
 import { addIcons } from 'ionicons';
-import { 
-  calendar, 
-  time, 
-  location, 
+import {
+  calendar,
+  time,
+  location,
   people,
   pricetag,
   save,
@@ -45,7 +45,6 @@ import {
 
 @Component({
   selector: 'app-mobile-form',
-  standalone: true,
   imports: [
     FormsModule,
     IonContent,
@@ -89,7 +88,7 @@ import {
         </ion-buttons>
       </ion-toolbar>
     </ion-header>
-    
+
     <ion-content>
       <form>
         <!-- Basic Information -->
@@ -101,26 +100,26 @@ import {
             <ion-list>
               <ion-item>
                 <ion-label position="stacked">Event Name</ion-label>
-                <ion-input 
+                <ion-input
                   [(ngModel)]="formData.eventName"
                   name="eventName"
                   placeholder="Enter event name"
                   required></ion-input>
               </ion-item>
-              
+
               <ion-item>
                 <ion-label position="stacked">Description</ion-label>
-                <ion-textarea 
+                <ion-textarea
                   [(ngModel)]="formData.description"
                   name="description"
                   placeholder="Describe your event..."
                   rows="3"
                   auto-grow="true"></ion-textarea>
               </ion-item>
-              
+
               <ion-item>
                 <ion-label position="stacked">Category</ion-label>
-                <ion-select 
+                <ion-select
                   [(ngModel)]="formData.category"
                   name="category"
                   placeholder="Select category">
@@ -131,10 +130,10 @@ import {
                   <ion-select-option value="food">Food & Drink</ion-select-option>
                 </ion-select>
               </ion-item>
-              
+
               <ion-item>
                 <ion-label position="stacked">Location</ion-label>
-                <ion-input 
+                <ion-input
                   [(ngModel)]="formData.location"
                   name="location"
                   placeholder="Event location">
@@ -144,7 +143,7 @@ import {
             </ion-list>
           </ion-card-content>
         </ion-card>
-        
+
         <!-- Date & Time -->
         <ion-card>
           <ion-card-header>
@@ -159,7 +158,7 @@ import {
                   <p>{{ formData.eventDate || 'Select date' }}</p>
                 </ion-label>
               </ion-item>
-              
+
               <ion-item button (click)="openTimeModal()">
                 <ion-icon name="time" slot="start"></ion-icon>
                 <ion-label>
@@ -167,14 +166,14 @@ import {
                   <p>{{ formData.eventTime || 'Select time' }}</p>
                 </ion-label>
               </ion-item>
-              
+
               <ion-item>
                 <ion-label position="stacked">Duration (hours)</ion-label>
-                <ion-range 
+                <ion-range
                   [(ngModel)]="formData.duration"
                   name="duration"
-                  min="1" 
-                  max="24" 
+                  min="1"
+                  max="24"
                   step="0.5"
                   snaps="true"
                   color="primary">
@@ -186,7 +185,7 @@ import {
             </ion-list>
           </ion-card-content>
         </ion-card>
-        
+
         <!-- Pricing -->
         <ion-card>
           <ion-card-header>
@@ -207,11 +206,11 @@ import {
                   </ion-item>
                 </ion-radio-group>
               </ion-item>
-              
+
               @if (formData.eventType === 'paid') {
                 <ion-item>
                   <ion-label position="stacked">Price (£)</ion-label>
-                  <ion-input 
+                  <ion-input
                     [(ngModel)]="formData.price"
                     name="price"
                     type="number"
@@ -221,11 +220,11 @@ import {
                   </ion-input>
                 </ion-item>
               }
-              
+
               @if (formData.eventType === 'paid') {
                 <ion-item>
                   <ion-label position="stacked">Max Attendees</ion-label>
-                  <ion-input 
+                  <ion-input
                     [(ngModel)]="formData.maxAttendees"
                     name="maxAttendees"
                     type="number"
@@ -237,7 +236,7 @@ import {
             </ion-list>
           </ion-card-content>
         </ion-card>
-        
+
         <!-- Settings -->
         <ion-card>
           <ion-card-header>
@@ -246,7 +245,7 @@ import {
           <ion-card-content>
             <ion-list>
               <ion-item>
-                <ion-checkbox 
+                <ion-checkbox
                   [(ngModel)]="formData.isPublic"
                   name="isPublic"
                   slot="start"></ion-checkbox>
@@ -255,9 +254,9 @@ import {
                   <p>Anyone can see this event</p>
                 </ion-label>
               </ion-item>
-              
+
               <ion-item>
-                <ion-toggle 
+                <ion-toggle
                   [(ngModel)]="formData.allowRegistration"
                   name="allowRegistration"
                   slot="end"></ion-toggle>
@@ -266,9 +265,9 @@ import {
                   <p>Allow users to register online</p>
                 </ion-label>
               </ion-item>
-              
+
               <ion-item>
-                <ion-toggle 
+                <ion-toggle
                   [(ngModel)]="formData.sendNotifications"
                   name="sendNotifications"
                   slot="end"></ion-toggle>
@@ -277,9 +276,9 @@ import {
                   <p>Notify attendees of updates</p>
                 </ion-label>
               </ion-item>
-              
+
               <ion-item>
-                <ion-toggle 
+                <ion-toggle
                   [(ngModel)]="formData.showAttendeeCount"
                   name="showAttendeeCount"
                   slot="end"></ion-toggle>
@@ -291,7 +290,7 @@ import {
             </ion-list>
           </ion-card-content>
         </ion-card>
-        
+
         <!-- Actions -->
         <ion-card>
           <ion-card-content>
@@ -312,7 +311,7 @@ import {
           </ion-card-content>
         </ion-card>
       </form>
-      
+
       <!-- Date Modal -->
       <ion-modal [isOpen]="showDateModal" (didDismiss)="showDateModal = false">
         <ng-template>
@@ -327,7 +326,7 @@ import {
             </ion-toolbar>
           </ion-header>
           <ion-content>
-            <ion-datetime 
+            <ion-datetime
               [(ngModel)]="formData.eventDate"
               name="eventDate"
               presentation="date"
@@ -336,7 +335,7 @@ import {
           </ion-content>
         </ng-template>
       </ion-modal>
-      
+
       <!-- Time Modal -->
       <ion-modal [isOpen]="showTimeModal" (didDismiss)="showTimeModal = false">
         <ng-template>
@@ -351,7 +350,7 @@ import {
             </ion-toolbar>
           </ion-header>
           <ion-content>
-            <ion-datetime 
+            <ion-datetime
               [(ngModel)]="formData.eventTime"
               name="eventTime"
               presentation="time"
@@ -366,23 +365,23 @@ import {
     ion-card {
       margin: 16px;
     }
-    
+
     ion-item {
       --inner-border-width: 0 0 1px 0;
     }
-    
+
     ion-range {
       padding: 20px 0;
     }
-    
+
     ion-note {
       text-align: center;
     }
-    
+
     .form-actions {
       padding: 16px;
     }
-    
+
     ion-datetime {
       --background: var(--ion-color-light);
     }
@@ -405,42 +404,42 @@ export class MobileFormComponent {
     sendNotifications: true,
     showAttendeeCount: false
   };
-  
+
   showDateModal = false;
   showTimeModal = false;
-  
+
   constructor() {
-    addIcons({ 
-      calendar, 
-      time, 
-      location, 
+    addIcons({
+      calendar,
+      time,
+      location,
       people,
       pricetag,
       save,
       close
     });
   }
-  
+
   openDateModal() {
     this.showDateModal = true;
   }
-  
+
   openTimeModal() {
     this.showTimeModal = true;
   }
-  
+
   onDateChange() {
     this.showDateModal = false;
   }
-  
+
   onTimeChange() {
     this.showTimeModal = false;
   }
-  
+
   onSave() {
     console.log('Form saved:', this.formData);
   }
-  
+
   onSubmit() {
     console.log('Form submitted:', this.formData);
   }

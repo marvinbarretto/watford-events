@@ -7,11 +7,11 @@ import { EventExtractionResult } from '../../shared/utils/event-extraction-types
 import { EventModel } from '../utils/event.model';
 import { FullScreenCameraComponent } from './camera/full-screen-camera.component';
 import { EventFormComponent } from './event-form.component';
+import { IconComponent } from '@shared/ui/icon/icon.component';
 
 @Component({
   selector: 'app-camera-add-event',
-  standalone: true,
-  imports: [CommonModule, RouterModule, FullScreenCameraComponent, EventFormComponent],
+  imports: [CommonModule, RouterModule, FullScreenCameraComponent, EventFormComponent, IconComponent],
   template: `
     <!-- Full Screen Camera Step -->
     @if (currentStep() === 'camera') {
@@ -40,7 +40,7 @@ import { EventFormComponent } from './event-form.component';
       <div class="form-container">
         <div class="header">
           <button class="back-btn" (click)="goBack()">
-            <span class="back-arrow">←</span>
+            <app-icon name="arrow_back" size="sm" />
             <span>Back</span>
           </button>
           <h1>Add New Event</h1>
@@ -218,11 +218,11 @@ import { EventFormComponent } from './event-form.component';
       .header {
         padding: 15px;
       }
-      
+
       .processing-content {
         padding: 20px;
       }
-      
+
       .processing-content h2 {
         font-size: 20px;
       }

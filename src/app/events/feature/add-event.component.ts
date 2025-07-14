@@ -7,17 +7,17 @@ import { EventModel, EventType, RecurrenceRule, RECURRENCE_FREQUENCIES, DAYS_OF_
 import { VenueLookupService } from '../../shared/data-access/venue-lookup.service';
 import { TypeaheadComponent, TypeaheadOption } from '../../shared/ui/typeahead/typeahead.component';
 import { Venue } from '../../venues/utils/venue.model';
+import { IconComponent } from '@shared/ui/icon/icon.component';
 
 @Component({
   selector: 'app-add-event',
-  standalone: true,
-  imports: [RouterModule, ReactiveFormsModule, TypeaheadComponent],
+  imports: [RouterModule, ReactiveFormsModule, TypeaheadComponent, IconComponent],
   template: `
     <div class="add-event-container">
       <!-- Header -->
       <div class="header">
         <button class="back-btn" (click)="goBack()">
-          <span class="back-arrow">←</span>
+          <app-icon name="arrow_back" size="sm" />
           <span>Back</span>
         </button>
         <h1>Add New Event</h1>
