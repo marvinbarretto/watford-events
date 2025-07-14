@@ -268,7 +268,7 @@ export class HomeComponent extends BaseComponent {
   }
 
   addNewEvent() {
-    this.router.navigate(['/events/add']);
+    this.router.navigate(['/events/create']);
   }
 
   createEvent() {
