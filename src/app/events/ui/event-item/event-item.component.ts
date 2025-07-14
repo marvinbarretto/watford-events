@@ -67,12 +67,14 @@ import { Venue } from '../../../venues/utils/venue.model';
                 {{ formatDistance() }}
               </span>
             }
-            <span class="meta-item">
-              <app-icon name="schedule" size="sm" animation="hover-fill" class="icon" />
-              <time [dateTime]="eventDate().toISOString()" itemprop="startDate">
-                {{ eventDate() | date:'shortTime' }}
-              </time>
-            </span>
+            @if (event().startTime) {
+              <span class="meta-item">
+                <app-icon name="schedule" size="sm" animation="hover-fill" class="icon" />
+                <time [dateTime]="eventDate().toISOString()" itemprop="startDate">
+                  {{ event().startTime }}
+                </time>
+              </span>
+            }
             @if (relativeTime()) {
               <span class="meta-item highlight">
                 {{ relativeTime() }}

@@ -1,5 +1,5 @@
 // Distance unit preference
-export type DistanceUnit = 'miles' | 'kilometers';
+export type DistanceUnit = 'miles' | 'kilometers' | 'walking-minutes';
 
 // Event sort order preference
 export type EventSortOrder = 'date-asc' | 'date-desc' | 'distance' | 'alphabetical';

@@ -73,17 +73,6 @@ import { IconComponent } from '@shared/ui/icon/icon.component';
                   <div class="username-display">
                     <span class="username" (click)="startEdit()">{{ userStore.displayName() }}</span>
 
-                    <!-- User Status Chip -->
-                    <app-chip
-                      [text]="getUserStatusText()"
-                      [icon]="getUserStatusIcon()"
-                      [color]="getUserStatusColor()"
-                      [textColor]="getUserStatusTextColor()"
-                      [borderColor]="getUserStatusBorderColor()"
-                      type="ui"
-                      variant="custom"
-                    />
-
                     <!-- Role Chip -->
                     @if (user()?.role && user()!.role !== Roles.Authenticated && user()!.role !== Roles.Public) {
                       <app-chip
@@ -467,81 +456,6 @@ export class UserInfoComponent {
    */
   getIconColor(): string {
     return 'var(--text-secondary)';
-  }
-
-  /**
-   * Get user status text
-   */
-  getUserStatusText(): string {
-    const user = this.user();
-    if (!user) return 'Unknown';
-
-    // Check if user has been active recently (within last 5 minutes)
-    // Note: Using joinedAt as fallback since we don't have lastActive tracking yet
-    const lastActive = new Date(user.joinedAt);
-    const now = new Date();
-    const timeDiff = now.getTime() - lastActive.getTime();
-    const minutesDiff = Math.floor(timeDiff / (1000 * 60));
-
-    if (minutesDiff < 5) {
-      return 'Online';
-    } else if (minutesDiff < 60) {
-      return 'Recently Active';
-    } else {
-      return 'Offline';
-    }
-  }
-
-  /**
-   * Get user status icon
-   */
-  getUserStatusIcon(): string {
-    const statusText = this.getUserStatusText();
-    switch (statusText) {
-      case 'Online': return 'radio_button_checked';
-      case 'Recently Active': return 'schedule';
-      case 'Offline': return 'radio_button_unchecked';
-      default: return 'help';
-    }
-  }
-
-  /**
-   * Get user status background color
-   */
-  getUserStatusColor(): string {
-    const statusText = this.getUserStatusText();
-    switch (statusText) {
-      case 'Online': return 'var(--success)';
-      case 'Recently Active': return 'var(--warning)';
-      case 'Offline': return 'var(--background-darker)';
-      default: return 'var(--secondary)';
-    }
-  }
-
-  /**
-   * Get user status text color
-   */
-  getUserStatusTextColor(): string {
-    const statusText = this.getUserStatusText();
-    switch (statusText) {
-      case 'Online': return 'var(--background-lighter)';
-      case 'Recently Active': return 'var(--background-lighter)';
-      case 'Offline': return 'var(--text-secondary)';
-      default: return 'var(--on-secondary)';
-    }
-  }
-
-  /**
-   * Get user status border color
-   */
-  getUserStatusBorderColor(): string {
-    const statusText = this.getUserStatusText();
-    switch (statusText) {
-      case 'Online': return 'var(--success-hover)';
-      case 'Recently Active': return 'var(--warning-hover)';
-      case 'Offline': return 'var(--border)';
-      default: return 'var(--border)';
-    }
   }
 
   /**

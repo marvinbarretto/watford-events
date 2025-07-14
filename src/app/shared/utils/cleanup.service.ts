@@ -42,6 +42,7 @@ export class CleanupService extends FirestoreService {
 
         // Create batch delete operation
         const batch = writeBatch(this.firestore);
+        
         snapshot.docs.forEach(doc => {
           batch.delete(doc.ref);
         });

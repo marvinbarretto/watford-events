@@ -12,6 +12,10 @@ export interface GeoCoordinates {
   lng: number;
 }
 
+// Walking speed constants
+const AVERAGE_WALKING_SPEED_KMH = 5; // Average walking speed in km/h
+const MINUTES_PER_HOUR = 60;
+
 /**
  * Calculate distance between two geographic points using Haversine formula
  * @param lat1 Latitude of first point
@@ -53,10 +57,24 @@ export function calculateDistanceBetweenPoints(from: GeoCoordinates, to: GeoCoor
  * @returns Distance in target unit
  */
 export function convertDistance(km: number, unit: DistanceUnit): number {
-  if (unit === 'miles') {
-    return km * 0.621371;
+  switch (unit) {
+    case 'miles':
+      return km * 0.621371;
+    case 'walking-minutes':
+      return convertKmToWalkingMinutes(km);
+    case 'kilometers':
+    default:
+      return km;
   }
-  return km;
+}
+
+/**
+ * Convert kilometers to walking time in minutes
+ * @param km Distance in kilometers
+ * @returns Walking time in minutes
+ */
+export function convertKmToWalkingMinutes(km: number): number {
+  return (km / AVERAGE_WALKING_SPEED_KMH) * MINUTES_PER_HOUR;
 }
 
 /**
@@ -71,12 +89,21 @@ export function formatDistance(distance: number, unit: DistanceUnit, precision: 
     return 'Unknown distance';
   }
 
-  const rounded = Number(distance.toFixed(precision));
-  const unitText = unit === 'miles' ? 
-    (rounded === 1 ? 'mile' : 'miles') : 
-    'km';
-
-  return `${rounded} ${unitText} away`;
+  switch (unit) {
+    case 'walking-minutes':
+      const minutes = Math.round(distance);
+      return `${minutes} min walk`;
+    
+    case 'miles':
+      const milesRounded = Number(distance.toFixed(precision));
+      const milesUnit = milesRounded === 1 ? 'mile' : 'miles';
+      return `${milesRounded} ${milesUnit} away`;
+    
+    case 'kilometers':
+    default:
+      const kmRounded = Number(distance.toFixed(precision));
+      return `${kmRounded} km away`;
+  }
 }
 
 /**

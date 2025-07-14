@@ -118,8 +118,8 @@ export class AuthStore {
     this.authService.logout();
   }
 
-  loginWithGoogle(): void {
-    this.authService.loginWithGoogle();
+  async loginWithGoogle(): Promise<void> {
+    await this.authService.loginWithGoogle();
   }
 
   loginWithEmail(email: string, password: string): void {

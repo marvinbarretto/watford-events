@@ -29,15 +29,9 @@ import { RouterModule } from '@angular/router';
             <a routerLink="/events/create" class="action-card featured">
               <div class="card-icon">➕</div>
               <h3 class="card-title">Create Event</h3>
-              <p class="card-description">Quick and simple 3-question creator</p>
-              <span class="card-badge">Recommended</span>
+              <p class="card-description">Smart event creation with AI assistance</p>
             </a>
 
-            <a routerLink="/events/add" class="action-card">
-              <div class="card-icon">📝</div>
-              <h3 class="card-title">Advanced Form</h3>
-              <p class="card-description">Detailed form with all options</p>
-            </a>
           </div>
         </section>
 

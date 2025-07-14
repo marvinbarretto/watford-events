@@ -294,7 +294,7 @@ export class CameraAddEventComponent {
   }
 
   useManualInstead() {
-    this.router.navigate(['/events/add']);
+    this.router.navigate(['/events/create']);
   }
 
   clearError() {

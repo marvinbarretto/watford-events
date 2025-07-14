@@ -40,11 +40,6 @@ export const routes: Routes = [
     loadComponent: () => import('./events/feature/event-enhancement.component').then(m => m.EventEnhancementComponent)
   },
   {
-    path: 'events/add',
-    data: { shell: 'main' },
-    loadComponent: () => import('./events/feature/add-event.component').then(m => m.AddEventComponent)
-  },
-  {
     path: 'events/parser',
     data: { shell: 'main' },
     loadComponent: () => import('./events/feature/event-parser.component').then(m => m.EventParserComponent)

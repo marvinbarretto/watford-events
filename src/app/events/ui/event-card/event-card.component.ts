@@ -2,11 +2,10 @@ import { Component, input, output, computed } from '@angular/core';
 import { EventModel, EVENT_CATEGORIES } from '../../utils/event.model';
 import { convertToDate } from '../../../shared/utils/date-utils';
 import { ChipComponent } from '../../../shared/ui/chip/chip.component';
-import { HeartButtonComponent } from '../../../shared/ui/heart-button/heart-button.component';
 
 @Component({
   selector: 'app-event-card',
-  imports: [ChipComponent, HeartButtonComponent],
+  imports: [ChipComponent],
   template: `
     <div class="event-card" (click)="handleClick()">
       <!-- Event Image -->
@@ -19,16 +18,6 @@ import { HeartButtonComponent } from '../../../shared/ui/heart-button/heart-butt
               <span>{{ event().scannerConfidence }}%</span>
             </div>
           }
-          @if (event().isMockEvent) {
-            <div class="mock-badge">
-              <span class="mock-icon">🧪</span>
-              <span>Mock</span>
-            </div>
-          }
-        </div>
-      } @else {
-        <div class="event-placeholder">
-          <span class="placeholder-icon">📅</span>
           @if (event().isMockEvent) {
             <div class="mock-badge">
               <span class="mock-icon">🧪</span>
@@ -93,43 +82,20 @@ import { HeartButtonComponent } from '../../../shared/ui/heart-button/heart-butt
           </div>
         }
 
-        <!-- Event Actions -->
-        <div class="event-actions" (click)="$event.stopPropagation()">
-          <!-- Heart/Like button for all users -->
-          <app-heart-button
-            [contentId]="event().id"
-            contentType="event"
-            [showCount]="true"
-            (liked)="onEventLiked($event)"
-            (error)="onLikeError($event)"
-          />
-
-          <!-- Share button for all users -->
-          <button class="action-btn share-btn" (click)="shareEvent()">
-            <span>📤</span>
-            <span>Share</span>
-          </button>
-
-          <!-- Edit/Delete actions only for event owners -->
-          @if (showOwnerActions()) {
+        <!-- Admin Actions -->
+        @if (isAdmin()) {
+          <div class="event-actions" (click)="$event.stopPropagation()">
             <button class="action-btn edit-btn" (click)="editEvent()">
               <span>✏️</span>
               <span>Edit</span>
             </button>
 
-            @if (event().status === 'draft') {
-              <button class="action-btn publish-btn" (click)="publishEvent()">
-                <span>🚀</span>
-                <span>Publish</span>
-              </button>
-            }
-
             <button class="action-btn delete-btn" (click)="deleteEvent()">
               <span>🗑️</span>
               <span>Delete</span>
             </button>
-          }
-        </div>
+          </div>
+        }
       </div>
     </div>
   `,
@@ -199,19 +165,6 @@ import { HeartButtonComponent } from '../../../shared/ui/heart-button/heart-butt
       font-size: 14px;
     }
 
-    .event-placeholder {
-      position: relative;
-      height: 200px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      background: linear-gradient(135deg, var(--background-lighter), var(--background-darker));
-    }
-
-    .placeholder-icon {
-      font-size: 48px;
-      opacity: 0.5;
-    }
 
     .event-content {
       padding: 20px;
@@ -292,15 +245,6 @@ import { HeartButtonComponent } from '../../../shared/ui/heart-button/heart-butt
       color: var(--primary);
     }
 
-    .publish-btn {
-      background: var(--success);
-      color: var(--background-lighter);
-    }
-
-    .share-btn {
-      background: var(--info);
-      color: var(--background-lighter);
-    }
 
     .delete-btn {
       background: var(--error);
@@ -319,13 +263,11 @@ export class EventCardComponent {
 
   // Optional inputs
   readonly currentUserId = input<string | null>(null);
+  readonly isAdmin = input<boolean>(false);
 
   // Outputs
   readonly clicked = output<EventModel>();
-  readonly liked = output<{ event: EventModel; isLiked: boolean }>();
-  readonly shareClicked = output<EventModel>();
   readonly editClicked = output<EventModel>();
-  readonly publishClicked = output<EventModel>();
   readonly deleteClicked = output<EventModel>();
   readonly categoryClicked = output<string>();
   readonly tagClicked = output<string>();
@@ -373,25 +315,14 @@ export class EventCardComponent {
     }
   });
 
-  readonly showOwnerActions = computed(() => {
-    return this.currentUserId() && this.event().createdBy === this.currentUserId();
-  });
 
   // Event handlers
   handleClick() {
     this.clicked.emit(this.event());
   }
 
-  shareEvent() {
-    this.shareClicked.emit(this.event());
-  }
-
   editEvent() {
     this.editClicked.emit(this.event());
-  }
-
-  publishEvent() {
-    this.publishClicked.emit(this.event());
   }
 
   deleteEvent() {
@@ -411,12 +342,4 @@ export class EventCardComponent {
     this.tagClicked.emit(tag);
   }
 
-  onEventLiked(isLiked: boolean) {
-    this.liked.emit({ event: this.event(), isLiked });
-  }
-
-  onLikeError(error: string) {
-    console.error('Like error in event card:', error);
-    // Could emit an error event or show a toast notification
-  }
 }

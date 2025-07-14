@@ -1,13 +1,16 @@
 import { Component, signal, inject, computed, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormsModule } from '@angular/forms';
+import { ReactiveFormsModule, FormBuilder, FormGroup, Validators, FormArray } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
 import { EventStore } from '../data-access/event.store';
 import { EventModel, EventCategory, EventType, RecurrenceRule, createEventDefaults, EVENT_CATEGORIES, RECURRENCE_FREQUENCIES, DAYS_OF_WEEK } from '../utils/event.model';
 import { Venue } from '../../venues/utils/venue.model';
 import { IconComponent } from '@shared/ui/icon/icon.component';
 import { EventCardComponent } from '../ui/event-card/event-card.component';
+import { CheckboxButtonComponent } from '@shared/ui/checkbox-button/checkbox-button.component';
 import { AuthService } from '../../auth/data-access/auth.service';
+import { generateSlug, createFallbackSlug } from '@shared/utils/slug.utils';
+import { PlatformNotificationService } from '@shared/data-access/platform-notification.service';
 
 interface EventConfirmationData {
   // Basic event details from form
@@ -19,6 +22,18 @@ interface EventConfirmationData {
   location: string;
   venueId?: string;
   categories: EventCategory[];
+
+  // LLM extracted additional details
+  description?: string;
+  organizer?: string;
+  ticketInfo?: string;
+  contactInfo?: string;
+  website?: string;
+  tags?: string[];
+
+  // LLM metadata
+  llmExtracted?: boolean;
+  extractionConfidence?: any;
 
   // Additional context from creator
   selectedVenue?: Venue | null;
@@ -48,7 +63,7 @@ interface AdditionalEventDetails {
 
 @Component({
   selector: 'app-event-confirmation',
-  imports: [CommonModule, FormsModule, RouterModule, IconComponent, EventCardComponent],
+  imports: [CommonModule, ReactiveFormsModule, RouterModule, IconComponent, EventCardComponent, CheckboxButtonComponent],
   template: `
     <div class="event-confirmation">
       <!-- Header -->
@@ -65,55 +80,144 @@ interface AdditionalEventDetails {
       </header>
 
       <main class="main-content">
+        <!-- Debug Info (temporary) -->
+        @if (isLoading()) {
+          <div class="debug-banner">
+            <div class="debug-icon">🔍</div>
+            <div class="debug-text">{{ debugInfo() }}</div>
+          </div>
+        }
+        
         @if (eventData()) {
+          <!-- LLM Extraction Results Overlay -->
+          @if (eventData()?.llmExtracted && !extractionBannerDismissed()) {
+            <section class="extraction-results-section">
+              <div class="extraction-banner">
+                <div class="banner-icon">🤖</div>
+                <div class="banner-content">
+                  <h3 class="banner-title">AI Extraction Results</h3>
+                  <p class="banner-subtitle">Here's what we detected from your flyer:</p>
+                </div>
+                <button class="banner-close" (click)="dismissExtractionBanner()" type="button">
+                  <app-icon name="close" size="sm" />
+                </button>
+              </div>
+              
+              <div class="extraction-details">
+                <div class="extraction-grid">
+                  @if (getExtractionSummary().title) {
+                    <div class="extraction-item success">
+                      <span class="item-icon">✅</span>
+                      <span class="item-label">Title:</span>
+                      <span class="item-value">{{ getExtractionSummary().title }}</span>
+                    </div>
+                  }
+                  
+                  @if (getExtractionSummary().date) {
+                    <div class="extraction-item success">
+                      <span class="item-icon">✅</span>
+                      <span class="item-label">Date:</span>
+                      <span class="item-value">{{ getExtractionSummary().date }}</span>
+                    </div>
+                  }
+                  
+                  @if (getExtractionSummary().location) {
+                    <div class="extraction-item success">
+                      <span class="item-icon">✅</span>
+                      <span class="item-label">Location:</span>
+                      <span class="item-value">{{ getExtractionSummary().location }}</span>
+                    </div>
+                  }
+                  
+                  @if (getExtractionSummary().organizer) {
+                    <div class="extraction-item success">
+                      <span class="item-icon">✅</span>
+                      <span class="item-label">Organizer:</span>
+                      <span class="item-value">{{ getExtractionSummary().organizer }}</span>
+                    </div>
+                  }
+                  
+                  @if (getExtractionSummary().ticketInfo) {
+                    <div class="extraction-item success">
+                      <span class="item-icon">✅</span>
+                      <span class="item-label">Tickets:</span>
+                      <span class="item-value">{{ getExtractionSummary().ticketInfo }}</span>
+                    </div>
+                  }
+                  
+                  @if (getExtractionSummary().description) {
+                    <div class="extraction-item success full-width">
+                      <span class="item-icon">✅</span>
+                      <span class="item-label">Description:</span>
+                      <span class="item-value">{{ getExtractionSummary().description }}</span>
+                    </div>
+                  }
+                </div>
+                
+                <div class="extraction-footer">
+                  <small class="extraction-note">
+                    AI extracted these details with {{ getOverallConfidence() }}% confidence. 
+                    Please review and edit as needed below.
+                  </small>
+                </div>
+              </div>
+            </section>
+          }
+
           <!-- Event Details Section -->
           <section class="event-details-section">
             <h2 class="section-title">Event Details</h2>
             
             <!-- Editable Basic Details -->
-            <div class="basic-details-form">
+            <form [formGroup]="basicDetailsForm" class="basic-details-form">
               <div class="form-group">
-                <label for="title">Event Title</label>
+                <label for="title">Event Title *</label>
                 <input
                   id="title"
                   type="text"
-                  [(ngModel)]="basicDetails().title"
+                  formControlName="title"
                   class="form-input"
                   placeholder="Event title"
                 />
+                @if (basicDetailsForm.get('title')?.invalid && basicDetailsForm.get('title')?.touched) {
+                  <div class="error-message">Event title is required</div>
+                }
               </div>
 
               <div class="form-row">
                 <div class="form-group">
-                  <label for="date">Date</label>
+                  <label for="date">Date *</label>
                   <input
                     id="date"
                     type="date"
-                    [(ngModel)]="basicDetails().date"
+                    formControlName="date"
                     class="form-input"
                   />
+                  @if (basicDetailsForm.get('date')?.invalid && basicDetailsForm.get('date')?.touched) {
+                    <div class="error-message">Date is required</div>
+                  }
                 </div>
                 
-                <div class="form-group">
-                  <label>
+                <div class="form-group checkbox-group">
+                  <label class="checkbox-label">
                     <input
                       type="checkbox"
-                      [(ngModel)]="basicDetails().isAllDay"
+                      formControlName="isAllDay"
                       (change)="onAllDayToggle()"
                     />
-                    All Day Event
+                    <span class="checkbox-text">All Day Event</span>
                   </label>
                 </div>
               </div>
 
-              @if (!basicDetails().isAllDay) {
+              @if (!basicDetailsForm.get('isAllDay')?.value) {
                 <div class="form-row">
                   <div class="form-group">
                     <label for="startTime">Start Time</label>
                     <input
                       id="startTime"
                       type="time"
-                      [(ngModel)]="basicDetails().startTime"
+                      formControlName="startTime"
                       class="form-input"
                     />
                   </div>
@@ -123,7 +227,7 @@ interface AdditionalEventDetails {
                     <input
                       id="endTime"
                       type="time"
-                      [(ngModel)]="basicDetails().endTime"
+                      formControlName="endTime"
                       class="form-input"
                     />
                   </div>
@@ -131,243 +235,291 @@ interface AdditionalEventDetails {
               }
 
               <div class="form-group">
-                <label for="location">Location</label>
+                <label for="location">Location *</label>
                 <input
                   id="location"
                   type="text"
-                  [(ngModel)]="basicDetails().location"
+                  formControlName="location"
                   class="form-input"
                   placeholder="Event location"
                 />
+                @if (basicDetailsForm.get('location')?.invalid && basicDetailsForm.get('location')?.touched) {
+                  <div class="error-message">Location is required</div>
+                }
               </div>
-            </div>
 
-            <!-- Event Card Preview -->
-            <div class="event-preview">
-              <h3 class="preview-title">Preview</h3>
-              <app-event-card
-                [event]="previewEvent()"
-                [currentUserId]="currentUserId()"
-              />
-            </div>
+            </form>
+
           </section>
 
           <!-- Event Schedule Section -->
           <section class="schedule-section">
             <h2 class="section-title">Event Schedule</h2>
             
-            <div class="form-group">
-              <label>Event Type</label>
-              <div class="radio-group">
-                <label class="radio-option">
-                  <input
-                    type="radio"
-                    [(ngModel)]="additionalDetails().eventType"
-                    value="single"
-                    name="eventType"
-                  />
-                  <span class="radio-custom"></span>
-                  <span class="radio-label">One-time event</span>
-                </label>
-                <label class="radio-option">
-                  <input
-                    type="radio"
-                    [(ngModel)]="additionalDetails().eventType"
-                    value="recurring"
-                    name="eventType"
-                  />
-                  <span class="radio-custom"></span>
-                  <span class="radio-label">Recurring event</span>
-                </label>
-              </div>
-            </div>
-
-            @if (additionalDetails().eventType === 'recurring') {
-              <div class="recurrence-options">
-                <div class="form-row">
-                  <div class="form-group">
-                    <label for="frequency">Repeats</label>
-                    <select
-                      id="frequency"
-                      [(ngModel)]="additionalDetails().recurrenceFrequency"
-                      class="form-input"
-                    >
-                      @for (freq of recurrenceFrequencies; track freq.value) {
-                        <option [value]="freq.value">{{ freq.label }}</option>
-                      }
-                    </select>
-                  </div>
-                  <div class="form-group">
-                    <label for="interval">Every</label>
+            <form [formGroup]="scheduleForm">
+              <div class="form-group">
+                <label>Event Type</label>
+                <div class="radio-group">
+                  <label class="radio-option">
                     <input
-                      id="interval"
-                      type="number"
-                      [(ngModel)]="additionalDetails().recurrenceInterval"
-                      class="form-input"
-                      min="1"
-                      max="52"
+                      type="radio"
+                      formControlName="eventType"
+                      value="single"
                     />
-                  </div>
+                    <span class="radio-custom"></span>
+                    <span class="radio-label">One-time event</span>
+                  </label>
+                  <label class="radio-option">
+                    <input
+                      type="radio"
+                      formControlName="eventType"
+                      value="recurring"
+                    />
+                    <span class="radio-custom"></span>
+                    <span class="radio-label">Recurring event</span>
+                  </label>
                 </div>
+              </div>
 
-                @if (additionalDetails().recurrenceFrequency === 'weekly') {
-                  <div class="form-group">
-                    <label>Days of Week</label>
-                    <div class="days-of-week">
-                      @for (day of daysOfWeek; track day.value) {
-                        <label class="day-checkbox">
-                          <input
-                            type="checkbox"
-                            [value]="day.value"
-                            [checked]="additionalDetails().recurrenceDaysOfWeek.includes(day.value)"
-                            (change)="onDayOfWeekChange(day.value, $event)"
-                          />
-                          <span class="day-label">{{ day.short }}</span>
-                        </label>
-                      }
+              @if (scheduleForm.get('eventType')?.value === 'recurring') {
+                <div class="recurrence-options">
+                  <div class="form-row">
+                    <div class="form-group">
+                      <label for="frequency">Repeats</label>
+                      <select
+                        id="frequency"
+                        formControlName="recurrenceFrequency"
+                        class="form-input"
+                      >
+                        @for (freq of recurrenceFrequencies; track freq.value) {
+                          <option [value]="freq.value">{{ freq.label }}</option>
+                        }
+                      </select>
+                    </div>
+                    <div class="form-group">
+                      <label for="interval">Every</label>
+                      <input
+                        id="interval"
+                        type="number"
+                        formControlName="recurrenceInterval"
+                        class="form-input"
+                        min="1"
+                        max="52"
+                      />
                     </div>
                   </div>
-                }
 
-                <div class="form-group">
-                  <label>Ends</label>
-                  <div class="radio-group">
-                    <label class="radio-option">
-                      <input
-                        type="radio"
-                        [(ngModel)]="additionalDetails().recurrenceEndType"
-                        value="never"
-                        name="recurrenceEndType"
-                      />
-                      <span class="radio-custom"></span>
-                      <span class="radio-label">Never</span>
-                    </label>
-                    <label class="radio-option">
-                      <input
-                        type="radio"
-                        [(ngModel)]="additionalDetails().recurrenceEndType"
-                        value="date"
-                        name="recurrenceEndType"
-                      />
-                      <span class="radio-custom"></span>
-                      <span class="radio-label">On date</span>
-                    </label>
-                    <label class="radio-option">
-                      <input
-                        type="radio"
-                        [(ngModel)]="additionalDetails().recurrenceEndType"
-                        value="count"
-                        name="recurrenceEndType"
-                      />
-                      <span class="radio-custom"></span>
-                      <span class="radio-label">After</span>
-                    </label>
+                  @if (scheduleForm.get('recurrenceFrequency')?.value === 'weekly') {
+                    <div class="form-group">
+                      <label>Days of Week</label>
+                      <div class="checkbox-buttons-inline">
+                        @for (day of daysOfWeek; track day.value; let i = $index) {
+                          <app-checkbox-button
+                            [label]="day.short"
+                            [value]="day.value"
+                            [checked]="isDaySelected(i)"
+                            (checkedChange)="onDayToggle(i, $event)"
+                          />
+                        }
+                      </div>
+                    </div>
+                  }
+
+                  <div class="form-group">
+                    <label>Ends</label>
+                    <div class="radio-group">
+                      <label class="radio-option">
+                        <input
+                          type="radio"
+                          formControlName="recurrenceEndType"
+                          value="never"
+                        />
+                        <span class="radio-custom"></span>
+                        <span class="radio-label">Never</span>
+                      </label>
+                      <label class="radio-option">
+                        <input
+                          type="radio"
+                          formControlName="recurrenceEndType"
+                          value="date"
+                        />
+                        <span class="radio-custom"></span>
+                        <span class="radio-label">On date</span>
+                      </label>
+                      <label class="radio-option">
+                        <input
+                          type="radio"
+                          formControlName="recurrenceEndType"
+                          value="count"
+                        />
+                        <span class="radio-custom"></span>
+                        <span class="radio-label">After</span>
+                      </label>
+                    </div>
                   </div>
+
+                  @if (scheduleForm.get('recurrenceEndType')?.value === 'date') {
+                    <div class="form-group">
+                      <label for="endDate">End Date</label>
+                      <input
+                        id="endDate"
+                        type="date"
+                        formControlName="recurrenceEndDate"
+                        class="form-input"
+                      />
+                    </div>
+                  }
+
+                  @if (scheduleForm.get('recurrenceEndType')?.value === 'count') {
+                    <div class="form-group">
+                      <label for="occurrences">Number of occurrences</label>
+                      <input
+                        id="occurrences"
+                        type="number"
+                        formControlName="recurrenceOccurrences"
+                        class="form-input"
+                        min="1"
+                        max="365"
+                      />
+                    </div>
+                  }
                 </div>
-
-                @if (additionalDetails().recurrenceEndType === 'date') {
-                  <div class="form-group">
-                    <label for="endDate">End Date</label>
-                    <input
-                      id="endDate"
-                      type="date"
-                      [(ngModel)]="additionalDetails().recurrenceEndDate"
-                      class="form-input"
-                    />
-                  </div>
-                }
-
-                @if (additionalDetails().recurrenceEndType === 'count') {
-                  <div class="form-group">
-                    <label for="occurrences">Number of occurrences</label>
-                    <input
-                      id="occurrences"
-                      type="number"
-                      [(ngModel)]="additionalDetails().recurrenceOccurrences"
-                      class="form-input"
-                      min="1"
-                      max="365"
-                    />
-                  </div>
-                }
-              </div>
-            }
+              }
+            </form>
           </section>
 
           <!-- Additional Details Section -->
           <section class="additional-details-section">
             <h2 class="section-title">Additional Details</h2>
             
-            <div class="form-group">
-              <label for="description">Description</label>
-              <textarea
-                id="description"
-                [(ngModel)]="additionalDetails().description"
-                class="form-textarea"
-                rows="4"
-                placeholder="Tell people about your event..."
-              ></textarea>
-            </div>
+            <form [formGroup]="additionalDetailsForm">
+              <div class="form-group">
+                <label for="description">Description</label>
+                <textarea
+                  id="description"
+                  formControlName="description"
+                  class="form-textarea"
+                  rows="4"
+                  placeholder="Tell people about your event..."
+                ></textarea>
+              </div>
 
-            <div class="form-row">
-              <div class="form-group">
-                <label for="organizer">Organizer</label>
-                <input
-                  id="organizer"
-                  type="text"
-                  [(ngModel)]="additionalDetails().organizer"
-                  class="form-input"
-                  placeholder="Who's organizing this?"
-                />
+              <div class="form-row">
+                <div class="form-group">
+                  <label for="organizer">Organizer</label>
+                  <input
+                    id="organizer"
+                    type="text"
+                    formControlName="organizer"
+                    class="form-input"
+                    placeholder="Who's organizing this?"
+                  />
+                </div>
+                
+                <div class="form-group">
+                  <label for="ticketInfo">Ticket Info</label>
+                  <input
+                    id="ticketInfo"
+                    type="text"
+                    formControlName="ticketInfo"
+                    class="form-input"
+                    placeholder="Free, £10, etc."
+                  />
+                </div>
               </div>
-              
-              <div class="form-group">
-                <label for="ticketInfo">Ticket Info</label>
-                <input
-                  id="ticketInfo"
-                  type="text"
-                  [(ngModel)]="additionalDetails().ticketInfo"
-                  class="form-input"
-                  placeholder="Free, £10, etc."
-                />
-              </div>
-            </div>
 
-            <div class="form-row">
-              <div class="form-group">
-                <label for="contactInfo">Contact Info</label>
-                <input
-                  id="contactInfo"
-                  type="text"
-                  [(ngModel)]="additionalDetails().contactInfo"
-                  class="form-input"
-                  placeholder="Phone, email, etc."
-                />
+              <div class="form-row">
+                <div class="form-group">
+                  <label for="contactInfo">Contact Info</label>
+                  <input
+                    id="contactInfo"
+                    type="text"
+                    formControlName="contactInfo"
+                    class="form-input"
+                    placeholder="Phone, email, etc."
+                  />
+                </div>
+                
+                <div class="form-group">
+                  <label for="website">Website</label>
+                  <input
+                    id="website"
+                    type="url"
+                    formControlName="website"
+                    class="form-input"
+                    placeholder="https://..."
+                  />
+                </div>
               </div>
-              
-              <div class="form-group">
-                <label for="website">Website</label>
-                <input
-                  id="website"
-                  type="url"
-                  [(ngModel)]="additionalDetails().website"
-                  class="form-input"
-                  placeholder="https://..."
-                />
-              </div>
-            </div>
 
-            <div class="form-group">
-              <label for="tags">Tags (comma-separated)</label>
-              <input
-                id="tags"
-                type="text"
-                [value]="additionalDetails().tags.join(', ')"
-                (input)="onTagsChange($event)"
-                class="form-input"
-                placeholder="music, family-friendly, outdoor"
-              />
-            </div>
+              <div class="form-row">
+                <div class="form-group">
+                  <label for="accessibility">Accessibility Info</label>
+                  <input
+                    id="accessibility"
+                    type="text"
+                    formControlName="accessibility"
+                    class="form-input"
+                    placeholder="Wheelchair accessible, hearing loop, etc."
+                  />
+                </div>
+                
+                <div class="form-group">
+                  <label for="ageRestriction">Age Restriction</label>
+                  <select
+                    id="ageRestriction"
+                    formControlName="ageRestriction"
+                    class="form-input"
+                  >
+                    <option value="">No restriction</option>
+                    <option value="all-ages">All ages</option>
+                    <option value="family-friendly">Family friendly</option>
+                    <option value="18+">18+</option>
+                    <option value="21+">21+</option>
+                  </select>
+                </div>
+              </div>
+
+              <div class="form-group">
+                <label for="tags">Tags (comma-separated)</label>
+                <input
+                  id="tags"
+                  type="text"
+                  formControlName="tags"
+                  class="form-input"
+                  placeholder="music, family-friendly, outdoor"
+                />
+              </div>
+
+              <div class="form-group">
+                <label for="capacity">Expected Capacity</label>
+                <input
+                  id="capacity"
+                  type="number"
+                  formControlName="capacity"
+                  class="form-input"
+                  placeholder="How many people do you expect?"
+                  min="1"
+                />
+              </div>
+            </form>
+          </section>
+
+          <!-- Event Preview -->
+          <section class="preview-section">
+            <details class="event-preview-disclosure">
+              <summary class="preview-summary">
+                <app-icon name="visibility" size="sm" />
+                <span>Preview Event</span>
+                <app-icon name="expand_more" size="sm" class="expand-icon" />
+              </summary>
+              <div class="preview-content">
+                <app-event-card
+                  [event]="previewEvent()"
+                  [currentUserId]="currentUserId()"
+                />
+              </div>
+            </details>
           </section>
 
           <!-- Action Buttons -->
@@ -381,7 +533,7 @@ interface AdditionalEventDetails {
                 class="primary-btn" 
                 type="button" 
                 (click)="createEvent()" 
-                [disabled]="isCreating()">
+                [disabled]="isCreating() || !isFormValid()">
                 @if (isCreating()) {
                   <div class="btn-spinner"></div>
                   Creating...
@@ -480,16 +632,116 @@ interface AdditionalEventDetails {
       font-size: 0.9rem;
     }
 
-    /* Event Review Section */
-    .event-review-section {
+    /* Form Validation Styles */
+    .error-message {
+      color: var(--error);
+      font-size: 0.8rem;
+      margin-top: 0.25rem;
+      display: flex;
+      align-items: center;
+      gap: 0.25rem;
+    }
+
+    .form-input.invalid {
+      border-color: var(--error);
+    }
+
+    .form-input:invalid:focus {
+      border-color: var(--error);
+      box-shadow: 0 0 0 2px rgba(var(--error-rgb), 0.1);
+    }
+
+    /* Checkbox Styling */
+    .checkbox-group {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .checkbox-label {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      cursor: pointer;
+      padding: 0.5rem;
+      border-radius: 6px;
+      transition: background-color 0.2s;
+    }
+
+    .checkbox-label:hover {
+      background: var(--background);
+    }
+
+    .checkbox-text {
+      font-size: 0.9rem;
+      color: var(--text);
+      font-weight: 500;
+    }
+
+    /* CheckboxButton Layout Classes */
+    .checkbox-buttons-stack {
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+    }
+
+    .checkbox-buttons-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+      gap: 0.75rem;
+    }
+
+    .checkbox-buttons-inline {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      justify-content: flex-start;
+    }
+
+    /* Event Preview Disclosure */
+    .preview-section {
       margin-bottom: 2rem;
     }
 
-    .event-preview {
-      background: var(--background-lighter);
-      border-radius: 16px;
-      padding: 1.5rem;
+    .event-preview-disclosure {
       border: 1px solid var(--border);
+      border-radius: 12px;
+      overflow: hidden;
+      background: var(--background-lighter);
+    }
+
+    .preview-summary {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      padding: 1rem 1.5rem;
+      cursor: pointer;
+      background: var(--background-lighter);
+      border: none;
+      font-size: 1rem;
+      font-weight: 600;
+      color: var(--text);
+      transition: all 0.2s;
+      list-style: none;
+    }
+
+    .preview-summary:hover {
+      background: var(--background);
+    }
+
+    .expand-icon {
+      margin-left: auto;
+      transition: transform 0.2s;
+    }
+
+    .event-preview-disclosure[open] .expand-icon {
+      transform: rotate(180deg);
+    }
+
+    .preview-content {
+      padding: 0 1.5rem 1.5rem 1.5rem;
+      background: var(--background);
+      border-top: 1px solid var(--border);
     }
 
     .event-header {
@@ -569,22 +821,25 @@ interface AdditionalEventDetails {
       object-fit: cover;
     }
 
-    /* Additional Details Form */
+    /* Section Styling */
+    .event-details-section,
+    .schedule-section,
     .additional-details-section {
       background: var(--background-lighter);
       border-radius: 16px;
       padding: 1.5rem;
       border: 1px solid var(--border);
       margin-bottom: 2rem;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
     }
 
-    /* Event Schedule Section */
-    .event-schedule-section {
-      background: var(--background-lighter);
-      border-radius: 16px;
-      padding: 1.5rem;
-      border: 1px solid var(--border);
-      margin-bottom: 2rem;
+    .section-title {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      margin-bottom: 1.5rem;
+      padding-bottom: 0.75rem;
+      border-bottom: 2px solid var(--border);
     }
 
     .schedule-form {
@@ -670,51 +925,6 @@ interface AdditionalEventDetails {
       to { opacity: 1; transform: translateY(0); }
     }
 
-    /* Days of Week */
-    .days-of-week {
-      display: flex;
-      gap: 0.5rem;
-      flex-wrap: wrap;
-    }
-
-    .day-checkbox {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      cursor: pointer;
-      padding: 0.5rem 0.75rem;
-      border: 2px solid var(--border);
-      border-radius: 6px;
-      transition: all 0.2s;
-      min-width: 45px;
-      background: var(--background-lighter);
-    }
-
-    .day-checkbox:hover {
-      border-color: var(--primary);
-      background: var(--background);
-    }
-
-    .day-checkbox input[type="checkbox"] {
-      display: none;
-    }
-
-    .day-checkbox input[type="checkbox"]:checked + .day-label {
-      color: var(--on-primary);
-      font-weight: 600;
-    }
-
-    .day-checkbox:has(input[type="checkbox"]:checked) {
-      border-color: var(--primary);
-      background: var(--primary);
-    }
-
-    .day-label {
-      font-size: 0.8rem;
-      font-weight: 500;
-      color: var(--text);
-      transition: all 0.2s;
-    }
 
     /* Final Action Section */
     .final-action-section {
@@ -724,11 +934,12 @@ interface AdditionalEventDetails {
       border: 1px solid var(--border);
     }
 
-    .form-field {
+    /* Enhanced Form Styling */
+    .form-group {
       margin-bottom: 1.5rem;
     }
 
-    .field-label {
+    .form-group label {
       display: block;
       font-size: 0.9rem;
       font-weight: 600;
@@ -736,32 +947,36 @@ interface AdditionalEventDetails {
       margin-bottom: 0.5rem;
     }
 
-    .field-input, .field-textarea {
+    .form-input,
+    .form-textarea {
       width: 100%;
-      padding: 0.75rem 1rem;
+      padding: 0.875rem 1rem;
       border: 2px solid var(--border);
       border-radius: 8px;
       font-size: 0.9rem;
       background: var(--background);
       color: var(--text);
-      transition: border-color 0.2s;
+      transition: all 0.2s;
       box-sizing: border-box;
     }
 
-    .field-input:focus, .field-textarea:focus {
+    .form-input:focus,
+    .form-textarea:focus {
       outline: none;
       border-color: var(--primary);
+      box-shadow: 0 0 0 3px rgba(var(--primary-rgb), 0.1);
     }
 
-    .field-textarea {
+    .form-textarea {
       resize: vertical;
-      min-height: 100px;
+      min-height: 120px;
+      font-family: inherit;
     }
 
-    .field-hint {
-      font-size: 0.8rem;
+    .form-input::placeholder,
+    .form-textarea::placeholder {
       color: var(--text-secondary);
-      margin-top: 0.25rem;
+      opacity: 0.7;
     }
 
     .category-grid {
@@ -835,6 +1050,12 @@ interface AdditionalEventDetails {
       background: var(--border);
       color: var(--text-secondary);
       cursor: not-allowed;
+      opacity: 0.6;
+    }
+
+    .primary-btn:disabled:hover {
+      background: var(--border);
+      transform: none;
     }
 
     .btn-spinner {
@@ -849,6 +1070,147 @@ interface AdditionalEventDetails {
     @keyframes spin {
       0% { transform: rotate(0deg); }
       100% { transform: rotate(360deg); }
+    }
+
+    /* Debug Banner */
+    .debug-banner {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      padding: 1rem;
+      background: #f39c12;
+      color: white;
+      border-radius: 8px;
+      margin-bottom: 1rem;
+      font-weight: 600;
+    }
+
+    .debug-icon {
+      font-size: 1.5rem;
+    }
+
+    .debug-text {
+      font-size: 0.9rem;
+    }
+
+    /* Extraction Results Overlay */
+    .extraction-results-section {
+      margin-bottom: 2rem;
+      background: linear-gradient(135deg, var(--primary) 0%, var(--accent) 100%);
+      border-radius: 16px;
+      overflow: hidden;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+      animation: slideIn 0.5s ease-out;
+    }
+
+    @keyframes slideIn {
+      from { opacity: 0; transform: translateY(-20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .extraction-banner {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      padding: 1.5rem;
+      background: rgba(255, 255, 255, 0.1);
+      backdrop-filter: blur(10px);
+    }
+
+    .banner-icon {
+      font-size: 2rem;
+      flex-shrink: 0;
+    }
+
+    .banner-content {
+      flex: 1;
+    }
+
+    .banner-title {
+      font-size: 1.25rem;
+      font-weight: 700;
+      color: var(--on-primary);
+      margin: 0 0 0.25rem 0;
+    }
+
+    .banner-subtitle {
+      font-size: 0.9rem;
+      color: rgba(255, 255, 255, 0.9);
+      margin: 0;
+    }
+
+    .banner-close {
+      background: rgba(255, 255, 255, 0.2);
+      border: none;
+      border-radius: 50%;
+      width: 32px;
+      height: 32px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      color: var(--on-primary);
+      transition: background 0.2s;
+    }
+
+    .banner-close:hover {
+      background: rgba(255, 255, 255, 0.3);
+    }
+
+    .extraction-details {
+      padding: 1.5rem;
+      background: var(--background);
+    }
+
+    .extraction-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 1rem;
+      margin-bottom: 1rem;
+    }
+
+    .extraction-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 0.75rem;
+      padding: 1rem;
+      background: var(--background-lighter);
+      border-radius: 8px;
+      border-left: 4px solid var(--success);
+    }
+
+    .extraction-item.full-width {
+      grid-column: 1 / -1;
+    }
+
+    .item-icon {
+      font-size: 1rem;
+      flex-shrink: 0;
+      margin-top: 0.1rem;
+    }
+
+    .item-label {
+      font-weight: 600;
+      color: var(--text);
+      min-width: 80px;
+      flex-shrink: 0;
+    }
+
+    .item-value {
+      color: var(--text);
+      line-height: 1.4;
+      word-break: break-word;
+    }
+
+    .extraction-footer {
+      text-align: center;
+      padding-top: 1rem;
+      border-top: 1px solid var(--border);
+    }
+
+    .extraction-note {
+      color: var(--text-secondary);
+      font-style: italic;
     }
 
     /* No Data */
@@ -882,26 +1244,67 @@ interface AdditionalEventDetails {
         flex-direction: column;
       }
 
-      .category-grid {
+      .checkbox-buttons-grid {
         grid-template-columns: 1fr;
       }
 
       .form-row {
         grid-template-columns: 1fr;
-        gap: 0.75rem;
+        gap: 1rem;
       }
 
-      .days-of-week {
+      .preview-summary {
+        padding: 0.875rem 1rem;
+        font-size: 0.9rem;
+      }
+
+      .preview-content {
+        padding: 0 1rem 1rem 1rem;
+      }
+
+      .checkbox-buttons-inline {
         justify-content: center;
       }
 
-      .day-checkbox {
-        min-width: 40px;
-        padding: 0.375rem 0.5rem;
+      /* Mobile extraction overlay */
+      .extraction-banner {
+        padding: 1rem;
+        gap: 0.75rem;
       }
 
-      .day-label {
-        font-size: 0.75rem;
+      .banner-title {
+        font-size: 1.125rem;
+      }
+
+      .banner-subtitle {
+        font-size: 0.8rem;
+      }
+
+      .extraction-details {
+        padding: 1rem;
+      }
+
+      .extraction-grid {
+        grid-template-columns: 1fr;
+        gap: 0.75rem;
+      }
+
+      .extraction-item {
+        padding: 0.75rem;
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.5rem;
+      }
+
+      .item-label {
+        min-width: unset;
+        font-size: 0.8rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+      }
+
+      .item-value {
+        font-size: 0.9rem;
       }
     }
   `]
@@ -910,56 +1313,97 @@ export class EventConfirmationComponent implements OnInit {
   private readonly router = inject(Router);
   private readonly eventStore = inject(EventStore);
   private readonly authService = inject(AuthService);
+  private readonly fb = inject(FormBuilder);
+  private readonly notificationService = inject(PlatformNotificationService);
 
   // Event data from navigation state
   readonly eventData = signal<EventConfirmationData | null>(null);
   
-  // Basic details that can be edited
-  readonly basicDetails = signal<{
-    title: string;
-    date: string;
-    startTime: string;
-    endTime: string;
-    isAllDay: boolean;
-    location: string;
-  }>({
-    title: '',
-    date: '',
-    startTime: '',
-    endTime: '',
-    isAllDay: false,
-    location: ''
-  });
+  // Unified Reactive Form
+  readonly eventForm: FormGroup;
+
+  constructor() {
+    this.eventForm = this.fb.group({
+      basicDetails: this.fb.group({
+        title: ['', Validators.required],
+        date: ['', Validators.required],
+        startTime: [''],
+        endTime: [''],
+        isAllDay: [false],
+        location: ['', Validators.required],
+        categories: this.fb.array([])
+      }),
+      schedule: this.fb.group({
+        eventType: ['single'],
+        recurrenceFrequency: ['weekly'],
+        recurrenceInterval: [1, [Validators.min(1), Validators.max(52)]],
+        recurrenceDaysOfWeek: this.fb.array(this.daysOfWeek.map(() => false)),
+        recurrenceEndType: ['never'],
+        recurrenceEndDate: [''],
+        recurrenceOccurrences: [1, [Validators.min(1), Validators.max(365)]]
+      }),
+      additionalDetails: this.fb.group({
+        description: [''],
+        organizer: [''],
+        ticketInfo: [''],
+        contactInfo: [''],
+        website: [''],
+        accessibility: [''],
+        ageRestriction: [''],
+        capacity: [null, Validators.min(1)],
+        tags: ['']
+      })
+    });
+  }
   
   // Current user ID for event card
   readonly currentUserId = computed(() => this.authService.user$$()?.uid || null);
   
+  // Convenience getters for form groups
+  get basicDetailsForm() { return this.eventForm.get('basicDetails') as FormGroup; }
+  get scheduleForm() { return this.eventForm.get('schedule') as FormGroup; }
+  get additionalDetailsForm() { return this.eventForm.get('additionalDetails') as FormGroup; }
+
   // Preview event for EventCardComponent
   readonly previewEvent = computed(() => {
-    const basic = this.basicDetails();
+    const formValue = this.eventForm.value;
+    const basicValues = formValue.basicDetails;
+    const scheduleValues = formValue.schedule;
+    const additionalValues = formValue.additionalDetails;
     const original = this.eventData();
     
     if (!original) return this.createEmptyEvent();
     
+    // Parse tags from comma-separated string
+    const tags = additionalValues.tags ? 
+      additionalValues.tags.split(',').map((tag: string) => tag.trim()).filter((tag: string) => tag.length > 0) : [];
+    
     return {
       id: 'preview',
-      title: basic.title || 'Untitled Event',
-      description: '',
-      date: basic.date || new Date().toISOString().split('T')[0],
-      startTime: basic.isAllDay ? undefined : basic.startTime,
-      endTime: basic.isAllDay ? undefined : basic.endTime,
-      isAllDay: basic.isAllDay,
-      location: basic.location || 'Location TBA',
-      categories: original.categories || [],
-      tags: [],
+      title: basicValues.title || 'Untitled Event',
+      description: additionalValues.description || '',
+      date: basicValues.date || new Date().toISOString().split('T')[0],
+      startTime: basicValues.isAllDay ? undefined : basicValues.startTime,
+      endTime: basicValues.isAllDay ? undefined : basicValues.endTime,
+      isAllDay: basicValues.isAllDay,
+      location: basicValues.location || 'Location TBA',
+      categories: this.getSelectedCategories(),
+      tags,
       status: 'draft' as const,
-      eventType: 'single' as EventType,
+      eventType: scheduleValues.eventType as EventType,
       attendeeIds: [],
       createdBy: this.currentUserId() || 'unknown',
       ownerId: this.currentUserId() || 'unknown',
       createdAt: new Date(),
       updatedAt: new Date(),
       imageUrl: original.uploadedFlyer || undefined,
+      organizer: additionalValues.organizer,
+      ticketInfo: additionalValues.ticketInfo,
+      contactInfo: additionalValues.contactInfo,
+      website: additionalValues.website,
+      accessibility: additionalValues.accessibility,
+      ageRestriction: additionalValues.ageRestriction,
+      capacity: additionalValues.capacity,
       isMockEvent: false
     } as EventModel;
   });
@@ -985,51 +1429,43 @@ export class EventConfirmationComponent implements OnInit {
     } as EventModel;
   }
 
-  // Additional details form
-  readonly additionalDetails = signal<AdditionalEventDetails>({
-    description: '',
-    organizer: '',
-    ticketInfo: '',
-    contactInfo: '',
-    website: '',
-    tags: [],
-    additionalCategories: [],
-
-    // Event scheduling defaults
-    eventType: 'single',
-    recurrenceFrequency: 'weekly',
-    recurrenceInterval: 1,
-    recurrenceDaysOfWeek: [],
-    recurrenceEndType: 'never',
-    recurrenceEndDate: '',
-    recurrenceOccurrences: 1
-  });
 
   // UI state
   readonly isCreating = signal(false);
-  readonly showRecurrenceSection = computed(() => this.additionalDetails().eventType === 'recurring');
+  readonly showRecurrenceSection = computed(() => this.additionalDetailsForm.value.eventType === 'recurring');
+  readonly extractionBannerDismissed = signal(false);
+  readonly debugInfo = signal<string>('Initializing...');
+  readonly isLoading = signal(true);
   tagsInput = '';
 
   // Constants for templates
   readonly recurrenceFrequencies = RECURRENCE_FREQUENCIES;
   readonly daysOfWeek = DAYS_OF_WEEK;
+  readonly eventCategories = EVENT_CATEGORIES;
 
-  // Available categories (excluding already selected ones)
-  readonly availableCategories = computed(() => {
-    const selected = this.eventData()?.categories || [];
-    return EVENT_CATEGORIES.filter(cat => !selected.includes(cat.value));
+  // Form validation
+  readonly isFormValid = computed(() => {
+    return this.eventForm.valid;
   });
 
+  readonly basicDetailsValid = computed(() => this.basicDetailsForm.valid);
+  readonly scheduleValid = computed(() => this.scheduleForm.valid);
+  readonly additionalDetailsValid = computed(() => this.additionalDetailsForm.valid);
+
   ngOnInit() {
+    this.debugInfo.set('Checking for event data...');
+    
     // Get event data from router state
     const navigation = this.router.getCurrentNavigation();
     const state = navigation?.extras?.state || history.state;
 
     if (state?.eventData) {
+      this.debugInfo.set('Found event data! Setting up form...');
       this.eventData.set(state.eventData);
-      // Initialize basic details from eventData
+      // Initialize forms from eventData
       const data = state.eventData;
-      this.basicDetails.set({
+      
+      this.basicDetailsForm.patchValue({
         title: data.title || '',
         date: data.date || '',
         startTime: data.startTime || '',
@@ -1037,33 +1473,99 @@ export class EventConfirmationComponent implements OnInit {
         isAllDay: data.isAllDay || false,
         location: data.location || ''
       });
+
+      // Set categories
+      if (data.categories?.length) {
+        this.setCategoriesFromData(data.categories);
+      }
+
+      // Populate additional details if they were extracted by LLM
+      if (data.llmExtracted) {
+        this.debugInfo.set('Pre-filling LLM extracted data...');
+        this.additionalDetailsForm.patchValue({
+          description: data.description || '',
+          organizer: data.organizer || '',
+          ticketInfo: data.ticketInfo || '',
+          contactInfo: data.contactInfo || '',
+          website: data.website || '',
+          tags: data.tags ? data.tags.join(', ') : ''
+        });
+      }
+      
+      // Hide debug banner after successful setup
+      setTimeout(() => {
+        this.isLoading.set(false);
+      }, 500);
     } else {
-      // If no data, redirect to creator
-      this.goToCreator();
+      this.debugInfo.set('No event data found, retrying...');
+      // Wait a bit in case state is still loading, then redirect
+      setTimeout(() => {
+        const retryState = history.state;
+        if (retryState?.eventData) {
+          this.debugInfo.set('Found data on retry!');
+          this.ngOnInit(); // Retry initialization
+        } else {
+          this.debugInfo.set('No data found, redirecting...');
+          setTimeout(() => {
+            this.goToCreator();
+          }, 1000);
+        }
+      }, 500);
     }
   }
   
   onAllDayToggle() {
-    const basic = this.basicDetails();
-    this.basicDetails.update(details => ({
-      ...details,
-      isAllDay: !basic.isAllDay,
-      startTime: !basic.isAllDay ? '' : details.startTime,
-      endTime: !basic.isAllDay ? '' : details.endTime
-    }));
+    const isAllDay = this.basicDetailsForm.get('isAllDay')?.value;
+    if (isAllDay) {
+      this.basicDetailsForm.patchValue({
+        startTime: '',
+        endTime: ''
+      });
+    }
   }
   
-  onTagsChange(event: Event) {
-    const input = event.target as HTMLInputElement;
-    const tags = input.value
-      .split(',')
-      .map(tag => tag.trim())
-      .filter(tag => tag.length > 0);
+  // Category management
+  getSelectedCategories(): EventCategory[] {
+    const categoriesArray = this.basicDetailsForm.get('categories') as FormArray;
+    return this.eventCategories
+      .filter((_, index) => categoriesArray.at(index)?.value)
+      .map(cat => cat.value);
+  }
+
+  isBasicCategorySelected(category: EventCategory): boolean {
+    const categoriesArray = this.basicDetailsForm.get('categories') as FormArray;
+    const index = this.eventCategories.findIndex(cat => cat.value === category);
+    return index >= 0 ? categoriesArray.at(index)?.value || false : false;
+  }
+
+  onBasicCategoryChange(category: EventCategory, isSelected: boolean) {
+    const categoriesArray = this.basicDetailsForm.get('categories') as FormArray;
+    const index = this.eventCategories.findIndex(cat => cat.value === category);
     
-    this.additionalDetails.update(details => ({
-      ...details,
-      tags
-    }));
+    if (index >= 0) {
+      categoriesArray.at(index)?.setValue(isSelected);
+    }
+  }
+
+  // Days of week management for schedule
+  isDaySelected(dayIndex: number): boolean {
+    const daysArray = this.scheduleForm.get('recurrenceDaysOfWeek') as FormArray;
+    return daysArray.at(dayIndex)?.value || false;
+  }
+
+  onDayToggle(dayIndex: number, isSelected: boolean) {
+    const daysArray = this.scheduleForm.get('recurrenceDaysOfWeek') as FormArray;
+    daysArray.at(dayIndex)?.setValue(isSelected);
+  }
+
+  private setCategoriesFromData(categories: EventCategory[]) {
+    const categoriesArray = this.basicDetailsForm.get('categories') as FormArray;
+    categoriesArray.clear();
+    
+    this.eventCategories.forEach(cat => {
+      const isSelected = categories.includes(cat.value);
+      categoriesArray.push(this.fb.control(isSelected));
+    });
   }
 
   goBack() {
@@ -1116,177 +1618,87 @@ export class EventConfirmationComponent implements OnInit {
     return categoryData?.label || category;
   }
 
-  updateTags(event: Event) {
-    const input = event.target as HTMLInputElement;
-    this.tagsInput = input.value;
 
-    // Parse tags from comma-separated string
-    const tags = input.value
-      .split(',')
-      .map(tag => tag.trim())
-      .filter(tag => tag.length > 0);
 
-    this.additionalDetails.update(details => ({
-      ...details,
-      tags
-    }));
-  }
-
-  isCategorySelected(category: EventCategory): boolean {
-    return this.additionalDetails().additionalCategories.includes(category);
-  }
-
-  toggleCategory(category: EventCategory) {
-    this.additionalDetails.update(details => {
-      const categories = details.additionalCategories;
-      const index = categories.indexOf(category);
-
-      if (index > -1) {
-        // Remove category
-        return {
-          ...details,
-          additionalCategories: categories.filter(c => c !== category)
-        };
-      } else {
-        // Add category
-        return {
-          ...details,
-          additionalCategories: [...categories, category]
-        };
-      }
-    });
-  }
-
-  // Event scheduling methods
-  onEventTypeChange(eventType: EventType) {
-    this.additionalDetails.update(details => ({
-      ...details,
-      eventType
-    }));
-  }
-
-  onRecurrenceFrequencyChange(frequency: 'daily' | 'weekly' | 'monthly' | 'yearly') {
-    this.additionalDetails.update(details => ({
-      ...details,
-      recurrenceFrequency: frequency,
-      // Clear days of week when switching away from weekly
-      recurrenceDaysOfWeek: frequency === 'weekly' ? details.recurrenceDaysOfWeek : []
-    }));
-  }
-
-  onRecurrenceIntervalChange(interval: number) {
-    this.additionalDetails.update(details => ({
-      ...details,
-      recurrenceInterval: interval
-    }));
-  }
-
-  onDayOfWeekChange(dayValue: number, event: any) {
-    const isChecked = event.target.checked;
-    this.additionalDetails.update(details => {
-      const currentDays = details.recurrenceDaysOfWeek;
-      let updatedDays: number[];
-
-      if (isChecked) {
-        updatedDays = [...currentDays, dayValue].sort();
-      } else {
-        updatedDays = currentDays.filter(day => day !== dayValue);
-      }
-
-      return {
-        ...details,
-        recurrenceDaysOfWeek: updatedDays
-      };
-    });
-  }
-
-  isDaySelected(dayValue: number): boolean {
-    return this.additionalDetails().recurrenceDaysOfWeek.includes(dayValue);
-  }
-
-  onRecurrenceEndTypeChange(endType: 'never' | 'date' | 'count') {
-    this.additionalDetails.update(details => ({
-      ...details,
-      recurrenceEndType: endType
-    }));
-  }
-
-  onRecurrenceEndDateChange(endDate: string) {
-    this.additionalDetails.update(details => ({
-      ...details,
-      recurrenceEndDate: endDate
-    }));
-  }
-
-  onRecurrenceOccurrencesChange(occurrences: number) {
-    this.additionalDetails.update(details => ({
-      ...details,
-      recurrenceOccurrences: occurrences
-    }));
-  }
 
   async createEvent() {
     const eventData = this.eventData();
-    const basicData = this.basicDetails();
-    if (!eventData) return;
+    if (!eventData || !this.isFormValid()) return;
 
     this.isCreating.set(true);
 
     try {
-      const additionalData = this.additionalDetails();
+      const formValue = this.eventForm.value;
+      const basicValues = formValue.basicDetails;
+      const scheduleValues = formValue.schedule;
+      const additionalValues = formValue.additionalDetails;
 
-      // Combine all categories
-      const allCategories = [
-        ...eventData.categories,
-        ...additionalData.additionalCategories
-      ];
+      // Parse tags from comma-separated string
+      const tags = additionalValues.tags ? 
+        additionalValues.tags.split(',').map((tag: string) => tag.trim()).filter((tag: string) => tag.length > 0) : [];
+
+      // Get selected categories
+      const selectedCategories = this.getSelectedCategories();
 
       // Build recurrence rule if this is a recurring event
       let recurrenceRule: RecurrenceRule | undefined;
-      if (additionalData.eventType === 'recurring') {
+      if (scheduleValues.eventType === 'recurring') {
         const endCondition: RecurrenceRule['endCondition'] = {
-          type: additionalData.recurrenceEndType
+          type: scheduleValues.recurrenceEndType
         };
 
-        if (additionalData.recurrenceEndType === 'date' && additionalData.recurrenceEndDate) {
-          endCondition.endDate = new Date(additionalData.recurrenceEndDate);
-        } else if (additionalData.recurrenceEndType === 'count') {
-          endCondition.occurrences = additionalData.recurrenceOccurrences || 1;
+        if (scheduleValues.recurrenceEndType === 'date' && scheduleValues.recurrenceEndDate) {
+          endCondition.endDate = new Date(scheduleValues.recurrenceEndDate);
+        } else if (scheduleValues.recurrenceEndType === 'count') {
+          endCondition.occurrences = scheduleValues.recurrenceOccurrences || 1;
         }
 
+        // Get selected days of week for weekly recurrence
+        const selectedDays = scheduleValues.recurrenceDaysOfWeek
+          .map((selected: boolean, index: number) => selected ? this.daysOfWeek[index].value : null)
+          .filter((day: number | null) => day !== null);
+
         recurrenceRule = {
-          frequency: additionalData.recurrenceFrequency,
-          interval: additionalData.recurrenceInterval || 1,
-          daysOfWeek: additionalData.recurrenceFrequency === 'weekly' ? additionalData.recurrenceDaysOfWeek : undefined,
+          frequency: scheduleValues.recurrenceFrequency,
+          interval: scheduleValues.recurrenceInterval || 1,
+          daysOfWeek: scheduleValues.recurrenceFrequency === 'weekly' ? selectedDays : undefined,
           endCondition,
           exceptions: []
         };
       }
 
-      // Create complete event data using edited basic details
+      // Generate slug from event title
+      const slug = generateSlug(basicValues.title);
+      console.log('Generated slug:', slug);
+
+      // Create complete event data
       const completeEventData = {
-        // Basic details from editable form (taking precedence)
-        title: basicData.title || eventData.title,
-        date: basicData.date || eventData.date,
-        ...(basicData.startTime && !basicData.isAllDay && { startTime: basicData.startTime }),
-        ...(basicData.endTime && !basicData.isAllDay && { endTime: basicData.endTime }),
-        isAllDay: basicData.isAllDay,
-        location: basicData.location || eventData.location,
+        // Basic details from form
+        title: basicValues.title,
+        slug: slug, // Add slug for SEO-friendly URLs
+        date: basicValues.date,
+        ...(basicValues.startTime && !basicValues.isAllDay && { startTime: basicValues.startTime }),
+        ...(basicValues.endTime && !basicValues.isAllDay && { endTime: basicValues.endTime }),
+        isAllDay: basicValues.isAllDay,
+        location: basicValues.location,
         ...(eventData.venueId && { venueId: eventData.venueId }),
 
-        // Additional details from confirmation form
-        ...(additionalData.description && { description: additionalData.description }),
-        ...(additionalData.organizer && { organizer: additionalData.organizer }),
-        ...(additionalData.ticketInfo && { ticketInfo: additionalData.ticketInfo }),
-        ...(additionalData.contactInfo && { contactInfo: additionalData.contactInfo }),
-        ...(additionalData.website && { website: additionalData.website }),
+        // Additional details from form
+        ...(additionalValues.description && { description: additionalValues.description }),
+        ...(additionalValues.organizer && { organizer: additionalValues.organizer }),
+        ...(additionalValues.ticketInfo && { ticketInfo: additionalValues.ticketInfo }),
+        ...(additionalValues.contactInfo && { contactInfo: additionalValues.contactInfo }),
+        ...(additionalValues.website && { website: additionalValues.website }),
+        ...(additionalValues.accessibility && { accessibility: additionalValues.accessibility }),
+        ...(additionalValues.ageRestriction && { ageRestriction: additionalValues.ageRestriction }),
+        ...(additionalValues.capacity && { capacity: additionalValues.capacity }),
 
         // Categories and tags
-        categories: allCategories,
-        tags: additionalData.tags,
+        categories: selectedCategories,
+        tags,
 
         // Event scheduling
-        eventType: additionalData.eventType,
+        eventType: scheduleValues.eventType,
         ...(recurrenceRule && { recurrenceRule }),
 
         // LLM metadata if available
@@ -1298,7 +1710,7 @@ export class EventConfirmationComponent implements OnInit {
 
         // Ensure required fields are properly set
         attendeeIds: [],
-        status: 'published' as const // Create as published since user confirmed
+        status: 'published' as const
       };
 
       console.log('Creating event with full data:', completeEventData);
@@ -1308,8 +1720,19 @@ export class EventConfirmationComponent implements OnInit {
 
       if (createdEvent) {
         console.log('Event created successfully:', createdEvent.id);
-        // Navigate to the created event
-        this.router.navigate(['/events', createdEvent.id]);
+        
+        // Show success notification
+        await this.notificationService.showSuccess(
+          `Event "${createdEvent.title}" created successfully!`,
+          { 
+            title: 'Success',
+            timeout: 4000,
+            description: 'Your event is now live and visible to others.'
+          }
+        );
+        
+        // Navigate to homepage
+        this.router.navigate(['/']);
       } else {
         throw new Error('Failed to create event - no event returned');
       }
@@ -1317,14 +1740,45 @@ export class EventConfirmationComponent implements OnInit {
     } catch (error) {
       console.error('Error creating event:', error);
 
-      // Show user-friendly error message
+      // Show error notification using the platform service
       if (error instanceof Error && error.message.includes('authenticated')) {
-        alert('Please log in to create events');
+        await this.notificationService.showError(
+          'Please log in to create events',
+          { title: 'Authentication Required' }
+        );
       } else {
-        alert('Failed to create event. Please try again.');
+        await this.notificationService.showError(
+          'Failed to create event. Please try again.',
+          { 
+            title: 'Error', 
+            description: error instanceof Error ? error.message : 'Unknown error occurred'
+          }
+        );
       }
     } finally {
       this.isCreating.set(false);
     }
+  }
+
+  // Extraction overlay methods
+  dismissExtractionBanner() {
+    this.extractionBannerDismissed.set(true);
+  }
+
+  getExtractionSummary() {
+    const data = this.eventData();
+    return {
+      title: data?.title && data.title !== 'Not found' ? data.title : null,
+      date: data?.date && data.date !== 'Not found' ? data.date : null,
+      location: data?.location && data.location !== 'Not found' ? data.location : null,
+      organizer: data?.organizer && data.organizer !== 'Not found' ? data.organizer : null,
+      ticketInfo: data?.ticketInfo && data.ticketInfo !== 'Not found' ? data.ticketInfo : null,
+      description: data?.description && data.description !== 'Not found' ? data.description : null,
+    };
+  }
+
+  getOverallConfidence(): number {
+    const data = this.eventData();
+    return data?.extractionConfidence?.overall || 0;
   }
 }

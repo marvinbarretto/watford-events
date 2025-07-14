@@ -58,11 +58,10 @@
       <section class="events-section">
         <div class="events-list">
           @for (event of filteredEvents(); track event.id) {
-            @if (!isEventFeatured(event) || currentFilter() !== 'upcoming') {
-              <app-event-item
+            <app-event-item
                 [event]="event"
                 [venue]="getEventVenue(event.id)"
-                [isFeatured]="false"
+                [isFeatured]="isEventFeatured(event)"
                 [isExpanded]="isEventExpanded(event.id)"
                 [searchTerm]="searchTerm()"
                 [userDistance]="getEventDistance(event.id)"
@@ -71,7 +70,6 @@
                 (clicked)="onEventClicked($event)"
                 (expandToggled)="toggleEventExpanded(event.id)"
               />
-            }
           }
         </div>
       </section>

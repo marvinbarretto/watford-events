@@ -79,6 +79,7 @@
     "@capacitor/camera": "7.0.1",
     "@capacitor/cli": "7.4.1",
     "@capacitor/core": "7.4.1",
+    "@capacitor/dialog": "7.0.1",
     "@capacitor/ios": "7.4.1",
     "@google/generative-ai": "0.24.1",
     "@ionic/angular": "8.6.3",

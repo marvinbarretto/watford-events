@@ -21,11 +21,13 @@ import {
   EventSortOrder,
   EventCategoryPreferences
 } from '../../utils/user-preferences.types';
+import { convertDistance, formatDistance } from '@shared/utils/distance.utils';
 import { IconComponent } from '@shared/ui/icon/icon.component';
+import { FeatureFlagPipe } from '@shared/utils/feature-flag.pipe';
 
 @Component({
   selector: 'app-user-preferences-widget',
-  imports: [FormsModule, IconComponent],
+  imports: [FormsModule, IconComponent, FeatureFlagPipe],
   template: `
     <div class="preferences-widget" [class.collapsed]="isCollapsed()">
       <div class="widget-header" (click)="toggleCollapsed()">
@@ -55,16 +57,50 @@ import { IconComponent } from '@shared/ui/icon/icon.component';
               <input
                 type="range"
                 class="radius-slider"
-                [value]="sliderValue()"
+                [value]="sliderValueInMeters()"
                 (input)="onRadiusChange($event)"
-                min="1"
-                max="50"
-                step="1"
+                min="0"
+                [max]="sliderConfig().maxValue"
+                [step]="sliderConfig().step"
               />
               <div class="radius-labels">
-                <span>1{{ unitAbbrev() }}</span>
-                <span>50{{ unitAbbrev() }}</span>
+                <span>0</span>
+                <span>{{ sliderConfig().maxLabel }}</span>
               </div>
+            </div>
+          </div>
+
+          <!-- Distance Unit -->
+          <div class="preference-section">
+            <label class="section-label">
+              <span class="label-icon">📏</span>
+              Distance Unit
+            </label>
+            <div class="unit-toggle">
+              <button
+                class="unit-option"
+                [class.active]="preferencesStore.distanceUnit() === 'miles'"
+                (click)="updateDistanceUnit('miles')"
+              >
+                <span class="unit-icon">📐</span>
+                Miles
+              </button>
+              <button
+                class="unit-option"
+                [class.active]="preferencesStore.distanceUnit() === 'kilometers'"
+                (click)="updateDistanceUnit('kilometers')"
+              >
+                <span class="unit-icon">📏</span>
+                Km
+              </button>
+              <button
+                class="unit-option"
+                [class.active]="preferencesStore.distanceUnit() === 'walking-minutes'"
+                (click)="updateDistanceUnit('walking-minutes')"
+              >
+                <span class="unit-icon">🚶</span>
+                Walk
+              </button>
             </div>
           </div>
 
@@ -96,27 +132,29 @@ import { IconComponent } from '@shared/ui/icon/icon.component';
 
 
           <!-- Event Categories -->
-          <div class="preference-section">
-            <label class="section-label">
-              <span class="label-icon">🏷️</span>
-              Preferred Categories
-            </label>
-            <div class="categories-grid">
-              @for (category of categoryList(); track category.key) {
-                <label class="category-item">
-                  <input
-                    type="checkbox"
-                    [checked]="category.enabled"
-                    (change)="onCategoryToggle(category.key, $event)"
-                  />
-                  <span class="category-label">
-                    <span class="category-icon">{{ category.icon }}</span>
-                    {{ category.label }}
-                  </span>
-                </label>
-              }
+          @if (('preferredCategories' | featureFlag)) {
+            <div class="preference-section">
+              <label class="section-label">
+                <span class="label-icon">🏷️</span>
+                Preferred Categories
+              </label>
+              <div class="categories-grid">
+                @for (category of categoryList(); track category.key) {
+                  <label class="category-item">
+                    <input
+                      type="checkbox"
+                      [checked]="category.enabled"
+                      (change)="onCategoryToggle(category.key, $event)"
+                    />
+                    <span class="category-label">
+                      <span class="category-icon">{{ category.icon }}</span>
+                      {{ category.label }}
+                    </span>
+                  </label>
+                }
+              </div>
             </div>
-          </div>
+          }
 
           <!-- Quick Actions -->
           <div class="preference-section">
@@ -490,14 +528,56 @@ export class UserPreferencesWidgetComponent {
   // Computed values
   readonly displayRadius = computed(() => {
     const radiusInKm = this.preferencesStore.searchRadius();
-    return `${radiusInKm} ${radiusInKm === 1 ? 'kilometer' : 'kilometers'}`;
+    if (radiusInKm === 0) {
+      return 'No limit';
+    }
+    const unit = this.preferencesStore.distanceUnit();
+    const convertedRadius = convertDistance(radiusInKm, unit);
+    return formatDistance(convertedRadius, unit);
   });
 
   readonly sliderValue = computed(() => {
     return this.preferencesStore.searchRadius();
   });
 
-  readonly unitAbbrev = computed(() => 'km');
+  readonly sliderValueInMeters = computed(() => {
+    return this.preferencesStore.searchRadius() * 1000;
+  });
+
+  readonly unitAbbrev = computed(() => {
+    const unit = this.preferencesStore.distanceUnit();
+    switch (unit) {
+      case 'miles': return 'mi';
+      case 'walking-minutes': return 'min walk';
+      case 'kilometers':
+      default: return 'km';
+    }
+  });
+
+  readonly sliderConfig = computed(() => {
+    const unit = this.preferencesStore.distanceUnit();
+    switch (unit) {
+      case 'miles':
+        return {
+          maxValue: 5000, // Still in meters for slider
+          maxLabel: '3.1mi', // 5km = ~3.1 miles
+          step: 250
+        };
+      case 'walking-minutes':
+        return {
+          maxValue: 5000, // Still in meters for slider
+          maxLabel: '60 min', // 5km = ~60 min walk
+          step: 250
+        };
+      case 'kilometers':
+      default:
+        return {
+          maxValue: 5000, // 5km in meters
+          maxLabel: '5km',
+          step: 250
+        };
+    }
+  });
 
   readonly categoryList = computed(() => {
     const categories = this.preferencesStore.preferredCategories();
@@ -522,13 +602,18 @@ export class UserPreferencesWidgetComponent {
 
   onRadiusChange(event: Event): void {
     const target = event.target as HTMLInputElement;
-    const radiusInKm = parseInt(target.value, 10);
+    const radiusInMeters = parseInt(target.value, 10);
+    const radiusInKm = radiusInMeters / 1000;
     this.preferencesStore.updateSearchRadius(radiusInKm);
   }
 
 
   updateSortOrder(order: EventSortOrder): void {
     this.preferencesStore.updateDefaultSortOrder(order);
+  }
+
+  updateDistanceUnit(unit: DistanceUnit): void {
+    this.preferencesStore.updateDistanceUnit(unit);
   }
 
   onCategoryToggle(category: keyof EventCategoryPreferences, event: Event): void {

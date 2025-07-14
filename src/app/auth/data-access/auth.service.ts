@@ -8,6 +8,8 @@ import {
   signOut,
   GoogleAuthProvider,
   signInWithPopup,
+  signInWithRedirect,
+  getRedirectResult,
   User as FirebaseUser, // Firebase Auth user (contains auth tokens, email verification, etc.)
   onAuthStateChanged,
   Unsubscribe,
@@ -15,10 +17,12 @@ import {
 import type { User } from '../../users/utils/user.model'; // Our application user model (stored in Firestore)
 import { Roles } from '../utils/roles.enum';
 import { FirestoreService } from '../../shared/data-access/firestore.service';
+import { PlatformDetectionService } from '../../shared/utils/platform-detection.service';
 
 @Injectable({ providedIn: 'root' })
 export class AuthService extends FirestoreService {
   private readonly auth = inject(Auth);
+  private readonly platformDetection = inject(PlatformDetectionService);
 
   private readonly userInternal = signal<FirebaseUser | null>(null);
   private readonly loading = signal<boolean>(true);
@@ -34,6 +38,9 @@ export class AuthService extends FirestoreService {
 
   private initAuthListener() {
     console.log('[AuthService] Initializing auth state listener...');
+
+    // Check for redirect result first (for mobile/Capacitor)
+    this.checkRedirectResult();
 
     const unsubscribe: Unsubscribe = onAuthStateChanged(this.auth, async (firebaseUser) => {
       try {
@@ -60,6 +67,18 @@ export class AuthService extends FirestoreService {
     });
   }
 
+  private async checkRedirectResult() {
+    try {
+      const result = await getRedirectResult(this.auth);
+      if (result?.user) {
+        console.log('[AuthService] ✅ Redirect login successful:', result.user.uid);
+        await this.ensureRegisteredUserDocument(result.user);
+      }
+    } catch (error) {
+      console.error('[AuthService] Error checking redirect result:', error);
+    }
+  }
+
 
 
   async loginWithEmail(email: string, password: string): Promise<FirebaseUser> {
@@ -78,17 +97,27 @@ export class AuthService extends FirestoreService {
     }
   }
 
-  async loginWithGoogle(): Promise<FirebaseUser> {
+  async loginWithGoogle(): Promise<FirebaseUser | void> {
     try {
       this.loading.set(true);
       const provider = new GoogleAuthProvider();
-      const cred = await signInWithPopup(this.auth, provider);
-      console.log('[AuthService] ✅ Google login successful:', cred.user.uid);
+      
+      // Use redirect for Capacitor native apps and mobile web browsers
+      if (this.platformDetection.shouldUseRedirectAuth) {
+        console.log('[AuthService] Using redirect auth for platform:', this.platformDetection.platform);
+        await signInWithRedirect(this.auth, provider);
+        // The actual sign-in will be handled by checkRedirectResult after redirect
+        return;
+      } else {
+        console.log('[AuthService] Using popup auth for desktop web');
+        const cred = await signInWithPopup(this.auth, provider);
+        console.log('[AuthService] ✅ Google login successful:', cred.user.uid);
 
-      // Ensure user document exists for registered users
-      await this.ensureRegisteredUserDocument(cred.user);
+        // Ensure user document exists for registered users
+        await this.ensureRegisteredUserDocument(cred.user);
 
-      return cred.user;
+        return cred.user;
+      }
     } catch (error) {
       this.loading.set(false);
       throw error;

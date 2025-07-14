@@ -49,9 +49,20 @@ export class EventStore {
   readonly draftEvents = computed(() => 
     this._userEvents().filter(event => event.status === 'draft')
   );
-  readonly publishedEvents = computed(() => 
-    this._userEvents().filter(event => event.status === 'published')
-  );
+  readonly publishedEvents = computed(() => {
+    const published = this._userEvents().filter(event => event.status === 'published');
+    console.log('[EventStore] 📊 Published events computed:', {
+      totalEvents: this._userEvents().length,
+      publishedCount: published.length,
+      publishedEvents: published.map(e => ({
+        id: e.id,
+        title: e.title,
+        date: e.date,
+        status: e.status
+      }))
+    });
+    return published;
+  });
   readonly upcomingEvents = computed(() => 
     this._userEvents().filter(event => {
       const eventDate = new Date(event.date);

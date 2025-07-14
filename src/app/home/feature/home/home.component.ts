@@ -115,10 +115,32 @@ export class HomeComponent extends BaseComponent {
     const tomorrow = new Date(today);
     tomorrow.setDate(tomorrow.getDate() + 1);
 
+    console.log('[HomeComponent] 🔍 Filtering events:', {
+      filter,
+      totalEvents: events.length,
+      today: today.toISOString(),
+      todayLocal: today.toLocaleDateString()
+    });
+
     // Apply filter-based filtering
     switch (filter) {
         case 'upcoming':
-          events = events.filter(e => convertToDate(e.date) >= today);
+          console.log('[HomeComponent] 📅 Testing upcoming filter...');
+          events = events.filter(e => {
+            const originalDate = e.date;
+            const convertedDate = convertToDate(e.date);
+            const isUpcoming = convertedDate >= today;
+            console.log(`[HomeComponent] Event "${e.title}":`, {
+              originalDate,
+              convertedDate: convertedDate.toISOString(),
+              convertedLocal: convertedDate.toLocaleDateString(),
+              today: today.toISOString(),
+              isUpcoming,
+              status: e.status
+            });
+            return isUpcoming;
+          });
+          console.log('[HomeComponent] ✅ Upcoming events after filter:', events.length);
           break;
         case 'today':
           events = events.filter(e => {
@@ -164,12 +186,38 @@ export class HomeComponent extends BaseComponent {
 
     // Apply radius filter - only show events within user's search radius
     const userLocation = this.locationService.location();
-    if (userLocation) {
+    const searchRadiusKm = this.preferencesStore.searchRadius();
+    console.log('[HomeComponent] 📍 Radius filtering:', {
+      hasUserLocation: !!userLocation,
+      eventsBeforeRadius: events.length,
+      userLocation,
+      searchRadiusKm
+    });
+    
+    if (userLocation && searchRadiusKm > 0) {
       const eventDistances = this.eventDistances();
+      console.log('[HomeComponent] 📏 Distance data:', {
+        distanceMapSize: eventDistances.size,
+        eventIds: events.map(e => e.id),
+        distanceEntries: Array.from(eventDistances.entries())
+      });
+      
       events = events.filter(event => {
         const distanceData = eventDistances.get(event.id);
-        return distanceData ? distanceData.withinRadius : true; // Include events without distance data
+        const withinRadius = distanceData ? distanceData.withinRadius : true;
+        console.log(`[HomeComponent] Event "${event.title}" radius check:`, {
+          hasDistanceData: !!distanceData,
+          withinRadius,
+          distanceData
+        });
+        return withinRadius; // Include events without distance data
       });
+      
+      console.log('[HomeComponent] 📍 Events after radius filter:', events.length);
+    } else if (!userLocation) {
+      console.log('[HomeComponent] 📍 No user location - skipping radius filter');
+    } else {
+      console.log('[HomeComponent] 📍 Search radius is 0 - skipping radius filter (showing all events)');
     }
 
     // Sort based on user preference
@@ -202,12 +250,9 @@ export class HomeComponent extends BaseComponent {
     });
   });
 
-  readonly featuredEvents = computed(() => {
-    // TODO: Replace with proper featured event logic (manual selection, popularity, etc.)
-    // For now, randomly select up to 3 upcoming events
-    const upcomingEvents = this.events().filter(e => convertToDate(e.date) >= getStartOfDay(new Date()));
-    const shuffled = [...upcomingEvents].sort(() => Math.random() - 0.5);
-    return shuffled.slice(0, 3);
+  readonly featuredEvents = computed<EventModel[]>(() => {
+    // No featured events for now - all events display as normal
+    return [];
   });
 
   readonly eventCounts = computed<EventCounts>(() => {

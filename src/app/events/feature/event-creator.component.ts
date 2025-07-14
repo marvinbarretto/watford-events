@@ -7,7 +7,7 @@ import { LLMService } from '@shared/data-access/llm.service';
 import { EventInferenceService } from '../data-access/event-inference.service';
 import { VenueLookupService } from '@shared/data-access/venue-lookup.service';
 import { TypeaheadComponent, TypeaheadOption } from '@shared/ui/typeahead/typeahead.component';
-import { EventData } from '@shared/utils/event-extraction-types';
+import { EventData, EventExtractionResult } from '@shared/utils/event-extraction-types';
 import { EventModel, EventCategory, createEventDefaults } from '../utils/event.model';
 import { Venue } from '../../venues/utils/venue.model';
 import { AuthService } from '../../auth/data-access/auth.service';
@@ -56,7 +56,7 @@ interface SimpleEventForm {
               <span>Scanning flyer...</span>
             } @else if (uploadedFlyer()) {
               <span class="btn-icon">✅</span>
-              <span>Flyer scanned - details filled in</span>
+              <span>Flyer scanned successfully!</span>
             } @else {
               <span class="btn-icon">📸</span>
               <span>Upload Flyer</span>
@@ -1083,6 +1083,14 @@ export class EventCreatorComponent extends BaseComponent implements OnDestroy {
 
         // Run inference on the extracted title
         this.runInference(data.title);
+
+        // Always proceed to confirmation with extraction results
+        this.showSuccess('Flyer processed! Proceeding to confirmation...');
+        
+        // Brief delay to show user the form being filled
+        setTimeout(() => {
+          this.proceedToConfirmationWithLLMData(result);
+        }, 1000);
       }
     } catch (error) {
       console.error('Error processing flyer:', error);
@@ -1435,5 +1443,63 @@ export class EventCreatorComponent extends BaseComponent implements OnDestroy {
     const isThisWeek = currentWeekStart.getTime() === nextOccurrenceWeekStart.getTime();
 
     return isThisWeek ? day.charAt(0).toUpperCase() + day.slice(1) : `${day.charAt(0).toUpperCase() + day.slice(1)}`;
+  }
+
+  // Auto-proceed helper methods
+  private proceedToConfirmationWithLLMData(extractionResult: EventExtractionResult) {
+    // Validate form first
+    if (!this.eventForm.valid) {
+      console.log('Form not valid, not auto-proceeding');
+      return;
+    }
+
+    const formData = this.eventForm.value;
+    const data = extractionResult.eventData;
+
+    // Guard against null data
+    if (!data) {
+      console.log('No event data extracted, not auto-proceeding');
+      return;
+    }
+
+    // Prepare enhanced event data with LLM extraction results
+    const eventData = {
+      // From form (basic details)
+      title: formData.title.trim(),
+      date: formData.date,
+      ...(formData.startTime && { startTime: formData.startTime }),
+      ...(formData.endTime && { endTime: formData.endTime }),
+      isAllDay: formData.isAllDay,
+      location: formData.location.trim(),
+      ...(formData.venueId && { venueId: formData.venueId }),
+
+      // From LLM extraction (additional details)
+      ...(data.description && data.description !== 'Not found' && { description: data.description }),
+      ...(data.organizer && data.organizer !== 'Not found' && { organizer: data.organizer }),
+      ...(data.ticketInfo && data.ticketInfo !== 'Not found' && { ticketInfo: data.ticketInfo }),
+      ...(data.contactInfo && data.contactInfo !== 'Not found' && { contactInfo: data.contactInfo }),
+      ...(data.website && data.website !== 'Not found' && { website: data.website }),
+      ...(data.tags && data.tags.length > 0 && { tags: data.tags }),
+
+      // Categories from inference
+      categories: this.inferredCategories(),
+
+      // LLM metadata
+      llmExtracted: true,
+      extractionConfidence: extractionResult.confidence,
+      
+      // Additional context for confirmation page
+      selectedVenue: this.selectedVenue(),
+      uploadedFlyer: this.uploadedFlyer(),
+      inferredEventType: this.inferredEventType(),
+      inferredDuration: this.inferredDuration()
+    };
+
+    console.log('Auto-proceeding to confirmation with enhanced data:', eventData);
+
+    // Navigate to confirmation page with enhanced event data
+    this.router.navigate(['/events/create/confirm'], {
+      state: { eventData }
+    });
   }
 }

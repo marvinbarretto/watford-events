@@ -21,7 +21,8 @@ import { AuthStore } from '@auth/data-access/auth.store';
 import { UserPreferencesStore } from '../data-access/user-preferences.store';
 import {
   ThemePreference,
-  LanguageCode
+  LanguageCode,
+  DistanceUnit
 } from '../utils/user-preferences.types';
 import { IconComponent } from '@shared/ui/icon/icon.component';
 
@@ -94,6 +95,27 @@ import { IconComponent } from '@shared/ui/icon/icon.component';
                   >
                     <span class="theme-icon">{{ theme.icon }}</span>
                     <span class="theme-label">{{ theme.label }}</span>
+                  </button>
+                }
+              </div>
+            </label>
+          </div>
+
+          <div class="setting-group">
+            <label class="setting-label">
+              <span class="label-text">
+                <span class="label-icon">📏</span>
+                Distance Unit
+              </span>
+              <div class="distance-options">
+                @for (unit of distanceUnitOptions(); track unit.value) {
+                  <button
+                    class="distance-option"
+                    [class.active]="preferencesStore.distanceUnit() === unit.value"
+                    (click)="updateDistanceUnit(unit.value)"
+                  >
+                    <span class="distance-icon">{{ unit.icon }}</span>
+                    <span class="distance-label">{{ unit.label }}</span>
                   </button>
                 }
               </div>
@@ -550,6 +572,47 @@ import { IconComponent } from '@shared/ui/icon/icon.component';
       font-weight: 500;
     }
 
+    /* Distance Unit Options */
+    .distance-options {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .distance-option {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 4px;
+      padding: 12px;
+      background: var(--background);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      min-width: 90px;
+    }
+
+    .distance-option:hover {
+      border-color: var(--primary);
+    }
+
+    .distance-option.active {
+      background: var(--primary);
+      border-color: var(--primary);
+      color: var(--on-primary);
+    }
+
+    .distance-icon {
+      font-size: 20px;
+    }
+
+    .distance-label {
+      font-size: 12px;
+      font-weight: 500;
+      text-align: center;
+    }
+
     /* Checkbox Settings */
     .setting-checkbox {
       display: flex;
@@ -716,6 +779,11 @@ import { IconComponent } from '@shared/ui/icon/icon.component';
         justify-content: flex-start;
       }
 
+      .distance-options {
+        flex-wrap: wrap;
+        justify-content: flex-start;
+      }
+
       .font-size-control {
         width: 100%;
       }
@@ -743,6 +811,12 @@ export class SettingsComponent {
     { value: 'system' as ThemePreference, label: 'System', icon: '💻' }
   ]);
 
+  readonly distanceUnitOptions = signal([
+    { value: 'miles' as DistanceUnit, label: 'Miles', icon: '📐' },
+    { value: 'kilometers' as DistanceUnit, label: 'Kilometers', icon: '📏' },
+    { value: 'walking-minutes' as DistanceUnit, label: 'Walking Time', icon: '🚶' }
+  ]);
+
   // Event handlers
   onLanguageChange(event: Event): void {
     const target = event.target as HTMLSelectElement;
@@ -752,6 +826,10 @@ export class SettingsComponent {
 
   updateTheme(theme: ThemePreference): void {
     this.preferencesStore.updateTheme(theme);
+  }
+
+  updateDistanceUnit(unit: DistanceUnit): void {
+    this.preferencesStore.updateDistanceUnit(unit);
   }
 
   updateNotification(key: string, event: Event): void {

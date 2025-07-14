@@ -743,11 +743,10 @@ export class NaturalLanguageAddEventComponent implements AfterViewInit {
     const eventData = this.currentEventData();
     if (!eventData) return;
 
-    // Navigate to the manual form with pre-filled data
-    this.router.navigate(['/events/add'], {
+    // Navigate to the confirmation page with event data
+    this.router.navigate(['/events/create/confirm'], {
       state: {
-        prefillData: eventData,
-        source: 'natural-language'
+        eventData: eventData
       }
     });
   }
@@ -832,19 +831,18 @@ export class NaturalLanguageAddEventComponent implements AfterViewInit {
   useManualForm() {
     const eventData = this.currentEventData();
     if (eventData) {
-      this.router.navigate(['/events/add'], {
+      this.router.navigate(['/events/create/confirm'], {
         state: {
-          prefillData: eventData,
-          source: 'natural-language'
+          eventData: eventData
         }
       });
     } else {
-      this.router.navigate(['/events/add']);
+      this.router.navigate(['/events/create']);
     }
   }
 
   goBack() {
-    this.router.navigate(['/events/add']);
+    this.router.navigate(['/events/create']);
   }
 
   getConfidenceClass(confidence: number): string {
