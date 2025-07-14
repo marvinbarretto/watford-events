@@ -2,11 +2,17 @@
  * Base type for all events in the system
  * Provides core properties that all event types should have
  */
-export type GenericEvent = {
+export type GenericEventModel = {
   id: string;
   title: string;
-  description: string;
-  date: Date;
+  description?: string; // Made optional - many events don't need detailed descriptions
+  
+  // User-friendly date/time structure
+  date: string;           // YYYY-MM-DD format from date input
+  startTime?: string;     // HH:MM format from time input
+  endTime?: string;       // HH:MM format from time input
+  isAllDay?: boolean;     // Flag for all-day events
+  
   location?: string; // Optional - can be derived from venue
   venueId?: string; // Reference to venue for location data
   createdAt: Date;
@@ -44,18 +50,18 @@ export type RecurrenceRule = {
 
 /**
  * Main domain event type for Watford events
- * Extends GenericEvent with domain-specific fields
+ * Extends GenericEventModel with domain-specific fields
  */
-export type Event = GenericEvent & {
+export type EventModel = GenericEventModel & {
   attendeeIds: string[];
   slug?: string; // SEO-friendly URL slug generated from title
 
-  // Event type and recurrence
+  // Event type and recurrence (defaults to single)
   eventType: EventType;
   recurrenceRule?: RecurrenceRule;
   parentEventId?: string; // For exception instances that override recurring pattern
   isException?: boolean; // True if this is a modified instance of recurring event
-  originalDate?: Date; // Original date if this is an exception instance
+  originalDate?: string; // Original date if this is an exception instance (string format)
 
   // LLM extraction metadata
   imageUrl?: string;
@@ -155,27 +161,68 @@ export const DAYS_OF_WEEK = [
 /**
  * Type guard for null safety
  */
-export function isEvent(event: Event | null): event is Event {
+export function isEvent(event: EventModel | null): event is EventModel {
   return event !== null && typeof event === 'object' && 'id' in event;
 }
 
 /**
  * Type guard for recurring events
  */
-export function isRecurringEvent(event: Event): event is Event & { recurrenceRule: RecurrenceRule } {
+export function isRecurringEvent(event: EventModel): event is EventModel & { recurrenceRule: RecurrenceRule } {
   return event.eventType === 'recurring' && !!event.recurrenceRule;
 }
 
 /**
  * Type guard for single events
  */
-export function isSingleEvent(event: Event): boolean {
+export function isSingleEvent(event: EventModel): boolean {
   return event.eventType === 'single';
 }
 
 /**
  * Check if event is an exception instance
  */
-export function isExceptionEvent(event: Event): boolean {
+export function isExceptionEvent(event: EventModel): boolean {
   return !!event.isException && !!event.parentEventId;
+}
+
+/**
+ * Helper function for creating EventModel objects with smart defaults
+ */
+export function createEventDefaults(): Partial<EventModel> {
+  return {
+    attendeeIds: [],
+    eventType: 'single',
+    status: 'draft',
+    categories: [],
+    tags: [],
+    likeCount: 0
+  };
+}
+
+/**
+ * Helper function to convert date string + time strings to Date object
+ */
+export function createEventDateTime(date: string, time?: string): Date {
+  if (!time) {
+    // If no time provided, use start of day
+    return new Date(date + 'T00:00:00');
+  }
+  
+  // Combine date and time into ISO string
+  return new Date(date + 'T' + time + ':00');
+}
+
+/**
+ * Helper function to extract date string from Date object
+ */
+export function getDateString(date: Date): string {
+  return date.toISOString().split('T')[0];
+}
+
+/**
+ * Helper function to extract time string from Date object
+ */
+export function getTimeString(date: Date): string {
+  return date.toTimeString().slice(0, 5); // HH:MM format
 }

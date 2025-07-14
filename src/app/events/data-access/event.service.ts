@@ -1,6 +1,6 @@
 import { Injectable, inject } from '@angular/core';
 import { FirestoreCrudService } from '../../shared/data-access/firestore-crud.service';
-import { Event } from '../utils/event.model';
+import { EventModel } from '../utils/event.model';
 import { Observable, combineLatest, map } from 'rxjs';
 import { VenueService } from '../../venues/data-access/venue.service';
 import { Venue } from '../../venues/utils/venue.model';
@@ -9,7 +9,7 @@ import { generateUniqueSlug } from '../../shared/utils/slug.utils';
 /**
  * Enhanced event with venue data
  */
-export type EventWithVenue = Event & {
+export type EventWithVenue = EventModel & {
   venue?: Venue;
   distance?: number; // Distance in km from user location
 };
@@ -17,7 +17,7 @@ export type EventWithVenue = Event & {
 @Injectable({
   providedIn: 'root',
 })
-export class EventService extends FirestoreCrudService<Event> {
+export class EventService extends FirestoreCrudService<EventModel> {
   protected path = 'events';
   
   private venueService = inject(VenueService);
@@ -25,14 +25,14 @@ export class EventService extends FirestoreCrudService<Event> {
   /**
    * Get a single event by ID
    */
-  getEvent(eventId: string): Observable<Event | undefined> {
-    return this.doc$<Event>(`events/${eventId}`);
+  getEvent(eventId: string): Observable<EventModel | undefined> {
+    return this.doc$<EventModel>(`events/${eventId}`);
   }
 
   /**
    * Get a single event by slug
    */
-  async getEventBySlug(slug: string): Promise<Event | null> {
+  async getEventBySlug(slug: string): Promise<EventModel | null> {
     const allEvents = await this.getAll();
     const event = allEvents.find(e => e.slug === slug);
     return event || null;
@@ -41,7 +41,7 @@ export class EventService extends FirestoreCrudService<Event> {
   /**
    * Get all events for a specific user
    */
-  async getUserEvents(userId: string): Promise<Event[]> {
+  async getUserEvents(userId: string): Promise<EventModel[]> {
     const allEvents = await this.getAll();
     return allEvents.filter(event => event.createdBy === userId)
                    .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
@@ -50,7 +50,7 @@ export class EventService extends FirestoreCrudService<Event> {
   /**
    * Get all published events (public feed)
    */
-  async getPublishedEvents(): Promise<Event[]> {
+  async getPublishedEvents(): Promise<EventModel[]> {
     const allEvents = await this.getAll();
     return allEvents.filter(event => event.status === 'published')
                    .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
@@ -59,7 +59,7 @@ export class EventService extends FirestoreCrudService<Event> {
   /**
    * Create a new event with auto-generated ID and slug
    */
-  async createEvent(eventData: Omit<Event, 'id'>): Promise<Event> {
+  async createEvent(eventData: Omit<EventModel, 'id'>): Promise<EventModel> {
     const id = this.generateId();
     
     // Generate unique slug if not provided
@@ -70,7 +70,7 @@ export class EventService extends FirestoreCrudService<Event> {
       slug = generateUniqueSlug(eventData.title, existingSlugs);
     }
     
-    const event: Event = {
+    const event: EventModel = {
       id,
       ...eventData,
       slug
@@ -82,7 +82,7 @@ export class EventService extends FirestoreCrudService<Event> {
   /**
    * Update an existing event
    */
-  async updateEvent(eventId: string, data: Partial<Event>): Promise<void> {
+  async updateEvent(eventId: string, data: Partial<EventModel>): Promise<void> {
     await this.update(eventId, {
       ...data,
       updatedAt: new Date()
@@ -99,7 +99,7 @@ export class EventService extends FirestoreCrudService<Event> {
   /**
    * Get events by location (for discovery)
    */
-  async getEventsByLocation(location: string): Promise<Event[]> {
+  async getEventsByLocation(location: string): Promise<EventModel[]> {
     const allEvents = await this.getAll();
     return allEvents.filter(event => 
       event.location === location && event.status === 'published'
@@ -109,7 +109,7 @@ export class EventService extends FirestoreCrudService<Event> {
   /**
    * Get upcoming events
    */
-  async getUpcomingEvents(): Promise<Event[]> {
+  async getUpcomingEvents(): Promise<EventModel[]> {
     const now = new Date();
     const allEvents = await this.getAll();
     return allEvents.filter(event => 
@@ -120,13 +120,13 @@ export class EventService extends FirestoreCrudService<Event> {
   /**
    * Search events by title or description
    */
-  async searchEvents(searchTerm: string): Promise<Event[]> {
+  async searchEvents(searchTerm: string): Promise<EventModel[]> {
     const allEvents = await this.getAll();
     const term = searchTerm.toLowerCase();
     return allEvents.filter(event => 
       event.status === 'published' && (
         event.title.toLowerCase().includes(term) ||
-        event.description.toLowerCase().includes(term)
+        event.description?.toLowerCase().includes(term)
       )
     ).sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
   }
@@ -318,7 +318,7 @@ export class EventService extends FirestoreCrudService<Event> {
   /**
    * Get all mock events (for development/debugging)
    */
-  async getMockEvents(): Promise<Event[]> {
+  async getMockEvents(): Promise<EventModel[]> {
     const allEvents = await this.getAll();
     return allEvents.filter(event => event.isMockEvent === true);
   }

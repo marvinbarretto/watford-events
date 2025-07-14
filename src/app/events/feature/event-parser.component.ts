@@ -1,7 +1,7 @@
 import { Component, signal, inject } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { EventParsingService, EditableEventData, ParsedEventData, ParsedField } from '@events/data-access/event-parsing.service';
-import { EventCategory, EVENT_CATEGORIES, Event as WatfordEvent, EventType } from '@events/utils/event.model';
+import { EventCategory, EVENT_CATEGORIES, EventModel, EventType } from '@events/utils/event.model';
 
 @Component({
   selector: 'app-event-parser',
@@ -1150,12 +1150,12 @@ export class EventParserComponent {
     return JSON.stringify(this.editableEvent(), null, 2);
   }
 
-  getEventForCreation(): Partial<WatfordEvent> {
+  getEventForCreation(): Partial<EventModel> {
     const current = this.editableEvent();
     return {
       title: current.title,
       description: current.description,
-      date: new Date(current.date),
+      date: typeof current.date === 'string' ? current.date : new Date(current.date).toISOString().split('T')[0],
       location: current.location,
       organizer: current.organizer,
       ticketInfo: current.ticketInfo,

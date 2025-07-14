@@ -19,13 +19,13 @@ export const appConfig: ApplicationConfig = {
       inject(ThemeStore);
     }),
     provideZoneChangeDetection({ eventCoalescing: true }),
-    provideRouter(routes), 
-    provideClientHydration(withEventReplay()), 
-    provideFirebaseApp(() => initializeApp(environment.firebaseConfig)), 
-    provideAuth(() => getAuth()), 
-    provideAnalytics(() => getAnalytics()), 
-    ScreenTrackingService, 
-    UserTrackingService, 
+    provideRouter(routes),
+    provideClientHydration(withEventReplay()),
+    provideFirebaseApp(() => initializeApp(environment.firebaseConfig)),
+    provideAuth(() => getAuth()),
+    provideAnalytics(() => getAnalytics()),
+    ScreenTrackingService,
+    UserTrackingService,
     provideFirestore(() => {
       // 🔥 ENABLE FIREBASE OFFLINE PERSISTENCE 🔥
       // Using modern initializeFirestore with persistent local cache
@@ -39,12 +39,9 @@ export const appConfig: ApplicationConfig = {
               tabManager: persistentSingleTabManager({})
             })
           });
-          
-          console.log('🔥 [Firebase] ✅ OFFLINE PERSISTENCE ENABLED!');
-          console.log('🔥 [Firebase] 💾 All reads will be cached in IndexedDB');
-          console.log('🔥 [Firebase] 📱 App will work offline automatically');
-          console.log('🔥 [Firebase] 🔄 Writes will queue when offline and sync when back online');
-          
+
+          console.log('🔥 [Firebase] ✅ OFFLINE PERSISTENCE ENABLED');
+
           return firestore;
         } catch (err: any) {
           console.warn('🔥 [Firebase] ⚠️ Offline persistence failed:', err.message);

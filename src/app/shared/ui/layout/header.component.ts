@@ -19,6 +19,7 @@ export class HeaderComponent extends BaseComponent {
   protected readonly authStore = inject(AuthStore);
   
   showExamplesDropdown = false;
+  showMobileMenu = false;
   readonly version = packageJson.version;
 
   get isAdmin(): boolean {
@@ -43,5 +44,17 @@ export class HeaderComponent extends BaseComponent {
   
   closeDropdown(): void {
     this.showExamplesDropdown = false;
+  }
+
+  toggleMobileMenu(): void {
+    this.showMobileMenu = !this.showMobileMenu;
+    // Close examples dropdown when opening mobile menu
+    if (this.showMobileMenu) {
+      this.showExamplesDropdown = false;
+    }
+  }
+
+  closeMobileMenu(): void {
+    this.showMobileMenu = false;
   }
 }

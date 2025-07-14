@@ -1,6 +1,6 @@
 import { Component, input, output, computed } from '@angular/core';
 import { DatePipe } from '@angular/common';
-import { Event, EVENT_CATEGORIES } from '../../utils/event.model';
+import { EventModel, EVENT_CATEGORIES } from '../../utils/event.model';
 import { convertToDate, getRelativeTime } from '../../../shared/utils/date-utils';
 import { ChipComponent } from '../../../shared/ui/chip/chip.component';
 import { IconComponent } from '../../../shared/ui/icon/icon.component';
@@ -110,7 +110,7 @@ import { Venue } from '../../../venues/utils/venue.model';
           @if (isExpanded() && event().description) {
             <div 
               class="event-description" 
-              [innerHTML]="event().description | highlight : searchTerm()" 
+              [innerHTML]="(event().description || '') | highlight : searchTerm()" 
               itemprop="description"
               [attr.id]="'event-details-' + event().id"
               role="region"
@@ -170,7 +170,7 @@ import { Venue } from '../../../venues/utils/venue.model';
 })
 export class EventItemComponent {
   // Inputs
-  readonly event = input.required<Event>();
+  readonly event = input.required<EventModel>();
   readonly venue = input<Venue | null>(null);
   readonly isFeatured = input<boolean>(false);
   readonly isExpanded = input<boolean>(false);
@@ -180,7 +180,7 @@ export class EventItemComponent {
   readonly withinRadius = input<boolean>(false);
 
   // Outputs
-  readonly clicked = output<Event>();
+  readonly clicked = output<EventModel>();
   readonly expandToggled = output<void>();
 
   constructor() {

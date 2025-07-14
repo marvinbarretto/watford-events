@@ -1,5 +1,5 @@
 import { Injectable, signal, computed, inject } from '@angular/core';
-import { Event } from '@app/events/utils/event.model';
+import { EventModel } from '@app/events/utils/event.model';
 import { User } from '@users/utils/user.model';
 import { Venue } from '@app/venues/utils/venue.model';
 
@@ -8,8 +8,8 @@ export class AdminStore {
   // ===== EVENT MANAGEMENT STATE =====
   
   // Private signals for event management
-  private readonly _events = signal<Event[]>([]);
-  private readonly _selectedEvent = signal<Event | null>(null);
+  private readonly _events = signal<EventModel[]>([]);
+  private readonly _selectedEvent = signal<EventModel | null>(null);
   private readonly _eventsLoading = signal(false);
   
   // Public readonly signals
@@ -80,13 +80,13 @@ export class AdminStore {
   
   // ===== EVENT MANAGEMENT METHODS =====
   
-  setEvents(events: Event[]) {
+  setEvents(events: EventModel[]) {
     this._events.set(events);
     this._totalEvents.set(events.length);
-    this._pendingEvents.set(events.filter((e: Event) => e.status === 'draft').length);
+    this._pendingEvents.set(events.filter((e: EventModel) => e.status === 'draft').length);
   }
   
-  setSelectedEvent(event: Event | null) {
+  setSelectedEvent(event: EventModel | null) {
     this._selectedEvent.set(event);
   }
   
@@ -94,26 +94,26 @@ export class AdminStore {
     this._eventsLoading.set(loading);
   }
   
-  updateEvent(eventId: string, updates: Partial<Event>) {
+  updateEvent(eventId: string, updates: Partial<EventModel>) {
     const currentEvents = this._events();
-    const updatedEvents = currentEvents.map((event: Event) => 
+    const updatedEvents = currentEvents.map((event: EventModel) => 
       event.id === eventId ? { ...event, ...updates } : event
     );
     this._events.set(updatedEvents);
     
     // Update stats
     this._totalEvents.set(updatedEvents.length);
-    this._pendingEvents.set(updatedEvents.filter((e: Event) => e.status === 'draft').length);
+    this._pendingEvents.set(updatedEvents.filter((e: EventModel) => e.status === 'draft').length);
   }
   
   removeEvent(eventId: string) {
     const currentEvents = this._events();
-    const updatedEvents = currentEvents.filter((event: Event) => event.id !== eventId);
+    const updatedEvents = currentEvents.filter((event: EventModel) => event.id !== eventId);
     this._events.set(updatedEvents);
     
     // Update stats
     this._totalEvents.set(updatedEvents.length);
-    this._pendingEvents.set(updatedEvents.filter((e: Event) => e.status === 'draft').length);
+    this._pendingEvents.set(updatedEvents.filter((e: EventModel) => e.status === 'draft').length);
   }
   
   // ===== USER MANAGEMENT METHODS =====
@@ -186,6 +186,6 @@ export class AdminStore {
     this._totalEvents.set(events.length);
     this._totalUsers.set(users.length);
     this._totalVenues.set(venues.length);
-    this._pendingEvents.set(events.filter((e: Event) => e.status === 'draft').length);
+    this._pendingEvents.set(events.filter((e: EventModel) => e.status === 'draft').length);
   }
 }

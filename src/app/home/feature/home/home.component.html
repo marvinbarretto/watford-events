@@ -13,11 +13,20 @@
 
   <!-- Add Event CTA -->
   <div class="add-event-cta">
-    <button class="add-event-btn" (click)="addNewEvent()">
-      <span class="add-icon">+</span>
-      <span>Add New Event</span>
-    </button>
+    <div class="add-event-options">
+      <button class="add-event-btn primary" (click)="createEvent()">
+        <span class="add-icon">➕</span>
+        <span>Create Event</span>
+      </button>
+      <button class="add-event-btn secondary" (click)="addNewEvent()">
+        <span class="add-icon">📝</span>
+        <span>Advanced form</span>
+      </button>
+    </div>
+    <p class="cta-subtitle">Quick creation or detailed form - your choice</p>
   </div>
+
+  <!-- Removed experimental section -->
 
   <app-event-filter
     [activeFilter]="currentFilter()"
@@ -30,7 +39,7 @@
   <app-user-preferences-widget />
 
   <!-- Loading State -->
-  @if (loading()) {
+  @if (storeLoading()) {
     <div class="loading-state">
       <div class="spinner"></div>
       <p>Loading events...</p>
@@ -38,15 +47,15 @@
   }
 
   <!-- Error State -->
-  @if (error() && !loading()) {
+  @if (storeError() && !storeLoading()) {
     <div class="error-state">
-      <p>{{ error() }}</p>
+      <p>{{ storeError() }}</p>
       <button class="retry-btn" (click)="eventStore.reload()">Try Again</button>
     </div>
   }
 
   <!-- Events List -->
-  @if (!loading() && !error()) {
+  @if (!storeLoading() && !storeError()) {
 
     <!-- Regular Events -->
     @if (filteredEvents().length > 0) {

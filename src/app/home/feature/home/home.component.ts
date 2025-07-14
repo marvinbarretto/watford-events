@@ -1,10 +1,11 @@
 import { Component, inject, computed, signal } from '@angular/core';
-import { Router } from '@angular/router';
+import { RouterModule } from '@angular/router';
+import { BaseComponent } from '../../../shared/data-access/base.component';
 import { EventStore } from '../../../events/data-access/event.store';
 import { EventItemComponent } from '../../../events/ui/event-item/event-item.component';
 import { EventFilterComponent, FilterOption, EventCounts } from '../../../events/ui/event-filter/event-filter.component';
 import { UserPreferencesWidgetComponent } from '../../../user-preferences/ui/user-preferences-widget/user-preferences-widget.component';
-import { Event } from '../../../events/utils/event.model';
+import { EventModel } from '../../../events/utils/event.model';
 import { convertToDate, getStartOfDay, getEndOfDay, getThisWeekRange, getThisMonthRange } from '../../../shared/utils/date-utils';
 import { calculateDistanceBetweenPoints, convertDistance, isWithinRadius } from '../../../shared/utils/distance.utils';
 import { LocationService } from '../../../shared/data-access/location.service';
@@ -14,13 +15,12 @@ import { VenueStore } from '../../../venues/data-access/venue.store';
 @Component({
   selector: 'app-home',
   standalone: true,
-  imports: [EventItemComponent, EventFilterComponent, UserPreferencesWidgetComponent],
+  imports: [EventItemComponent, EventFilterComponent, UserPreferencesWidgetComponent, RouterModule],
   templateUrl: './home.component.html',
   styleUrl: './home.component.scss'
 })
-export class HomeComponent {
+export class HomeComponent extends BaseComponent {
   protected readonly eventStore = inject(EventStore);
-  protected readonly router = inject(Router);
   private readonly venueStore = inject(VenueStore);
   private readonly locationService = inject(LocationService);
   private readonly preferencesStore = inject(UserPreferencesStore);
@@ -33,8 +33,9 @@ export class HomeComponent {
 
   // Data from store
   readonly events = this.eventStore.publishedEvents;
-  readonly loading = this.eventStore.loading;
-  readonly error = this.eventStore.error;
+  // Use store's loading and error states instead of BaseComponent's
+  readonly storeLoading = this.eventStore.loading;
+  readonly storeError = this.eventStore.error;
 
   // Calculate event distances using real venue coordinates
   readonly eventDistances = computed(() => {
@@ -263,12 +264,16 @@ export class HomeComponent {
     this.searchTerm.set(search);
   }
 
-  onEventClicked(event: Event) {
+  onEventClicked(event: EventModel) {
     this.router.navigate(['/events', event.id]);
   }
 
   addNewEvent() {
     this.router.navigate(['/events/add']);
+  }
+
+  createEvent() {
+    this.router.navigate(['/events/create']);
   }
 
   toggleEventExpanded(eventId: string) {
@@ -285,7 +290,7 @@ export class HomeComponent {
     return this.expandedEventIds().has(eventId);
   }
 
-  isEventFeatured(event: Event): boolean {
+  isEventFeatured(event: EventModel): boolean {
     return this.featuredEvents().some(e => e.id === event.id);
   }
 

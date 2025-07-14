@@ -20,9 +20,19 @@ export const routes: Routes = [
     loadComponent: () => import('./venues/feature/venue-list.component').then(m => m.VenueListComponent)
   },
   {
-    path: 'events/add/camera',
+    path: 'events',
     data: { shell: 'main' },
-    loadComponent: () => import('./events/feature/camera-add-event.component').then(m => m.CameraAddEventComponent)
+    loadComponent: () => import('./events/feature/events-directory.component').then(m => m.EventsDirectoryComponent)
+  },
+  {
+    path: 'events/create',
+    data: { shell: 'main' },
+    loadComponent: () => import('./events/feature/event-creator.component').then(m => m.EventCreatorComponent)
+  },
+  {
+    path: 'events/:id/enhance',
+    data: { shell: 'main' },
+    loadComponent: () => import('./events/feature/event-enhancement.component').then(m => m.EventEnhancementComponent)
   },
   {
     path: 'events/add',

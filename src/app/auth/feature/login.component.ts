@@ -15,7 +15,7 @@ import { AuthStore } from '../data-access/auth.store';
         <div class="login-header">
           <div class="app-logo">📅</div>
           <h1>Watford Events</h1>
-          <p>Create events from flyer photos using AI</p>
+          <p>Sign in to your account</p>
         </div>
 
         <div class="login-content">
@@ -95,28 +95,6 @@ import { AuthStore } from '../data-access/auth.store';
           </div>
         }
 
-        <!-- Features Preview -->
-        <div class="features-preview">
-          <h3>What you can do:</h3>
-          <div class="feature-list">
-            <div class="feature-item">
-              <span class="feature-icon">📸</span>
-              <span>Take photos of event flyers</span>
-            </div>
-            <div class="feature-item">
-              <span class="feature-icon">🤖</span>
-              <span>AI extracts event details automatically</span>
-            </div>
-            <div class="feature-item">
-              <span class="feature-icon">📝</span>
-              <span>Edit and publish your events</span>
-            </div>
-            <div class="feature-item">
-              <span class="feature-icon">📱</span>
-              <span>Mobile-first design for on-the-go use</span>
-            </div>
-          </div>
-        </div>
 
         <!-- Footer -->
         <div class="login-footer">
@@ -361,38 +339,6 @@ import { AuthStore } from '../data-access/auth.store';
       cursor: pointer;
     }
 
-    /* Features Preview */
-    .features-preview {
-      margin-top: 30px;
-      padding-top: 30px;
-      border-top: 1px solid #e9ecef;
-    }
-
-    .features-preview h3 {
-      margin: 0 0 20px 0;
-      color: #333;
-      font-size: 16px;
-      text-align: center;
-    }
-
-    .feature-list {
-      display: grid;
-      gap: 15px;
-    }
-
-    .feature-item {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      padding: 12px;
-      background: #f8f9fa;
-      border-radius: 6px;
-    }
-
-    .feature-icon {
-      font-size: 20px;
-      flex-shrink: 0;
-    }
 
     /* Footer */
     .login-footer {

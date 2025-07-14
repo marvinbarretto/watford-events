@@ -10,7 +10,7 @@ import { MultiSelectComponent } from '../../shared/ui/multi-select/multi-select.
 import { TagInputComponent } from '../../shared/ui/tag-input/tag-input.component';
 
 import { EventStore } from '../data-access/event.store';
-import { Event, EVENT_CATEGORIES, EVENT_CATEGORY_SETTINGS } from '../utils/event.model';
+import { EventModel, EVENT_CATEGORIES, EVENT_CATEGORY_SETTINGS } from '../utils/event.model';
 import { EventExtractionResult } from '../../shared/utils/event-extraction-types';
 import { parseEventDateTime, isLikelyDateTime } from '../utils/date-time-parser.util';
 
@@ -583,7 +583,7 @@ export class EventFormComponent implements OnInit {
   @Input() extractionResult: EventExtractionResult | null = null;
   @Input() capturedImage: string | null = null;
 
-  @Output() eventSaved = new EventEmitter<Event>();
+  @Output() eventSaved = new EventEmitter<EventModel>();
   @Output() error = new EventEmitter<string>();
 
   // Services
@@ -795,7 +795,7 @@ export class EventFormComponent implements OnInit {
       const eventData = {
         title: formValue.title,
         description: formValue.description,
-        date: eventDateTime,
+        date: eventDateTime.toISOString().split('T')[0],
         ...locationData,
         organizer: formValue.organizer,
         ticketInfo: formValue.ticketInfo,

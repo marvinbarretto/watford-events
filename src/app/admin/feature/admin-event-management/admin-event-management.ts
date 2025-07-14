@@ -4,7 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
 import { AdminStore } from '../../data-access/admin.store';
 import { EventService } from '@app/events/data-access/event.service';
-import { Event } from '@app/events/utils/event.model';
+import { EventModel } from '@app/events/utils/event.model';
 
 @Component({
   selector: 'app-admin-event-management',
@@ -43,16 +43,16 @@ export class AdminEventManagement implements OnInit {
     }
   }
 
-  get filteredAndSortedEvents(): Event[] {
+  get filteredAndSortedEvents(): EventModel[] {
     let filtered = this.events();
     
     // Apply status filter
     if (this.filterStatus !== 'all') {
-      filtered = filtered.filter((event: Event) => event.status === this.filterStatus);
+      filtered = filtered.filter((event: EventModel) => event.status === this.filterStatus);
     }
     
     // Apply sorting
-    filtered.sort((a: Event, b: Event) => {
+    filtered.sort((a: EventModel, b: EventModel) => {
       let comparison = 0;
       
       switch (this.sortBy) {
@@ -75,7 +75,7 @@ export class AdminEventManagement implements OnInit {
 
   async updateEventStatus(eventId: string, newStatus: 'draft' | 'published' | 'cancelled') {
     try {
-      const event = this.events().find((e: Event) => e.id === eventId);
+      const event = this.events().find((e: EventModel) => e.id === eventId);
       if (!event) return;
 
       const updatedEvent = { ...event, status: newStatus, updatedAt: new Date() };
@@ -99,7 +99,7 @@ export class AdminEventManagement implements OnInit {
     }
   }
 
-  selectEvent(event: Event) {
+  selectEvent(event: EventModel) {
     this.adminStore.setSelectedEvent(event);
   }
 
@@ -116,7 +116,7 @@ export class AdminEventManagement implements OnInit {
     }
   }
 
-  formatDate(date: Date): string {
+  formatDate(date: string | Date): string {
     return new Date(date).toLocaleDateString('en-US', {
       year: 'numeric',
       month: 'short',

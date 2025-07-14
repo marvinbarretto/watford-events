@@ -8,52 +8,48 @@
       </a>
     </div>
 
-    <!-- Navigation -->
+    <!-- Desktop Navigation -->
     <nav class="header__nav">
       <a routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}">Home</a>
-      <a routerLink="/events/enhanced-parser" routerLinkActive="active">Enhanced Parser</a>
+      <a routerLink="/events" routerLinkActive="active">Events Hub</a>
+      <a routerLink="/events/create" routerLinkActive="active">Create Event</a>
       <a routerLink="/venues" routerLinkActive="active">Venues</a>
-      
+
       <!-- Admin Links -->
       <a routerLink="/admin" routerLinkActive="active">Admin</a>
-      <a routerLink="/admin/events" routerLinkActive="active">Manage Events</a>
-      <a routerLink="/admin/venues" routerLinkActive="active">Manage Venues</a>
-      
+
       <!-- Examples Dropdown -->
       <div class="header__dropdown">
         <button class="header__dropdown-btn" (click)="toggleExamplesDropdown()" type="button">
-          Examples
+          More
           <span class="dropdown-arrow" [class.open]="showExamplesDropdown">▼</span>
         </button>
         <div class="header__dropdown-menu" [class.show]="showExamplesDropdown">
+          <!-- Removed experimental section -->
           <div class="dropdown-section">
-            <h3>Web Examples</h3>
+            <h3>Admin</h3>
+            <a routerLink="/admin/events" (click)="closeDropdown()">Manage Events</a>
+            <a routerLink="/admin/venues" (click)="closeDropdown()">Manage Venues</a>
+          </div>
+          <div class="dropdown-section">
+            <h3>Examples</h3>
             <a routerLink="/examples/web-dashboard" (click)="closeDropdown()">Web Dashboard</a>
-            <a routerLink="/examples/web-form" (click)="closeDropdown()">Web Form</a>
-          </div>
-          <div class="dropdown-section">
-            <h3>Mobile Examples</h3>
             <a routerLink="/examples/mobile-dashboard" (click)="closeDropdown()">Mobile Dashboard</a>
-            <a routerLink="/examples/mobile-form" (click)="closeDropdown()">Mobile Form</a>
-            <a routerLink="/examples/mobile-actions" (click)="closeDropdown()">Mobile Actions</a>
-          </div>
-          <div class="dropdown-section">
-            <h3>Fullscreen Examples</h3>
-            <a routerLink="/examples/fullscreen-onboarding" (click)="closeDropdown()">Onboarding</a>
-            <a routerLink="/examples/fullscreen-welcome" (click)="closeDropdown()">Welcome</a>
-          </div>
-          <div class="dropdown-section">
-            <h3>Flyer Parser</h3>
             <a routerLink="/examples/flyer-demo" (click)="closeDropdown()">Flyer Demo</a>
           </div>
         </div>
       </div>
     </nav>
 
+    <!-- Mobile Menu Button -->
+    <button class="header__mobile-menu-btn" (click)="toggleMobileMenu()" type="button">
+      <span class="hamburger" [class.open]="showMobileMenu"></span>
+    </button>
+
     <!-- Actions -->
     <div class="header__actions">
       <!-- Theme Toggle -->
-      <button 
+      <button
         class="header__theme-toggle"
         (click)="onThemeToggle()"
         [attr.aria-label]="themeStore.isDark() ? 'Switch to light theme' : 'Switch to dark theme'"
@@ -69,14 +65,7 @@
       <div class="header__auth">
         @if (authStore.isAuthenticated()) {
           <div class="header__user">
-            <span class="header__username">{{ authStore.user()?.displayName }}</span>
-            <a 
-              routerLink="/settings"
-              class="header__settings-btn"
-              title="Settings">
-              ⚙️
-            </a>
-            <button 
+            <button
               class="header__logout-btn"
               (click)="onLogout()"
               type="button">
@@ -84,7 +73,7 @@
             </button>
           </div>
         } @else {
-          <button 
+          <button
             class="header__login-btn"
             (click)="onLogin()"
             type="button">
@@ -94,4 +83,103 @@
       </div>
     </div>
   </div>
+
+  <!-- Mobile Menu Overlay -->
+  <div class="header__mobile-overlay" [class.show]="showMobileMenu" (click)="closeMobileMenu()"></div>
+  
+  <!-- Mobile Menu -->
+  <nav class="header__mobile-menu" [class.show]="showMobileMenu">
+    <div class="mobile-menu__header">
+      <h3>Navigation</h3>
+      <button class="mobile-menu__close" (click)="closeMobileMenu()" type="button">✕</button>
+    </div>
+    
+    <div class="mobile-menu__content">
+      <!-- Quick Actions Section -->
+      <div class="mobile-menu__section">
+        <h4 class="mobile-menu__section-title">
+          <span class="section-icon">⚡</span>
+          Quick Actions
+        </h4>
+        <div class="mobile-menu__quick-actions">
+          <a routerLink="/events/create" class="quick-action-btn" (click)="closeMobileMenu()">
+            <span class="action-icon">➕</span>
+            <span>Create Event</span>
+          </a>
+        </div>
+      </div>
+
+      <!-- Main Navigation -->
+      <div class="mobile-menu__section">
+        <h4 class="mobile-menu__section-title">
+          <span class="section-icon">🏠</span>
+          Browse
+        </h4>
+        <div class="mobile-menu__links">
+          <a routerLink="/" (click)="closeMobileMenu()">
+            <span class="link-icon">🏠</span>
+            <span>Home</span>
+          </a>
+          <a routerLink="/events" (click)="closeMobileMenu()">
+            <span class="link-icon">📅</span>
+            <span>Events Hub</span>
+          </a>
+          <a routerLink="/venues" (click)="closeMobileMenu()">
+            <span class="link-icon">📍</span>
+            <span>Venues</span>
+          </a>
+        </div>
+      </div>
+
+      <!-- Add Events Section -->
+      <div class="mobile-menu__section">
+        <h4 class="mobile-menu__section-title">
+          <span class="section-icon">➕</span>
+          Add Events
+        </h4>
+        <div class="mobile-menu__links">
+          <a routerLink="/events/create" (click)="closeMobileMenu()">
+            <span class="link-icon">➕</span>
+            <span>Create Event</span>
+          </a>
+          <a routerLink="/events/add" (click)="closeMobileMenu()">
+            <span class="link-icon">📝</span>
+            <span>Manual Form</span>
+          </a>
+          <a routerLink="/events/parser" (click)="closeMobileMenu()">
+            <span class="link-icon">🔍</span>
+            <span>Event Parser</span>
+          </a>
+          <a routerLink="/events/enhanced-parser" (click)="closeMobileMenu()">
+            <span class="link-icon">🚀</span>
+            <span>Enhanced Parser</span>
+          </a>
+        </div>
+      </div>
+
+      <!-- Admin Section (if applicable) -->
+      @if (isAdmin) {
+        <div class="mobile-menu__section">
+          <h4 class="mobile-menu__section-title">
+            <span class="section-icon">⚙️</span>
+            Admin
+          </h4>
+          <div class="mobile-menu__links">
+            <a routerLink="/admin" (click)="closeMobileMenu()">
+              <span class="link-icon">👑</span>
+              <span>Admin Dashboard</span>
+            </a>
+            <a routerLink="/admin/events" (click)="closeMobileMenu()">
+              <span class="link-icon">📊</span>
+              <span>Manage Events</span>
+            </a>
+            <a routerLink="/admin/venues" (click)="closeMobileMenu()">
+              <span class="link-icon">🏢</span>
+              <span>Manage Venues</span>
+            </a>
+          </div>
+        </div>
+      }
+    </div>
+  </nav>
 </header>

@@ -1,5 +1,5 @@
 import { Component, input, output, computed } from '@angular/core';
-import { Event, EVENT_CATEGORIES } from '../../utils/event.model';
+import { EventModel, EVENT_CATEGORIES } from '../../utils/event.model';
 import { convertToDate } from '../../../shared/utils/date-utils';
 import { ChipComponent } from '../../../shared/ui/chip/chip.component';
 import { HeartButtonComponent } from '../../../shared/ui/heart-button/heart-button.component';
@@ -316,18 +316,18 @@ import { HeartButtonComponent } from '../../../shared/ui/heart-button/heart-butt
 })
 export class EventCardComponent {
   // Required inputs
-  readonly event = input.required<Event>();
+  readonly event = input.required<EventModel>();
   
   // Optional inputs
   readonly currentUserId = input<string | null>(null);
 
   // Outputs
-  readonly clicked = output<Event>();
-  readonly liked = output<{ event: Event; isLiked: boolean }>();
-  readonly shareClicked = output<Event>();
-  readonly editClicked = output<Event>();
-  readonly publishClicked = output<Event>();
-  readonly deleteClicked = output<Event>();
+  readonly clicked = output<EventModel>();
+  readonly liked = output<{ event: EventModel; isLiked: boolean }>();
+  readonly shareClicked = output<EventModel>();
+  readonly editClicked = output<EventModel>();
+  readonly publishClicked = output<EventModel>();
+  readonly deleteClicked = output<EventModel>();
   readonly categoryClicked = output<string>();
   readonly tagClicked = output<string>();
 

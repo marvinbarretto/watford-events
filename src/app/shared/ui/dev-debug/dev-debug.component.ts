@@ -7,7 +7,7 @@ import { AuthStore } from '../../../auth/data-access/auth.store';
 import { CleanupService } from '../../utils/cleanup.service';
 import { UserService } from '../../../users/data-access/user.service';
 import { environment } from '../../../../environments/environment';
-import { Event } from '../../../events/utils/event.model';
+import { EventModel } from '../../../events/utils/event.model';
 import { createMockEvent, createMockEvents, createMixedEvents } from '../../../../testing/test-data-factories';
 
 @Component({
@@ -655,11 +655,11 @@ export class DevDebugComponent {
 
       for (const mockData of mockEventData) {
         try {
-          // Convert MockEvent to Event format
-          const eventData: Omit<Event, 'id' | 'createdAt' | 'updatedAt' | 'createdBy' | 'ownerId'> = {
+          // Convert MockEvent to EventModel format
+          const eventData: Omit<EventModel, 'id' | 'createdAt' | 'updatedAt' | 'createdBy' | 'ownerId'> = {
             title: mockData.title,
             description: mockData.description,
-            date: mockData.date,
+            date: mockData.date.toISOString().split('T')[0],
             location: mockData.location,
             attendeeIds: [],
             status: mockData.status as 'draft' | 'published' | 'cancelled',

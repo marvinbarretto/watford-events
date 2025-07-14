@@ -3,7 +3,7 @@ import { RouterModule, Router } from '@angular/router';
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 
 import { EventStore } from '../data-access/event.store';
-import { Event, EventType, RecurrenceRule, RECURRENCE_FREQUENCIES, DAYS_OF_WEEK } from '../utils/event.model';
+import { EventModel, EventType, RecurrenceRule, RECURRENCE_FREQUENCIES, DAYS_OF_WEEK } from '../utils/event.model';
 import { VenueLookupService } from '../../shared/data-access/venue-lookup.service';
 import { TypeaheadComponent, TypeaheadOption } from '../../shared/ui/typeahead/typeahead.component';
 import { Venue } from '../../venues/utils/venue.model';
@@ -23,22 +23,27 @@ import { Venue } from '../../venues/utils/venue.model';
         <h1>Add New Event</h1>
       </div>
 
-      <!-- Alternative Method Link -->
+      <!-- Alternative Method Links -->
       <div class="alternative-method">
-        <p>Have a flyer? Try our AI scanner for faster entry!</p>
-        <div class="scanner-options">
-          <button class="scanner-btn" (click)="useCameraInstead()">
-            📸 Use Camera
+        <p>Want an easier way? Try our smart input methods!</p>
+        <div class="smart-options">
+          <button class="smart-btn primary" (click)="useNaturalLanguage()">
+            💬 Just describe your event
           </button>
-          <button class="scanner-btn" (click)="uploadPhotoInstead()">
-            📂 Upload Photo
-          </button>
+          <div class="scanner-options">
+            <button class="scanner-btn" (click)="useCameraInstead()">
+              📸 Use Camera
+            </button>
+            <button class="scanner-btn" (click)="uploadPhotoInstead()">
+              📂 Upload Photo
+            </button>
+          </div>
         </div>
-        <input 
-          #fileInput 
-          type="file" 
-          accept="image/*" 
-          style="display: none" 
+        <input
+          #fileInput
+          type="file"
+          accept="image/*"
+          style="display: none"
           (change)="onFileSelected($event)"
         />
       </div>
@@ -48,7 +53,7 @@ import { Venue } from '../../venues/utils/venue.model';
         <!-- Essential Fields Section -->
         <section class="form-section essential">
           <h2>Event Details</h2>
-          
+
           <!-- Title -->
           <div class="form-group">
             <label for="title">Event Title *</label>
@@ -107,7 +112,7 @@ import { Venue } from '../../venues/utils/venue.model';
                 [compareFunction]="compareVenues"
                 (selectedOption)="onVenueSelected($event)"
               />
-              
+
               <!-- Custom Location Input (shows when no venue selected) -->
               @if (!selectedVenue()) {
                 <input
@@ -118,7 +123,7 @@ import { Venue } from '../../venues/utils/venue.model';
                 />
               }
             </div>
-            
+
             @if (selectedVenue()) {
               <div class="selected-venue-info">
                 <strong>{{ selectedVenue()?.name }}</strong>
@@ -138,15 +143,15 @@ import { Venue } from '../../venues/utils/venue.model';
         <!-- Event Type & Recurrence Section -->
         <section class="form-section recurrence">
           <h2>Event Schedule</h2>
-          
+
           <!-- Event Type Selection -->
           <div class="form-group">
             <label>Event Type *</label>
             <div class="radio-group">
               <label class="radio-option">
-                <input 
-                  type="radio" 
-                  formControlName="eventType" 
+                <input
+                  type="radio"
+                  formControlName="eventType"
                   value="single"
                   name="eventType"
                 />
@@ -154,9 +159,9 @@ import { Venue } from '../../venues/utils/venue.model';
                 <span class="radio-label">One-time event</span>
               </label>
               <label class="radio-option">
-                <input 
-                  type="radio" 
-                  formControlName="eventType" 
+                <input
+                  type="radio"
+                  formControlName="eventType"
                   value="recurring"
                   name="eventType"
                 />
@@ -173,7 +178,7 @@ import { Venue } from '../../venues/utils/venue.model';
               <div class="form-row">
                 <div class="form-group">
                   <label for="recurrenceFrequency">Repeats</label>
-                  <select 
+                  <select
                     id="recurrenceFrequency"
                     formControlName="recurrenceFrequency"
                     class="form-control"
@@ -203,7 +208,7 @@ import { Venue } from '../../venues/utils/venue.model';
                   <div class="days-of-week">
                     @for (day of daysOfWeek; track day.value) {
                       <label class="day-checkbox">
-                        <input 
+                        <input
                           type="checkbox"
                           [value]="day.value"
                           (change)="onDayOfWeekChange(day.value, $event)"
@@ -220,9 +225,9 @@ import { Venue } from '../../venues/utils/venue.model';
                 <label>Ends</label>
                 <div class="radio-group">
                   <label class="radio-option">
-                    <input 
-                      type="radio" 
-                      formControlName="recurrenceEndType" 
+                    <input
+                      type="radio"
+                      formControlName="recurrenceEndType"
                       value="never"
                       name="recurrenceEndType"
                     />
@@ -230,9 +235,9 @@ import { Venue } from '../../venues/utils/venue.model';
                     <span class="radio-label">Never</span>
                   </label>
                   <label class="radio-option">
-                    <input 
-                      type="radio" 
-                      formControlName="recurrenceEndType" 
+                    <input
+                      type="radio"
+                      formControlName="recurrenceEndType"
                       value="date"
                       name="recurrenceEndType"
                     />
@@ -240,9 +245,9 @@ import { Venue } from '../../venues/utils/venue.model';
                     <span class="radio-label">On date</span>
                   </label>
                   <label class="radio-option">
-                    <input 
-                      type="radio" 
-                      formControlName="recurrenceEndType" 
+                    <input
+                      type="radio"
+                      formControlName="recurrenceEndType"
                       value="count"
                       name="recurrenceEndType"
                     />
@@ -285,8 +290,8 @@ import { Venue } from '../../venues/utils/venue.model';
 
         <!-- Optional Details Section -->
         <section class="form-section optional">
-          <button 
-            type="button" 
+          <button
+            type="button"
             class="section-toggle"
             (click)="toggleOptionalSection()"
           >
@@ -442,6 +447,33 @@ import { Venue } from '../../venues/utils/venue.model';
       font-size: 14px;
     }
 
+    .smart-options {
+      display: flex;
+      flex-direction: column;
+      gap: 15px;
+    }
+
+    .smart-btn {
+      background: var(--primary);
+      color: var(--on-primary);
+      border: none;
+      padding: 16px 24px;
+      border-radius: 8px;
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+      width: 100%;
+      max-width: 300px;
+      margin: 0 auto;
+    }
+
+    .smart-btn:hover {
+      background: var(--primary-hover);
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    }
+
     .scanner-options {
       display: flex;
       gap: 12px;
@@ -449,9 +481,9 @@ import { Venue } from '../../venues/utils/venue.model';
     }
 
     .scanner-btn {
-      background: var(--primary);
-      color: var(--on-primary);
-      border: none;
+      background: var(--background-lighter);
+      color: var(--text);
+      border: 2px solid var(--border);
       padding: 12px 20px;
       border-radius: 6px;
       font-size: 14px;
@@ -463,7 +495,8 @@ import { Venue } from '../../venues/utils/venue.model';
     }
 
     .scanner-btn:hover {
-      background: var(--primary-hover);
+      border-color: var(--primary);
+      background: var(--background);
       transform: translateY(-1px);
     }
 
@@ -782,7 +815,6 @@ import { Venue } from '../../venues/utils/venue.model';
     }
 
     .error-banner {
-      position: fixed;
       top: 20px;
       left: 50%;
       transform: translateX(-50%);
@@ -896,7 +928,7 @@ export class AddEventComponent implements OnInit {
       ticketInfo: [''],
       contactInfo: [''],
       website: [''],
-      
+
       // Event type and recurrence
       eventType: ['single', Validators.required],
       recurrenceFrequency: ['weekly'],
@@ -914,14 +946,64 @@ export class AddEventComponent implements OnInit {
   }
 
   ngOnInit() {
-    // Set smart defaults
-    const tomorrow = new Date();
-    tomorrow.setDate(tomorrow.getDate() + 1);
-    
+    // Check for pre-filled data from navigation state
+    const navigation = this.router.getCurrentNavigation();
+    const prefillData = navigation?.extras?.state?.['prefillData'];
+
+    if (prefillData) {
+      console.log('[AddEvent] Pre-filling form with data:', prefillData);
+      this.prefillFormFromData(prefillData);
+    } else {
+      // Set smart defaults
+      const tomorrow = new Date();
+      tomorrow.setDate(tomorrow.getDate() + 1);
+
+      this.eventForm.patchValue({
+        date: tomorrow.toISOString().split('T')[0],
+        time: '19:00' // Default to 7 PM
+      });
+    }
+  }
+
+  private prefillFormFromData(data: any) {
+    // Extract date and time from datetime string
+    let dateValue = '';
+    let timeValue = '';
+
+    if (data.date) {
+      try {
+        const dateTime = new Date(data.date);
+        dateValue = dateTime.toISOString().split('T')[0];
+        timeValue = dateTime.toTimeString().slice(0, 5);
+      } catch (e) {
+        console.warn('Failed to parse date:', data.date);
+      }
+    }
+
+    // Update the form with parsed data
     this.eventForm.patchValue({
-      date: tomorrow.toISOString().split('T')[0],
-      time: '19:00' // Default to 7 PM
+      title: data.title || '',
+      description: data.description || '',
+      date: dateValue,
+      time: timeValue,
+      location: data.location || '',
+      organizer: data.organizer || '',
+      ticketInfo: data.ticketInfo || '',
+      contactInfo: data.contactInfo || '',
+      website: data.website || ''
     });
+
+    // Handle categories and other complex fields
+    if (data.categories && data.categories.length > 0) {
+      // Categories would need to be handled in the UI if form supported them
+      console.log('Categories to apply:', data.categories);
+    }
+
+    // Open optional section if we have optional data
+    const hasOptionalData = data.organizer || data.ticketInfo || data.contactInfo || data.website;
+    if (hasOptionalData) {
+      this.showOptionalSection.set(true);
+    }
   }
 
   // Methods
@@ -931,7 +1013,7 @@ export class AddEventComponent implements OnInit {
 
   onVenueSelected(option: TypeaheadOption<Venue>) {
     this.selectedVenue.set(option.value);
-    this.eventForm.patchValue({ 
+    this.eventForm.patchValue({
       venue: option.value,
       location: ''
     });
@@ -939,7 +1021,7 @@ export class AddEventComponent implements OnInit {
 
   clearVenue() {
     this.selectedVenue.set(null);
-    this.eventForm.patchValue({ 
+    this.eventForm.patchValue({
       venue: null,
       location: ''
     });
@@ -948,14 +1030,14 @@ export class AddEventComponent implements OnInit {
   onDayOfWeekChange(dayValue: number, event: any) {
     const isChecked = event.target.checked;
     const currentDays = this.eventForm.get('recurrenceDaysOfWeek')?.value || [];
-    
+
     let updatedDays: number[];
     if (isChecked) {
       updatedDays = [...currentDays, dayValue].sort();
     } else {
       updatedDays = currentDays.filter((day: number) => day !== dayValue);
     }
-    
+
     this.eventForm.patchValue({ recurrenceDaysOfWeek: updatedDays });
   }
 
@@ -964,7 +1046,7 @@ export class AddEventComponent implements OnInit {
     const hasLocation = this.eventForm.get('location')?.value?.trim();
     const locationTouched = this.eventForm.get('location')?.touched;
     const venueTouched = this.eventForm.get('venue')?.touched;
-    
+
     if ((locationTouched || venueTouched) && !hasVenue && !hasLocation) {
       return 'Please select a venue or enter a custom location';
     }
@@ -1041,7 +1123,7 @@ export class AddEventComponent implements OnInit {
       const eventData = {
         title: formValue.title,
         description: formValue.description,
-        date: eventDateTime,
+        date: eventDateTime.toISOString().split('T')[0],
         ...locationData,
         organizer: formValue.organizer,
         ticketInfo: formValue.ticketInfo,
@@ -1071,6 +1153,10 @@ export class AddEventComponent implements OnInit {
     this.router.navigate(['/events']);
   }
 
+  useNaturalLanguage() {
+    this.router.navigate(['/events/add/natural']);
+  }
+
   useCameraInstead() {
     this.router.navigate(['/events/add/camera']);
   }
@@ -1089,8 +1175,8 @@ export class AddEventComponent implements OnInit {
       const file = input.files[0];
       // Navigate to camera component with the selected file
       // The camera component should handle both camera capture and file upload
-      this.router.navigate(['/events/add/camera'], { 
-        state: { uploadedFile: file } 
+      this.router.navigate(['/events/add/camera'], {
+        state: { uploadedFile: file }
       });
     }
   }

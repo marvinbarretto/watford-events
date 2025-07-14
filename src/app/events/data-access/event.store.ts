@@ -23,7 +23,7 @@ import { Injectable, signal, computed, inject, effect } from '@angular/core';
 import { firstValueFrom } from 'rxjs';
 import { EventService } from './event.service';
 import { AuthStore } from '../../auth/data-access/auth.store';
-import type { Event } from '../utils/event.model';
+import type { EventModel } from '../utils/event.model';
 
 @Injectable({ providedIn: 'root' })
 export class EventStore {
@@ -32,10 +32,10 @@ export class EventStore {
   private readonly authStore = inject(AuthStore);
 
   // ✅ Events state
-  private readonly _userEvents = signal<Event[]>([]);
+  private readonly _userEvents = signal<EventModel[]>([]);
   private readonly _loading = signal(false);
   private readonly _error = signal<string | null>(null);
-  private readonly _currentEvent = signal<Event | null>(null);
+  private readonly _currentEvent = signal<EventModel | null>(null);
 
   // 📡 Public signals
   readonly userEvents = this._userEvents.asReadonly();
@@ -141,7 +141,7 @@ export class EventStore {
   /**
    * Create a new event with optimistic updates
    */
-  async createEvent(eventData: Omit<Event, 'id' | 'createdAt' | 'updatedAt' | 'createdBy' | 'ownerId'>): Promise<Event | null> {
+  async createEvent(eventData: Omit<EventModel, 'id' | 'createdAt' | 'updatedAt' | 'createdBy' | 'ownerId'>): Promise<EventModel | null> {
     const authUser = this.authStore.user();
     if (!authUser) {
       throw new Error('Must be authenticated to create events');
@@ -151,7 +151,7 @@ export class EventStore {
     this._error.set(null);
 
     // Create full event object
-    const newEvent: Omit<Event, 'id'> = {
+    const newEvent: Omit<EventModel, 'id'> = {
       ...eventData,
       createdBy: authUser.uid,
       ownerId: authUser.uid,
@@ -187,7 +187,7 @@ export class EventStore {
   /**
    * Update an existing event with optimistic updates
    */
-  async updateEvent(eventId: string, updates: Partial<Event>): Promise<void> {
+  async updateEvent(eventId: string, updates: Partial<EventModel>): Promise<EventModel | null> {
     const authUser = this.authStore.user();
     if (!authUser) {
       throw new Error('Must be authenticated to update events');
@@ -220,6 +220,7 @@ export class EventStore {
     try {
       await this.eventService.updateEvent(eventId, updates);
       console.log('[EventStore] ✅ Event updated:', eventId);
+      return updatedEvent;
     } catch (error: any) {
       // ❌ Rollback optimistic update
       this._userEvents.set(currentEvents);
@@ -277,8 +278,8 @@ export class EventStore {
   /**
    * Publish a draft event
    */
-  async publishEvent(eventId: string): Promise<void> {
-    await this.updateEvent(eventId, { status: 'published' });
+  async publishEvent(eventId: string): Promise<EventModel | null> {
+    return await this.updateEvent(eventId, { status: 'published' });
   }
 
   /**
@@ -349,14 +350,14 @@ export class EventStore {
   /**
    * Get event by ID from loaded events
    */
-  getEventById(eventId: string): Event | null {
+  getEventById(eventId: string): EventModel | null {
     return this._userEvents().find(event => event.id === eventId) || null;
   }
 
   /**
    * Fetch any event by ID from database (for event detail view)
    */
-  async fetchEventById(eventId: string): Promise<Event | null> {
+  async fetchEventById(eventId: string): Promise<EventModel | null> {
     this._loading.set(true);
     this._error.set(null);
 
@@ -376,7 +377,7 @@ export class EventStore {
   /**
    * Fetch event by slug from database
    */
-  async fetchEventBySlug(slug: string): Promise<Event | null> {
+  async fetchEventBySlug(slug: string): Promise<EventModel | null> {
     this._loading.set(true);
     this._error.set(null);
 

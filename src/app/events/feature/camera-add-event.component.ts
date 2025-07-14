@@ -4,7 +4,7 @@ import { RouterModule, Router } from '@angular/router';
 
 import { LLMService } from '../../shared/data-access/llm.service';
 import { EventExtractionResult } from '../../shared/utils/event-extraction-types';
-import { Event } from '../utils/event.model';
+import { EventModel } from '../utils/event.model';
 import { FullScreenCameraComponent } from './camera/full-screen-camera.component';
 import { EventFormComponent } from './event-form.component';
 
@@ -279,7 +279,7 @@ export class CameraAddEventComponent {
   }
 
   // Event handlers for form component
-  onEventSaved(event: Event) {
+  onEventSaved(event: EventModel) {
     console.log('Event saved successfully:', event.id);
     this.router.navigate(['/events']);
   }

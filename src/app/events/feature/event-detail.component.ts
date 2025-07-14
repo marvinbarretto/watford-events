@@ -3,7 +3,7 @@ import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 
 import { EventStore } from '../data-access/event.store';
 import { AuthStore } from '../../auth/data-access/auth.store';
-import { Event } from '../utils/event.model';
+import { EventModel } from '../utils/event.model';
 import { toDate, formatTimestamp } from '../../shared/utils/timestamp.utils';
 import { ChipComponent } from '../../shared/ui/chip/chip.component';
 
@@ -773,7 +773,7 @@ export class EventDetailComponent implements OnInit {
   private router = inject(Router);
 
   // Signals
-  readonly event = signal<Event | null>(null);
+  readonly event = signal<EventModel | null>(null);
   readonly loading = signal(true);
   readonly error = signal<string | null>(null);
   readonly showRawText = signal(false);
@@ -835,7 +835,7 @@ export class EventDetailComponent implements OnInit {
 
       console.log('[EventDetail] 🔍 Looking for event with identifier:', idOrSlug);
 
-      let event: Event | null = null;
+      let event: EventModel | null = null;
       
       // First try as an ID (most common case for existing events)
       if (idOrSlug.startsWith('event_')) {
