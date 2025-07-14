@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.0.14](https://github.com/marvinbarretto/watford-events/compare/v0.0.13...v0.0.14) (2025-07-14)
+
+
+### Features
+
+* Test Ionic shell out ([4686657](https://github.com/marvinbarretto/watford-events/commit/4686657343a3abd878c1d0d21dc359240392e947))
+
 ### [0.0.13](https://github.com/marvinbarretto/watford-events/compare/v0.0.12...v0.0.13) (2025-07-14)
 
 
