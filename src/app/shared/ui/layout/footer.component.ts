@@ -1,6 +1,5 @@
 import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterModule } from '@angular/router';
 import packageJson from '../../../../../package.json';
 import { environment } from '../../../../environments/environment';
 import { DevDebugComponent } from '../dev-debug/dev-debug.component';
@@ -10,7 +9,7 @@ import { Roles } from '../../../auth/utils/roles.enum';
 @Component({
   selector: 'app-footer',
   standalone: true,
-  imports: [CommonModule, RouterModule, DevDebugComponent],
+  imports: [CommonModule, DevDebugComponent],
   templateUrl: './footer.component.html',
   styleUrl: './footer.component.scss'
 })
