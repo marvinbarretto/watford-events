@@ -6,6 +6,10 @@ export const serverRoutes: ServerRoute[] = [
     renderMode: RenderMode.Client  // Dynamic route, render on client
   },
   {
+    path: 'events/:id/enhance',
+    renderMode: RenderMode.Client  // Dynamic route, render on client
+  },
+  {
     path: 'admin/venues/:id/edit',
     renderMode: RenderMode.Client  // Dynamic route, render on client
   },
