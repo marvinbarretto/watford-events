@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.0.15](https://github.com/marvinbarretto/watford-events/compare/v0.0.14...v0.0.15) (2025-07-15)
+
+
+### Bug Fixes
+
+* Serve web shell to everyone for the time being ([485779b](https://github.com/marvinbarretto/watford-events/commit/485779ba3cd15b30209d18fa0c12beddedf0504f))
+
 ### [0.0.14](https://github.com/marvinbarretto/watford-events/compare/v0.0.13...v0.0.14) (2025-07-14)
 
 
