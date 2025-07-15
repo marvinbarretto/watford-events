@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.0.15](https://github.com/marvinbarretto/watford-events/compare/v0.0.14...v0.0.15) (2025-07-15)
+
+
+### Features
+
+* Remove ionic template from android build, develop admin section ([22077b3](https://github.com/marvinbarretto/watford-events/commit/22077b365fd555de95b81ff14c32e1985674d44a))
+
 ### [0.0.14](https://github.com/marvinbarretto/watford-events/compare/v0.0.13...v0.0.14) (2025-07-14)
 
 
