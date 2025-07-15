@@ -59,7 +59,7 @@ export const appConfig: ApplicationConfig = {
     }),
     { provide: TitleStrategy, useClass: TemplatePageTitleStrategy },
 
-    provideIonicAngular(),
-    { provide: RouteReuseStrategy, useClass: IonicRouteStrategy },
+    // provideIonicAngular(),
+    // { provide: RouteReuseStrategy, useClass: IonicRouteStrategy },
   ]
 };

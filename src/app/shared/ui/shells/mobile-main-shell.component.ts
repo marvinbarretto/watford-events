@@ -11,20 +11,22 @@ import { PlatformDetectionService } from '../../utils/platform-detection.service
   imports: [IonApp, IonTabBar, IonTabButton, IonIcon, IonRouterOutlet, ToastComponent],
   template: `
     <ion-app>
+      <!-- Main router outlet for page content -->
       <ion-router-outlet></ion-router-outlet>
       
+      <!-- Bottom tab navigation for mobile web -->
       <ion-tab-bar slot="bottom">
-        <ion-tab-button tab="events" href="/events">
+        <ion-tab-button tab="events" routerLink="/events">
           <ion-icon name="calendar"></ion-icon>
           Events
         </ion-tab-button>
-
-        <ion-tab-button tab="flyer-parser" href="/flyer-parser">
+        
+        <ion-tab-button tab="flyer-parser" routerLink="/flyer-parser">
           <ion-icon name="camera"></ion-icon>
-          Scan
+          Parse Flyer
         </ion-tab-button>
-
-        <ion-tab-button tab="profile" href="/profile">
+        
+        <ion-tab-button tab="profile" routerLink="/profile">
           <ion-icon name="person"></ion-icon>
           Profile
         </ion-tab-button>
