@@ -926,7 +926,7 @@ export class EventEnhancementComponent implements OnInit {
 
       if (publishedEvent) {
         alert('Event published successfully! 🚀');
-        this.router.navigate(['/events', event.id]);
+        this.router.navigate(['/events', event.slug || event.id]);
       } else {
         throw new Error('Failed to publish event');
       }

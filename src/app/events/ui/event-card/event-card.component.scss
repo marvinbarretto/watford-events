@@ -265,3 +265,187 @@ app-date-box {
     font-size: 12px;
   }
 }
+
+/* Card Mode Styles */
+.event-item.card-mode {
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+  margin-bottom: 16px;
+}
+
+.event-item.card-mode:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 16px rgba(0,0,0,0.15);
+}
+
+.event-item.card-mode .event-image {
+  position: relative;
+  height: 200px;
+  overflow: hidden;
+}
+
+.event-item.card-mode .event-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.event-item.card-mode .ai-badge {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 8px;
+  background: rgba(0,0,0,0.8);
+  color: white;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.event-item.card-mode .ai-icon {
+  font-size: 14px;
+}
+
+.event-item.card-mode .mock-badge {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 8px;
+  background: var(--warning);
+  color: var(--background-lighter);
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 600;
+  border: 1px solid var(--warning-hover);
+}
+
+.event-item.card-mode .mock-icon {
+  font-size: 14px;
+}
+
+.event-item.card-mode .card-content {
+  padding: 20px;
+}
+
+.event-item.card-mode .event-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 15px;
+}
+
+.event-item.card-mode .event-title {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--text);
+  line-height: 1.3;
+  flex: 1;
+  margin-right: 10px;
+  white-space: normal;
+}
+
+.event-item.card-mode .event-details {
+  margin-bottom: 15px;
+}
+
+.event-item.card-mode .event-date,
+.event-item.card-mode .event-location {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 5px;
+  font-size: 14px;
+  color: var(--text-secondary);
+}
+
+.event-item.card-mode .date-icon,
+.event-item.card-mode .location-icon {
+  font-size: 16px;
+}
+
+.event-item.card-mode .event-description {
+  margin: 0 0 15px 0;
+  color: var(--text-secondary);
+  font-size: 14px;
+  line-height: 1.4;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.event-item.card-mode .event-tags {
+  margin-top: 12px;
+  margin-bottom: 15px;
+}
+
+.event-item.card-mode .admin-actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-top: 15px;
+}
+
+.event-item.card-mode .edit-btn {
+  background: var(--secondary);
+  color: var(--primary);
+  border: none;
+  border-radius: 6px;
+  padding: 6px 12px;
+  font-size: 12px;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.event-item.card-mode .delete-btn {
+  background: var(--error);
+  color: var(--background-lighter);
+  border: none;
+  border-radius: 6px;
+  padding: 6px 12px;
+  font-size: 12px;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.event-item.card-mode .edit-btn:hover,
+.event-item.card-mode .delete-btn:hover {
+  transform: translateY(-1px);
+  filter: brightness(0.9);
+}
+
+/* List mode admin actions styling */
+.list-admin-actions {
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid var(--border);
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.list-admin-actions .action-btn {
+  background: var(--background);
+  border: 1px solid var(--border);
+  color: var(--text-secondary);
+}
+
+.list-admin-actions .action-btn:hover {
+  background: var(--background-lighter);
+  border-color: var(--primary);
+  color: var(--primary);
+}

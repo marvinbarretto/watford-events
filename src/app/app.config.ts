@@ -1,5 +1,5 @@
 import { ApplicationConfig, inject, provideAppInitializer, provideBrowserGlobalErrorListeners, provideZoneChangeDetection } from '@angular/core';
-import { provideRouter, TitleStrategy } from '@angular/router';
+import { provideRouter, TitleStrategy, RouteReuseStrategy } from '@angular/router';
 import { provideHttpClient, withFetch } from '@angular/common/http';
 import { routes } from './app.routes';
 import { provideClientHydration, withEventReplay } from '@angular/platform-browser';
@@ -11,6 +11,7 @@ import { USER_THEME_TOKEN } from '../libs/tokens/user-theme.token';
 import { ThemeStore } from './shared/data-access/theme.store';
 import { TemplatePageTitleStrategy } from './TemplatePageTitleStrategy';
 import { environment } from '../environments/environment';
+import { provideIonicAngular, IonicRouteStrategy } from '@ionic/angular/standalone';
 
 export const appConfig: ApplicationConfig = {
   providers: [
@@ -57,5 +58,8 @@ export const appConfig: ApplicationConfig = {
       }
     }),
     { provide: TitleStrategy, useClass: TemplatePageTitleStrategy },
+
+    provideIonicAngular(),
+    { provide: RouteReuseStrategy, useClass: IonicRouteStrategy },
   ]
 };

@@ -86,6 +86,7 @@
     "@jest/globals": "29.7.0",
     "cheerio": "^1.0.0",
     "express": "^5.1.0",
+    "ionicons": "8.0.13",
     "nanoid": "5.1.5",
     "puppeteer": "^23.9.0",
     "robots-parser": "^3.0.1",

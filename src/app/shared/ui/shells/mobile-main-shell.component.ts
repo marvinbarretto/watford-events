@@ -1,6 +1,5 @@
 import { Component, inject } from '@angular/core';
-import { RouterOutlet } from '@angular/router';
-import { IonApp, IonTabs, IonTabBar, IonTabButton, IonIcon } from '@ionic/angular/standalone';
+import { IonApp, IonTabBar, IonTabButton, IonIcon, IonRouterOutlet } from '@ionic/angular/standalone';
 import { addIcons } from 'ionicons';
 import { calendar, camera, person, home } from 'ionicons/icons';
 import { ToastComponent } from '../toast/toast.component';
@@ -9,29 +8,27 @@ import { PlatformDetectionService } from '../../utils/platform-detection.service
 
 @Component({
   selector: 'app-mobile-main-shell',
-  imports: [RouterOutlet, IonApp, IonTabs, IonTabBar, IonTabButton, IonIcon, ToastComponent],
+  imports: [IonApp, IonTabBar, IonTabButton, IonIcon, IonRouterOutlet, ToastComponent],
   template: `
     <ion-app>
-      <ion-tabs>
-        <router-outlet></router-outlet>
+      <ion-router-outlet></ion-router-outlet>
+      
+      <ion-tab-bar slot="bottom">
+        <ion-tab-button tab="events" href="/events">
+          <ion-icon name="calendar"></ion-icon>
+          Events
+        </ion-tab-button>
 
-        <ion-tab-bar slot="bottom">
-          <ion-tab-button tab="events" href="/events">
-            <ion-icon name="calendar"></ion-icon>
-            Events
-          </ion-tab-button>
+        <ion-tab-button tab="flyer-parser" href="/flyer-parser">
+          <ion-icon name="camera"></ion-icon>
+          Scan
+        </ion-tab-button>
 
-          <ion-tab-button tab="flyer-parser" href="/flyer-parser">
-            <ion-icon name="camera"></ion-icon>
-            Scan
-          </ion-tab-button>
-
-          <ion-tab-button tab="profile" href="/profile">
-            <ion-icon name="person"></ion-icon>
-            Profile
-          </ion-tab-button>
-        </ion-tab-bar>
-      </ion-tabs>
+        <ion-tab-button tab="profile" href="/profile">
+          <ion-icon name="person"></ion-icon>
+          Profile
+        </ion-tab-button>
+      </ion-tab-bar>
       
       <!-- Toast Notifications for mobile web (non-native) -->
       @if (!platformDetection.isCapacitorNative) {
@@ -46,7 +43,8 @@ import { PlatformDetectionService } from '../../utils/platform-detection.service
         }
       }
     </ion-app>
-  `
+  `,
+  styleUrl: './mobile-main-shell.component.scss'
 })
 export class MobileMainShell {
   readonly toastService = inject(ToastService);

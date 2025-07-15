@@ -22,7 +22,19 @@
     <p class="cta-subtitle">Quick creation or detailed form - your choice</p>
   </div>
 
-  <!-- Removed experimental section -->
+  <!-- Development & Testing Section -->
+  <div class="dev-section">
+    <h2>🧪 Development Testing</h2>
+    <div class="dev-links">
+      <a routerLink="/test-responsive" class="dev-link">
+        <span class="dev-icon">📱</span>
+        <div>
+          <strong>Responsive Design Test</strong>
+          <small>Compare single codebase vs dual shell approaches</small>
+        </div>
+      </a>
+    </div>
+  </div>
 
   <app-event-filter
     [activeFilter]="currentFilter()"
@@ -58,7 +70,7 @@
       <section class="events-section">
         <div class="events-list">
           @for (event of filteredEvents(); track event.id) {
-            <app-event-item
+            <app-event-card
                 [event]="event"
                 [venue]="getEventVenue(event.id)"
                 [isFeatured]="isEventFeatured(event)"

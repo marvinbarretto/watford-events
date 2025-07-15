@@ -382,6 +382,71 @@
   }
 }
 
+// Development & Testing Section
+.dev-section {
+  background: var(--background-lighter);
+  border: 2px dashed var(--warning);
+  border-radius: 12px;
+  padding: 1.5rem;
+  margin: 2rem 0;
+
+  h2 {
+    margin: 0 0 1rem 0;
+    color: var(--warning);
+    font-size: 1.125rem;
+    font-weight: 600;
+  }
+
+  .dev-links {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+
+  .dev-link {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 1rem;
+    background: var(--background);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    text-decoration: none;
+    color: var(--text);
+    transition: all 0.2s ease;
+
+    &:hover {
+      background: var(--background-darker);
+      border-color: var(--primary);
+      transform: translateY(-1px);
+      box-shadow: var(--shadow);
+    }
+
+    .dev-icon {
+      font-size: 1.5rem;
+      flex-shrink: 0;
+    }
+
+    div {
+      flex: 1;
+
+      strong {
+        display: block;
+        font-weight: 600;
+        color: var(--text);
+        margin-bottom: 0.25rem;
+      }
+
+      small {
+        display: block;
+        color: var(--text-secondary);
+        font-size: 0.875rem;
+        line-height: 1.3;
+      }
+    }
+  }
+}
+
 @media (max-width: 480px) {
   .home-container {
     padding: 12px;
@@ -389,5 +454,18 @@
 
   .page-title {
     font-size: 20px;
+  }
+
+  .dev-section {
+    padding: 1rem;
+    margin: 1rem 0;
+
+    .dev-link {
+      padding: 0.75rem;
+      
+      .dev-icon {
+        font-size: 1.25rem;
+      }
+    }
   }
 }

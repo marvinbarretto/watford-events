@@ -2,7 +2,7 @@ import { Component, inject, computed, signal } from '@angular/core';
 import { RouterModule } from '@angular/router';
 import { BaseComponent } from '../../../shared/data-access/base.component';
 import { EventStore } from '../../../events/data-access/event.store';
-import { EventItemComponent } from '../../../events/ui/event-item/event-item.component';
+import { EventCardComponent } from '../../../events/ui/event-card/event-card.component';
 import { EventFilterComponent, FilterOption, EventCounts } from '../../../events/ui/event-filter/event-filter.component';
 import { UserPreferencesWidgetComponent } from '../../../user-preferences/ui/user-preferences-widget/user-preferences-widget.component';
 import { EventModel } from '../../../events/utils/event.model';
@@ -14,7 +14,7 @@ import { VenueStore } from '../../../venues/data-access/venue.store';
 
 @Component({
   selector: 'app-home',
-  imports: [EventItemComponent, EventFilterComponent, UserPreferencesWidgetComponent, RouterModule],
+  imports: [EventCardComponent, EventFilterComponent, UserPreferencesWidgetComponent, RouterModule],
   templateUrl: './home.component.html',
   styleUrl: './home.component.scss'
 })
@@ -309,7 +309,7 @@ export class HomeComponent extends BaseComponent {
   }
 
   onEventClicked(event: EventModel) {
-    this.router.navigate(['/events', event.id]);
+    this.router.navigate(['/events', event.slug || event.id]);
   }
 
   addNewEvent() {

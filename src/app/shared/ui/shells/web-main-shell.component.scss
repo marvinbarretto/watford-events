@@ -1,0 +1,118 @@
+// -----------------------------------------------------------------------------
+// Web Main Shell - Mobile Optimizations
+// Enhanced for cross-platform deployment (web, mobile web, Capacitor)
+// -----------------------------------------------------------------------------
+
+// Mobile-specific optimizations for Capacitor deployment
+.app {
+  // Ensure proper mobile app behavior
+  min-height: 100vh;
+  min-height: 100dvh; // Dynamic viewport height for mobile browsers
+  
+  // Safe area support for notched devices (iPhone X+)
+  padding-top: env(safe-area-inset-top);
+  padding-bottom: env(safe-area-inset-bottom);
+  padding-left: env(safe-area-inset-left);
+  padding-right: env(safe-area-inset-right);
+  
+  // Prevent zoom on focus for mobile web
+  @media (max-width: 768px) {
+    input, select, textarea {
+      font-size: 16px; // Prevents zoom on iOS
+    }
+  }
+}
+
+// Touch-friendly enhancements for mobile deployment
+@media (max-width: 768px) {
+  .main {
+    // Better mobile spacing
+    padding: 1rem 0.75rem;
+    
+    // Optimize for touch scrolling
+    -webkit-overflow-scrolling: touch;
+    
+    // Ensure content doesn't get cut off by virtual keyboards
+    padding-bottom: env(keyboard-inset-height, 0);
+  }
+  
+  // Touch targets should be minimum 44px for accessibility
+  button, .btn, [role="button"] {
+    min-height: 44px;
+    min-width: 44px;
+    
+    // Better touch feedback
+    &:active {
+      transform: scale(0.98);
+      opacity: 0.8;
+    }
+  }
+  
+  // Links should also be touch-friendly
+  a {
+    min-height: 44px;
+    display: inline-flex;
+    align-items: center;
+    
+    // Touch feedback for links
+    &:active {
+      opacity: 0.7;
+    }
+  }
+}
+
+// Capacitor-specific optimizations
+@media (max-width: 480px) {
+  .main {
+    // Tighter spacing on very small screens
+    padding: 0.75rem 0.5rem;
+  }
+  
+  // Status bar consideration for Capacitor apps
+  app-header {
+    // Ensure header doesn't conflict with status bar
+    position: relative;
+    z-index: 1000;
+  }
+}
+
+// Hardware back button support hint
+// Note: Actual implementation would be in a Capacitor plugin service
+.app {
+  // Prevent default browser behavior that might interfere with Capacitor
+  overscroll-behavior: contain;
+  
+  // Improve scroll performance
+  scroll-behavior: smooth;
+}
+
+// Toast positioning for mobile (avoid system UI overlap)
+app-toast {
+  // Ensure toasts don't conflict with safe areas
+  margin-top: env(safe-area-inset-top, 0);
+  margin-bottom: env(safe-area-inset-bottom, 0);
+  margin-left: env(safe-area-inset-left, 0);
+  margin-right: env(safe-area-inset-right, 0);
+  
+  @media (max-width: 768px) {
+    // Better mobile toast positioning
+    bottom: calc(1rem + env(safe-area-inset-bottom, 0));
+    left: calc(1rem + env(safe-area-inset-left, 0));
+    right: calc(1rem + env(safe-area-inset-right, 0));
+  }
+}
+
+// Pull-to-refresh prevention (Capacitor apps might want to control this)
+.main {
+  // Prevent pull-to-refresh on the main content area
+  overscroll-behavior-y: contain;
+}
+
+// High DPI display optimizations
+@media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 2dppx) {
+  // Sharper rendering for high-DPI mobile screens
+  .app {
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+}

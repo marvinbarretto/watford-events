@@ -35,36 +35,6 @@ import { RouterModule } from '@angular/router';
           </div>
         </section>
 
-        <!-- Parse & Process Section -->
-        <section class="directory-section parse-events">
-          <div class="section-header">
-            <h2 class="section-title">
-              <span class="section-icon">⚡</span>
-              Parse & Process
-            </h2>
-            <p class="section-description">Advanced event processing tools</p>
-          </div>
-
-          <div class="action-cards">
-            <a routerLink="/events/parser" class="action-card">
-              <div class="card-icon">🔍</div>
-              <h3 class="card-title">Event Parser</h3>
-              <p class="card-description">Process multiple event sources</p>
-            </a>
-
-            <a routerLink="/events/enhanced-parser" class="action-card">
-              <div class="card-icon">🚀</div>
-              <h3 class="card-title">Enhanced Parser</h3>
-              <p class="card-description">Advanced parsing with AI</p>
-            </a>
-
-            <a routerLink="/flyer-parser" class="action-card">
-              <div class="card-icon">🖼️</div>
-              <h3 class="card-title">Flyer Parser</h3>
-              <p class="card-description">Dedicated flyer processing</p>
-            </a>
-          </div>
-        </section>
 
         <!-- Browse Events Section -->
         <section class="directory-section browse-events">

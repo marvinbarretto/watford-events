@@ -15,6 +15,11 @@ export const routes: Routes = [
     loadComponent: () => import('./shared/feature/test/test.component').then(m => m.TestComponent)
   },
   {
+    path: 'test-responsive',
+    data: { shell: 'main' },
+    loadComponent: () => import('./features/test-responsive/test-responsive.component').then(m => m.TestResponsiveComponent)
+  },
+  {
     path: 'venues',
     data: { shell: 'main' },
     loadComponent: () => import('./venues/feature/venue-list.component').then(m => m.VenueListComponent)
@@ -40,24 +45,9 @@ export const routes: Routes = [
     loadComponent: () => import('./events/feature/event-enhancement.component').then(m => m.EventEnhancementComponent)
   },
   {
-    path: 'events/parser',
-    data: { shell: 'main' },
-    loadComponent: () => import('./events/feature/event-parser.component').then(m => m.EventParserComponent)
-  },
-  {
-    path: 'events/enhanced-parser',
-    data: { shell: 'main' },
-    loadComponent: () => import('./events/feature/enhanced-event-parser.component').then(m => m.EnhancedEventParserComponent)
-  },
-  {
     path: 'events/:id',
     data: { shell: 'main' },
     loadComponent: () => import('./events/feature/event-detail.component').then(m => m.EventDetailComponent)
-  },
-  {
-    path: 'flyer-parser',
-    data: { shell: 'flyer-parser' },
-    loadComponent: () => import('./events/feature/flyer-parser.component').then(m => m.FlyerParserComponent)
   },
   {
     path: 'login',
@@ -104,6 +94,24 @@ export const routes: Routes = [
     data: { shell: 'main' },
     // canActivate: [authGuard, roleGuard([Roles.Admin])],
     loadComponent: () => import('./admin/feature/admin-scraping/admin-scraping').then(m => m.AdminScraping)
+  },
+  {
+    path: 'admin/data-quality',
+    data: { shell: 'main' },
+    canActivate: [authGuard, roleGuard([Roles.Admin])],
+    loadComponent: () => import('./admin/feature/admin-data-quality/admin-data-quality').then(m => m.AdminDataQualityComponent)
+  },
+  {
+    path: 'admin/venue-reconciliation',
+    data: { shell: 'main' },
+    canActivate: [authGuard, roleGuard([Roles.Admin])],
+    loadComponent: () => import('./admin/feature/venue-reconciliation/venue-reconciliation').then(m => m.VenueReconciliationComponent)
+  },
+  {
+    path: 'admin/reconciliation',
+    data: { shell: 'main' },
+    canActivate: [authGuard, roleGuard([Roles.Admin])],
+    loadComponent: () => import('./admin/feature/entity-reconciliation/entity-reconciliation.component').then(m => m.EntityReconciliationComponent)
   },
   {
     path: 'admin/venues/new',

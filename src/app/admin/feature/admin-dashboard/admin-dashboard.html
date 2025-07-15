@@ -1,52 +1,164 @@
 <div class="admin-dashboard">
+  <!-- Header Section -->
   <div class="dashboard-header">
-    <h1>Admin Dashboard</h1>
-    <p>Manage your Watford Events platform</p>
+    <div class="header-content">
+      <div class="title-section">
+        <h1>🎯 Admin Dashboard</h1>
+        <p class="subtitle">Manage your Watford Events platform</p>
+      </div>
+      
+      <div class="header-actions">
+        <button 
+          class="btn btn-secondary" 
+          [disabled]="isLoading()"
+          (click)="refreshDashboard()">
+          <span *ngIf="!isLoading()">🔄 Refresh</span>
+          <span *ngIf="isLoading()">⏳ Loading...</span>
+        </button>
+        
+        <div class="last-updated" *ngIf="lastUpdated()">
+          <span class="label">Last updated:</span>
+          <span class="time">{{ formatLastUpdated() }}</span>
+        </div>
+      </div>
+    </div>
   </div>
 
-  @if (eventsLoading()) {
-    <div class="loading">Loading dashboard data...</div>
-  } @else {
-    <div class="dashboard-stats">
-      <div class="stat-card">
-        <h3>Total Events</h3>
-        <div class="stat-number">{{ dashboardStats().totalEvents }}</div>
-      </div>
-      
-      <div class="stat-card">
-        <h3>Pending Events</h3>
-        <div class="stat-number pending">{{ dashboardStats().pendingEvents }}</div>
-      </div>
-      
-      <div class="stat-card">
-        <h3>Approved Events</h3>
-        <div class="stat-number approved">{{ dashboardStats().approvedEvents }}</div>
-      </div>
-      
-      <div class="stat-card">
-        <h3>Total Users</h3>
-        <div class="stat-number">{{ dashboardStats().totalUsers }}</div>
-      </div>
-      
-      <div class="stat-card">
-        <h3>Total Venues</h3>
-        <div class="stat-number">{{ dashboardStats().totalVenues }}</div>
+  <!-- Loading State -->
+  <div class="loading-overlay" *ngIf="isLoading()">
+    <div class="loading-content">
+      <div class="spinner"></div>
+      <p>Loading dashboard data...</p>
+    </div>
+  </div>
+
+  <!-- Dashboard Content -->
+  <div class="dashboard-content" *ngIf="!isLoading()">
+    <!-- Statistics Section -->
+    <div class="stats-section">
+      <h2 class="section-title">📊 Overview</h2>
+      <div class="stats-grid">
+        <a 
+          *ngFor="let stat of dashboardConfig().stats" 
+          [routerLink]="stat.link"
+          class="stat-card"
+          [style.border-left-color]="stat.color">
+          
+          <div class="stat-header">
+            <span class="stat-icon">{{ stat.icon }}</span>
+            <h3 class="stat-title">{{ stat.title }}</h3>
+          </div>
+          
+          <div class="stat-value" [style.color]="stat.color">
+            {{ stat.value }}
+          </div>
+          
+          <div class="stat-trend" *ngIf="stat.trend">
+            <span 
+              class="trend-indicator"
+              [class]="'trend-' + stat.trend.direction">
+              {{ stat.trend.direction === 'up' ? '↗️' : stat.trend.direction === 'down' ? '↘️' : '➡️' }}
+            </span>
+            <span class="trend-label">{{ stat.trend.label }}</span>
+          </div>
+        </a>
       </div>
     </div>
 
-    <div class="dashboard-actions">
-      <h2>Quick Actions</h2>
-      <div class="action-buttons">
-        <a routerLink="/admin/events" class="action-button primary">
-          📅 Manage Events
-        </a>
-        <a routerLink="/admin/users" class="action-button secondary">
-          👥 Manage Users
-        </a>
-        <a routerLink="/admin/venues" class="action-button secondary">
-          🏢 Manage Venues
+    <!-- Primary Actions Section -->
+    <div class="actions-section">
+      <h2 class="section-title">⚡ Primary Actions</h2>
+      <div class="primary-actions-grid">
+        <a 
+          *ngFor="let action of dashboardConfig().primaryActions" 
+          [routerLink]="action.link"
+          [class]="getActionButtonClass(action)">
+          
+          <div class="action-header">
+            <span class="action-icon">{{ action.icon }}</span>
+            <h3 class="action-title">{{ action.title }}</h3>
+            <div class="action-badge" *ngIf="action.badge" [style.background-color]="action.badge.color">
+              {{ action.badge.value }}
+            </div>
+          </div>
+          
+          <p class="action-description">{{ action.description }}</p>
         </a>
       </div>
     </div>
-  }
+
+    <!-- Secondary Actions Section -->
+    <div class="actions-section">
+      <h2 class="section-title">🔧 Additional Tools</h2>
+      <div class="secondary-actions-grid">
+        <a 
+          *ngFor="let action of dashboardConfig().secondaryActions" 
+          [routerLink]="action.link"
+          [class]="getActionButtonClass(action)">
+          
+          <div class="action-content">
+            <span class="action-icon">{{ action.icon }}</span>
+            <div class="action-text">
+              <h4 class="action-title">{{ action.title }}</h4>
+              <p class="action-description">{{ action.description }}</p>
+            </div>
+            <span class="action-arrow">→</span>
+          </div>
+        </a>
+      </div>
+    </div>
+
+    <!-- Recent Activities Section -->
+    <div class="activities-section" *ngIf="dashboardConfig().recentActivities.length > 0">
+      <h2 class="section-title">📈 Recent Activities</h2>
+      <div class="activities-list">
+        <a 
+          *ngFor="let activity of dashboardConfig().recentActivities" 
+          [routerLink]="activity.link"
+          class="activity-item">
+          
+          <div class="activity-icon">{{ getActivityIcon(activity.type) }}</div>
+          
+          <div class="activity-content">
+            <h4 class="activity-title">{{ activity.title }}</h4>
+            <p class="activity-description">{{ activity.description }}</p>
+          </div>
+          
+          <div class="activity-time">
+            {{ formatActivityTime(activity.timestamp) }}
+          </div>
+        </a>
+      </div>
+    </div>
+
+    <!-- Quick Tips Section -->
+    <div class="tips-section">
+      <h2 class="section-title">💡 Quick Tips</h2>
+      <div class="tips-grid">
+        <div class="tip-card">
+          <div class="tip-icon">📊</div>
+          <div class="tip-content">
+            <h4>Monitor Data Quality</h4>
+            <p>Check the Data Quality dashboard regularly to ensure venue assignments are up to date.</p>
+          </div>
+        </div>
+        
+        <div class="tip-card">
+          <div class="tip-icon">🔗</div>
+          <div class="tip-content">
+            <h4>Entity Reconciliation</h4>
+            <p>Resolve duplicate artists and venues to improve data quality and enable better event discovery.</p>
+          </div>
+        </div>
+        
+        <div class="tip-card">
+          <div class="tip-icon">🕷️</div>
+          <div class="tip-content">
+            <h4>Automated Scraping</h4>
+            <p>Configure web scraping to automatically discover new events from venue websites.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
 </div>

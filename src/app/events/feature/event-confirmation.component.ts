@@ -93,6 +93,10 @@ interface AdditionalEventDetails {
                 <app-event-card
                   [event]="previewEvent()"
                   [currentUserId]="currentUserId()"
+                  [isAdmin]="true"
+                  displayMode="card"
+                  (editClicked)="editEvent($event)"
+                  (deleteClicked)="deleteEvent($event)"
                 />
               </div>
             </details>
@@ -1667,5 +1671,18 @@ export class EventConfirmationComponent implements OnInit {
   getOverallConfidence(): number {
     const data = this.eventData();
     return data?.extractionConfidence?.overall || 0;
+  }
+
+  // Event card interaction handlers
+  editEvent(event: EventModel): void {
+    // Placeholder for edit functionality - could navigate to edit page
+    console.log('Edit event:', event);
+    // Could implement actual edit navigation if needed
+  }
+
+  deleteEvent(event: EventModel): void {
+    // Placeholder for delete functionality - could show confirmation dialog
+    console.log('Delete event:', event);
+    // Could implement actual delete functionality if needed
   }
 }

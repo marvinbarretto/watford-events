@@ -1,0 +1,114 @@
+// -----------------------------------------------------------------------------
+// Mobile Main Shell Styles
+// Essential Ionic CSS imports for component functionality on mobile web
+// -----------------------------------------------------------------------------
+
+// ===== EXPERIMENT: Comment out our custom styles to test for conflicts =====
+
+// Import essential Ionic CSS for component functionality
+@import '@ionic/angular/css/core.css';
+@import '@ionic/angular/css/typography.css';
+
+// Essential Ionic component-specific CSS
+@import '@ionic/angular/css/padding.css';
+@import '@ionic/angular/css/flex-utils.css';
+
+// COMMENTED OUT: Test if our custom variables are causing conflicts
+// Component-scoped styling (scoped to this shell only)
+// :host {
+//   // Bridge existing theme tokens to Ionic variables for consistency
+//   --ion-color-primary: var(--primary);
+//   --ion-color-primary-rgb: var(--primary-rgb, 59, 130, 246);
+//   --ion-color-primary-contrast: var(--primary-contrast, #ffffff);
+//   --ion-color-primary-shade: var(--primary-dark, #2563eb);
+//   --ion-color-primary-tint: var(--primary-light, #60a5fa);
+
+//   // Background colors
+//   --ion-background-color: var(--background);
+//   --ion-background-color-rgb: var(--background-rgb, 255, 255, 255);
+  
+//   // Text colors
+//   --ion-text-color: var(--text);
+//   --ion-text-color-rgb: var(--text-rgb, 17, 24, 39);
+  
+//   // Tab bar styling for mobile web
+//   --ion-tab-bar-background: var(--background-lighter);
+//   --ion-tab-bar-color: var(--text-muted);
+//   --ion-tab-bar-color-selected: var(--primary);
+//   --ion-tab-bar-border-color: var(--border);
+  
+//   // Mobile web optimizations
+//   --ion-item-background: var(--background-lighter);
+//   --ion-border-color: var(--border);
+// }
+
+// Essential styling for proper Ionic structure (with IonRouterOutlet)
+
+// Mobile web specific optimizations
+ion-app {
+  // Ensure proper mobile web behavior
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+ion-router-outlet {
+  // Router outlet takes up remaining space
+  flex: 1;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch; // iOS momentum scrolling
+}
+
+// Tab bar enhancements for mobile web
+ion-tab-bar {
+  // Better mobile web styling
+  border-top: 1px solid var(--border, #e0e0e0);
+  background: var(--background-lighter, #ffffff);
+  
+  ion-tab-button {
+    // Better touch targets for mobile web
+    --padding-top: 8px;
+    --padding-bottom: 8px;
+    
+    // Icon styling
+    ion-icon {
+      font-size: 24px;
+      margin-bottom: 2px;
+    }
+    
+    // Hover state for better web interaction
+    @media (hover: hover) {
+      &:hover {
+        background: rgba(59, 130, 246, 0.1);
+      }
+    }
+    
+    // Focus state for accessibility
+    &:focus {
+      outline: 2px solid var(--primary, #3b82f6);
+      outline-offset: 2px;
+    }
+  }
+}
+
+// // Toast positioning for mobile web (avoid tab bar overlap)
+// app-toast {
+//   position: fixed;
+//   bottom: calc(64px + 1rem); // Tab bar height + margin
+//   left: 1rem;
+//   right: 1rem;
+//   z-index: 10000;
+// }
+
+// // Responsive adjustments
+// @media (max-width: 480px) {
+//   ion-tab-bar ion-tab-button {
+//     --padding-top: 6px;
+//     --padding-bottom: 6px;
+//     font-size: 12px;
+    
+//     ion-icon {
+//       font-size: 20px;
+//     }
+//   }
+// }

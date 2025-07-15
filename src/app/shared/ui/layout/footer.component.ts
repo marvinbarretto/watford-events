@@ -17,16 +17,20 @@ export class FooterComponent {
 
   readonly currentYear = new Date().getFullYear();
   readonly version = packageJson.version;
-  readonly showDevDebug = !environment.production && this.isAdminUser();
+  readonly showDevDebug = !environment.production; // Temporarily bypass auth check for development
 
   private isAdminUser(): boolean {
     const user = this.authStore.user();
-    console.log('[FooterComponent] Debug - User role check:', {
+    const authState = this.authStore.isAuthenticated();
+    console.log('[FooterComponent] Enhanced Debug - Auth State:', {
+      isAuthenticated: authState,
       user: user,
       role: user?.role,
       isAdmin: user?.role === Roles.Admin,
       rolesEnum: Roles,
-      environment: environment.production
+      environment: environment.production,
+      showDevDebug: !environment.production,
+      userObjectKeys: user ? Object.keys(user) : 'null'
     });
     return user?.role === Roles.Admin;
   }
